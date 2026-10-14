@@ -1,0 +1,2303 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+:root {
+  /* === RENK ===
+     Deneyap'ın kendi fiziksel kimliğinden türetildi — kartın PCB'si kırmızı,
+     dahili LED'in ışığı mavi. Zemin sıcak/açık (atölye tezgahı hissi).
+     Site genelinde (portal + ders sayfaları) tek kaynak burası; sayfaya özel
+     dosyalar (index-theme.css) sadece layout/animasyon eziyor, renk değil. */
+  --color-bg:           #FFF8F0;
+  --color-surface:      #FFFFFF;
+  --color-surface-2:    #FCE6C8;
+  --color-surface-deep: #F4F9FF;
+  --color-border:       #EAD3AE;
+  --color-border-soft:  #F7EBDD;
+
+  --color-text:         #23180F;
+  --color-text-muted:   #7C6552;
+  --color-text-dim:     #7F6C58;
+  --color-text-2:       #5C4B3A;
+  --color-text-3:       #3D3024;
+
+  --color-primary:        #D6273A;
+  --color-primary-soft:   rgba(214, 39, 58, 0.10);
+  --color-primary-stroke: rgba(214, 39, 58, 0.32);
+  --color-primary-hover:  #B81F2F;
+  --color-accent:         #1D4ED8;
+  --color-accent-hover:   #163FB0;
+  /* Metin ici mavi vurgu (rehber kartindaki <b>) icin yumusak zemin;
+     --color-primary-soft ile ayni desen. */
+  --color-accent-soft:    rgba(29, 78, 216, 0.12);
+  --color-accent-2:       #17B3A3;
+  --color-accent-3:       #F5A524;
+  --color-accent-2-hover: #0F9385;
+
+  --color-success:      #2BB673;
+  --color-success-soft: rgba(43, 182, 115, 0.15);
+  --color-success-2:    #157244;
+  --color-success-3:    #0E7A45;
+  --color-warning:      #FFB627;
+  --color-danger:       #F4511E;
+  --color-danger-soft:  rgba(244, 81, 30, 0.14);
+  --color-danger-2:     #C23616;
+  --color-arduino:      #c93c34;
+  --color-arduino-2:    #8e1c15;
+  --color-bg-deep:      #101820;
+
+  --font-heading: 'Baloo 2', 'Inter', sans-serif;
+  /* Comic Neue'de latin-ext yok: ş ve ğ sessizce Arial'a düşüyor,
+     aynı cümlede kalın/yabancı harf gibi duruyordu. Nunito aynı sıcak,
+     yuvarlak karakteri taşıyor ve Türkçeyi tam kapsıyor. */
+  --font-body: 'Nunito', 'Inter', sans-serif;
+
+  /* === SPACING === */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 14px;
+  --space-6: 16px;
+  --space-7: 18px;
+  --space-8: 20px;
+
+  /* === RADIUS ===
+     Claymorphism ölçeği: tek köşe-yarıçapı sistemi (SHAPE CONSISTENCY LOCK) —
+     her yerde büyük/yumuşak köşeler, tam pil için 999px. */
+  --radius-sm:   10px;
+  --radius-md:   14px;
+  --radius-lg:  20px;
+  --radius-xl:  28px;
+  --radius-pill: 999px;
+  --radius-circle: 50%;
+  --border-w-thin: 2px;
+  --border-w-thick: 3px;
+
+  /* === TYPOGRAPHY === */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', monospace;
+  /* Olcek 2026-09-20'de bir basamak buyudu (Arda: "yazilar BENI OKU desin").
+     Onceki degerler yorumda duruyor: 11/12/13/14/15/18/22.
+     Gerekce: gercek sayfada olculdu, kontrast (8.3:1) ve satir uzunlugu
+     (32-66 karakter) zaten iyiydi; eksik olan BOYUT ve AGIRLIKTI.
+     10-11 yas icerigi icin 14px govde kucuk kaliyor. */
+  --text-xs:    12px;
+  --text-sm:    13px;
+  --text-base:  14px;
+  --text-md:    15px;
+  --text-lg:    17px;
+  --text-xl:    20px;
+  --text-2xl:   24px;
+  --text-3xl:   48px;
+
+  /* Alt gezinme çubuğunun yüksekliği TEK KAYNAK. Üç yerde elle 48px
+     yazılıydı (.bottom-nav, body padding-bottom, .fentop-container'ın
+     mobil yükseklik hesabı) — biri değişip öbürü eski kalınca çubuk
+     sahnenin altını yiyordu. Tester (Arda, 2026-09-21) "ilk başta nereye
+     basacağımı anlamadım" dedi: 48px'lik barda düğmeler 12px yazı ve
+     ~25px yükseklikteydi, dokunma hedefi olarak da küçüktü. */
+  --nav-h: 54px;
+  --leading-tight:   1.3;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.6;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+
+  /* === SHADOW ===
+     --shadow-clay-* : claymorphism'in "double shadow" imzası — dış yumuşak
+     ambient gölge + üstte cam gibi bir ışık çizgisi (inset highlight),
+     kartlara şişkin/toy-like bir his verir. */
+  --shadow-sm: 0 2px 6px rgba(43, 33, 24, 0.08);
+  --shadow-md: 0 6px 16px rgba(43, 33, 24, 0.12);
+  --shadow-lg: 0 12px 32px rgba(43, 33, 24, 0.16);
+  --shadow-xl: 0 20px 50px rgba(43, 33, 24, 0.22);
+  --shadow-clay-sm: 0 4px 10px rgba(43, 33, 24, 0.10), inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
+  --shadow-clay-md: 0 8px 20px rgba(43, 33, 24, 0.14), inset 0 1.5px 0 rgba(255, 255, 255, 0.7);
+  --shadow-clay-lg: 0 14px 32px rgba(43, 33, 24, 0.18), inset 0 2px 0 rgba(255, 255, 255, 0.7);
+
+  /* === Z-INDEX === */
+  --z-base:     1;
+  --z-svg-low:  2;
+  --z-svg-mid:  4;
+  --z-svg-hi:   6;
+  --z-sticky:  10;
+  --z-dropdown:30;
+  --z-floating:40;
+  --z-overlay: 50;
+  --z-tooltip: 60;
+  --z-toast:  100;
+  --z-cursor:9999;
+
+  /* === MOTION ===
+     --easing-default: zayıf yerleşik ease-out yerine güçlü bir eğri (animate
+     skill'inin kuralı — "Built-in ease-out on a deliberate animation" yasak).
+     --t-press: buton/kart basma geri bildirimi için 100-160ms aralığı. */
+  --t-fast:    150ms;
+  --t-base:    200ms;
+  --t-mid:     300ms;
+  --t-slow:    500ms;
+  --t-led:     300ms;
+  --t-press:   140ms;
+  --easing-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+  --easing-smooth:   ease;
+  --easing-default:  cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* === SİYAH TEMA (2026-09-30) ===
+   Arda: "siteye siyah tema gelsin kullanıcı için." Seçim başlıktaki ay/güneş
+   düğmesinde (assets/js/tema.js), <html data-theme="dark"> ile açılır.
+   Yalnızca renk değişkenleri ezilir; sayfa dosyaları aynı değişkenleri
+   okuduğu için ayrı ayrı elden geçmez. Zemin saf siyah değil, tezgahın
+   sıcak kahvesi: açık temanın krem kimliğinin karanlıktaki karşılığı.
+   Devre çizimi (breadboard, kart, LED) BİLEREK açık kalır — çocuk ekrandaki
+   tezgahı masasındaki gerçek parçalarla karşılaştırıyor (Kurallar.md). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --odak-ara:           #17120D;
+  --color-bg:           #17120D;
+  --color-surface:      #231B14;
+  --color-surface-2:    #3A2C1E;
+  --color-surface-deep: #1B2029;
+  --color-border:       #54422F;
+  --color-border-soft:  #362A1F;
+
+  --color-text:         #F7EEE3;
+  --color-text-muted:   #C4AE95;
+  --color-text-dim:     #B8A189;
+  --color-text-2:       #DCCAB5;
+  --color-text-3:       #EADCCB;
+
+  --color-primary:        #E8394C;
+  --color-primary-soft:   rgba(232, 57, 76, 0.18);
+  --color-primary-stroke: rgba(232, 57, 76, 0.45);
+  --color-primary-hover:  #FF5467;
+  --color-accent:         #4574F2;
+  --color-accent-hover:   #5E88FF;
+  --color-accent-soft:    rgba(94, 136, 255, 0.20);
+
+  --color-success-soft: rgba(43, 182, 115, 0.20);
+  --color-success-2:    #3FCB86;
+  --color-success-3:    #4FD993;
+  --color-danger-soft:  rgba(244, 81, 30, 0.20);
+  --color-danger-2:     #FF7A52;
+
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.50);
+  --shadow-clay-sm: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.05);
+  --shadow-clay-md: 0 8px 20px rgba(0, 0, 0, 0.40), inset 0 1.5px 0 rgba(255, 255, 255, 0.05);
+  --shadow-clay-lg: 0 14px 32px rgba(0, 0, 0, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.06);
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding-bottom: var(--nav-h);
+  font-family: var(--font-body);
+}
+
+/* Klavyeyle gezinen (Tab tuşu) öğrenci her zaman "buradayım" görsün —
+   siteye özgü çift-renkli çerçeve (kırmızı çizgi + krem halo), fareyle
+   tıklarken görünmesin diye :focus değil :focus-visible kullanılıyor. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+* { font-family: var(--font-body); }
+
+/* Kalin yazi 700 degil 800: Arda "kalin yazilar da daha belli olsun" dedi.
+   800 ancak font baglantisinda YUKLUYSE gercek olur; yuklu degilse tarayici
+   700'u yapay kalinlastirir ve "biraz tuhaf kalin" durur — bu, 13 Eylul'de
+   yakalanan font tuzaginin aynisi. Nunito 800 index/lesson/portal
+   sayfalarinin Google Fonts baglantisina eklendi. */
+strong, b { font-weight: 800; }
+
+/* Baloo 2: kısa/vurgulu UI metinleri (başlıklar, butonlar, rozetler, nav) —
+   site genelinde (portal + ders sayfaları) ortak kural. */
+h1, h2, h3,
+.header-title,
+.lesson-item,
+.step-title-text,
+.step-badge,
+.portal-btn,
+.bottom-nav button,
+.ai-prompt-btn,
+.sim-btn,
+.vp-btn,
+.quiz-option,
+.modal-header,
+.badge-card h3,
+.ctl-header,
+.toast,
+.panel-toggle-label,
+.step-card-toggle,
+.material-item,
+.ai-prompt-title,
+.header-badge,
+.lesson-card-title,
+.lesson-card-status {
+  font-family: var(--font-heading);
+}
+
+.header-bar {
+  height: 48px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+}
+
+.header-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-badge {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  border: var(--border-w-thin) solid var(--color-primary-stroke);
+}
+
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  vertical-align: -3px;
+}
+.icon-logo { width: 20px; height: 20px; color: var(--color-primary); }
+
+.lesson-progress-track { height: 4px; background: var(--color-surface); flex-shrink: 0; }
+/* Tek renk: ilerleme çubuğu dolarken RENK DEĞİŞTİRMİYOR.
+   Eskiden kırmızıdan turkuaza geçiyordu (`linear-gradient(90deg,
+   --color-primary, --color-accent-2)`) — çubuğun tonunun kayması
+   hiçbir şey anlatmıyor, yalnızca üretilmiş arayüz izlenimi veriyordu.
+   Marka kırmızısı tek başına; derinlik için hafif bir koyulaşma var. */
+.lesson-progress-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); width: 12.5%; transition: width .4s ease; }
+
+/* KIRPMA `clip`, `hidden` DEGIL — ikisi ayni sekilde kirpar ama `hidden`
+   elemani bir KAYDIRMA KABI yapar ve icindeki her `position: sticky`
+   o kaba baglanir. Kap kendisi kaymadigi icin sticky hic yapismiyordu:
+   Adim 4'te `.vp-toolbar` (bkz. video-player.css) ve sol panel ekranin
+   altinda kaliyordu. `clip` kaydirma kabi YARATMAZ — sticky en yakin
+   gercek kaydirma kabina, yani goruntu alanina yapisir. Kirpma birebir
+   ayni kaldigi icin tasma olcen testler (wiring/parts) degismedi. */
+.fentop-container {
+  display: flex;
+  flex: 1;
+  gap: 14px;
+  padding: 14px;
+  height: calc(100vh - 160px);
+  min-height: 0;
+  overflow: clip;
+}
+
+/* ÜST YATAY BAR: DERS MODÜLLERİ (eski sol sidebar → yatay bar) */
+.sidebar-panel {
+  width: 100%;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 0;
+  border-right: 0;
+  border-radius: 0;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: row;
+  flex-shrink: 0;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-surface-2) transparent;
+  position: relative;
+  z-index: var(--z-sticky);
+}
+.sidebar-panel::-webkit-scrollbar { height: 4px; }
+.sidebar-panel::-webkit-scrollbar-thumb { background: var(--color-surface-2); border-radius: 2px; }
+
+.sidebar-title { display: none; }
+
+.lesson-list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.lesson-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-bg);
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  transition: transform var(--t-base) var(--easing-default),
+              background var(--t-base) var(--easing-default),
+              border-color var(--t-base) var(--easing-default),
+              color var(--t-base) var(--easing-default),
+              box-shadow var(--t-base) var(--easing-default);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  opacity: 0;
+/* Yaylanma (--easing-spring) artık yalnızca FİZİKSEL nesnelerde:
+   fişin sokete oturması, parçanın breadboard'a düşmesi. Arayüz
+   öğelerinin girişleri üstel yavaşlamaya (--easing-default) alındı —
+   sayfada beş ayrı "pop-in" aynı yaylanmayla giriyordu ve bu, her
+   bölüme aynı girişi vermenin (üretilmiş arayüz kalıbı) ta kendisiydi. */
+  animation: lessonSlideIn var(--t-slow) var(--easing-default) both;
+}
+
+.lesson-item:nth-child(1) { animation-delay:  40ms; }
+.lesson-item:nth-child(2) { animation-delay: 120ms; }
+.lesson-item:nth-child(3) { animation-delay: 200ms; }
+.lesson-item:nth-child(4) { animation-delay: 280ms; }
+.lesson-item:nth-child(5) { animation-delay: 360ms; }
+
+.lesson-item .lesson-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* "1.1" üç karakter: 22px'lik dairede taşıyordu (kırmızı daire metni kesiyordu).
+     Hap biçimi, en az daire kadar. */
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 11px;
+  background: var(--color-surface-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs); /* 11px taban: 10px islevsel yazi okunmuyor */
+  font-weight: 700;
+  /* #7F6C58 krem rozet zemininde 4.1:1 kalıyordu (gereken 4.5).
+     Koyu metin rengine alındı: 10.5:1. */
+  color: var(--color-text-3);
+  letter-spacing: 0.5px;
+  transition: background var(--t-base) var(--easing-default), color var(--t-base) var(--easing-default);
+}
+.lesson-item .lesson-name {
+  font-weight: 600;
+}
+.lesson-item .lesson-status {
+  display: inline-flex;
+  color: var(--color-success-2);
+}
+.lesson-item .lesson-status .icon { width: 14px; height: 14px; }
+
+.lesson-item.active {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary-stroke);
+  color: var(--color-primary-hover);
+  font-weight: 700;
+  padding: 10px 16px;
+  font-size: var(--text-md);
+  /* Sıfır ofsetli renkli hale + geniş bulanık gölge ikilisi kaldırıldı:
+     hale dekordu, gölge de nereden geldiği belli olmayan bir ışık varsayıyordu.
+     Tek gölge, gerçek ofsetle; seçili sekmeyi kenarlığın kalınlığı ayırıyor. */
+  border-width: var(--border-w-thick, 2px);
+  box-shadow: 0 3px 10px rgba(35, 24, 15, 0.14);
+  animation: lessonSlideIn var(--t-slow) var(--easing-default) both,
+             lessonPulse 2.4s ease-in-out 600ms infinite;
+}
+.lesson-item.active .lesson-num { background: var(--color-primary); color: #fff; }
+.lesson-item.locked .lesson-num { background: transparent; }
+
+.lesson-item:not(.locked):not(.active):hover {
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: var(--shadow-md);
+}
+.lesson-item.active:hover {
+  transform: translateY(-2px) scale(1.04);
+  filter: brightness(1.08);
+}
+
+.lesson-item.locked {
+  color: var(--color-text-dim);
+  cursor: not-allowed;
+  background: var(--color-bg);
+  opacity: 0.65;
+}
+.lesson-item.locked:hover { transform: none; }
+
+.lock-icon { display: inline-flex; color: var(--color-text-dim); }
+.lock-icon .icon { width: 13px; height: 13px; }
+
+@keyframes lessonSlideIn {
+  from { opacity: 0; transform: translateX(-24px) scale(0.94); }
+  to   { opacity: 1; transform: translateX(0)    scale(1);    }
+}
+@keyframes lessonPulse {
+  0%, 100% { box-shadow: 0 0 0 1px var(--color-primary-stroke), 0 6px 18px var(--color-primary-stroke); }
+  50%      { box-shadow: 0 0 0 2px var(--color-primary-stroke), 0 10px 28px var(--color-primary-stroke); }
+}
+
+.panel {
+  flex: 1;
+  border-radius: var(--radius-xl);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.left-panel {
+  background: var(--color-surface);
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid var(--color-border);
+  position: relative;
+  max-width: 460px;
+  overflow: visible;
+  /* `all` DEĞİL: hangi özelliğin geçişte olduğu okunur olsun ve
+     yükseklik/genişlik gibi düzen tetikleyen değerler kazara
+     animasyonlanmasın (dosyanın geri kalanı zaten böyle yazıyor). */
+  transition: background var(--t-base) var(--easing-default),
+              border-color var(--t-base) var(--easing-default),
+              box-shadow var(--t-base) var(--easing-default),
+              max-width var(--t-base) var(--easing-default);
+}
+
+/* Sol panel collapse toggle (sadece mobile/tablet'te görünür) */
+.panel-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--color-bg);
+  color: var(--color-text-2);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--t-base) var(--easing-default),
+              color var(--t-base) var(--easing-default),
+              border-color var(--t-base) var(--easing-default);
+}
+.panel-toggle:hover {
+  background: var(--color-surface-2);
+  border-color: var(--color-primary-stroke);
+  color: var(--color-primary);
+}
+.panel-toggle-icon {
+  display: inline-block;
+  transition: transform var(--t-base) var(--easing-default);
+  font-size: 10px;
+  color: var(--color-primary);
+}
+.left-panel.collapsed .panel-toggle-icon { transform: rotate(-90deg); }
+.left-panel.collapsed .sim-controls   { display: none; }
+.left-panel.collapsed .simulation-area { max-width: 100%; height: 200px; }
+
+.simulation-area {
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  height: 380px;
+  /* Sahnenin arkasındaki radyal ışık lekesi kaldırıldı: kartın kendi kil
+     gölgesi zaten derinliği veriyordu, spot yalnızca dekordu — kaynağı
+     olmayan bir ışık, "üretilmiş arayüz"ün alışkanlıklarından biri. */
+  background: var(--color-bg);
+  border-radius: var(--radius-xl);
+  border: var(--border-w-thick) solid var(--color-border);
+  box-shadow: var(--shadow-clay-lg);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  transform: scale(1.15);
+}
+
+/* Ders 1.2: statik breadboard fotoğrafı 669x446 (oran 1.5) — canlı simülasyon
+   kutusunun 340x380 (portre) oranı yerine görselin kendi oranına oturt, boşluk kalmasın. */
+.simulation-area.simulation-area--diagram {
+  max-width: 420px;
+  height: 280px;
+}
+
+/* Ders 1.2 sol paneli: statik PNG yerine etkileşimli devre şeması
+   (assets/js/wiring-diagram.js). Bileşen kendi kartını ve kenarlığını
+   çiziyor, bu yüzden kutu burada şeffaflaşır ve panel yüksekliğini
+   doldurur — iç içe iki kart görünmesin. */
+.simulation-area.simulation-area--wiring {
+  max-width: 100%;
+  width: 100%;
+  /* Sol panel içerik boyutlu (fentop-container align-items:center), bu yüzden
+     flex:1 burada alan doldurmaz — yüksekliği ekrana göre kendimiz veriyoruz.
+     Alt sınır: adım şeridi + düğme çubuğu sığsın. Üst sınır: 1366x768'de taşmasın. */
+  height: clamp(380px, 62vh, 560px);
+  min-height: 0;
+  align-items: stretch;
+  justify-content: stretch;
+  background: none;
+  border: none;
+  box-shadow: none;
+  border-radius: 0;
+  overflow: visible;
+}
+.left-panel.collapsed .simulation-area--wiring { height: 260px; }
+
+/* Adım 4'teki bağlantı listesi: her madde soldaki şemanın o adımına atlar. */
+.wiring-list { margin: 12px 0 0; padding-left: 0; list-style: none; counter-reset: wiring; }
+.wiring-list li { counter-increment: wiring; }
+.wiring-jump {
+  /* display:flex DEĞİL: madde metninin içinde <strong> geçiyor, flex onu
+     ayrı bir öğe yapıp cümlenin ortasında boşluk açıyordu. */
+  display: block;
+  position: relative;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  padding: 7px 10px 7px 38px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text-2);
+  cursor: pointer;
+  transition: background var(--t-base) var(--easing-default),
+              border-color var(--t-base) var(--easing-default);
+}
+.wiring-jump::before {
+  content: counter(wiring);
+  position: absolute;
+  left: 9px;
+  top: 9px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  color: var(--color-text-3);
+  font-size: 11px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+@media (hover: hover) and (pointer: fine) {
+  .wiring-jump:hover { background: var(--color-surface-2); }
+}
+.wiring-jump:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.wiring-list li.is-active .wiring-jump {
+  background: var(--color-surface-2);
+  border-color: var(--color-primary-stroke);
+  color: var(--color-text);
+}
+.wiring-list li.is-active .wiring-jump::before {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Katmanlar adım değişince yer/opaklık değiştiriyor (usb-ready, connected).
+   `all` yerine gerçekten değişen özellikler. */
+.sim-layer { position: absolute; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* 1. ve 2. adımda ortada tek başına, 3. adımda porta oturur.
+   Kart artık board-svg.js'ten geliyor (viewBox 10 12 152 300, bkz.
+   index.html #layer-kart) — eski kartın oranı (200x320) değil, bu
+   yüzden left/width burada yeniden hesaplandı: 340px'lik sahnede
+   yatayda ortalanır (170 - width/2), yükseklik viewBox oranından
+   (300/152) doğar. top:100 (1-2. adım) eski değerle aynı bırakıldı;
+   .connected top'u (eskiden 192) 177'ye çekildi — yeni kartın USB
+   çıkıntısı #layer-plug'ın ucuyla tam orada buluşuyor (getScreenCTM
+   ile ölçülüp doğrulandı, bkz. GÖZLE DOĞRULAMA ekran görüntüleri).
+
+   DÜZELTME (2026-09-14): 177 yetmiyordu — fiş kartın USB çıkıntısını
+   tamamen örtüp gövdeye 20px giriyordu ("kartın portuna tam otursun
+   kablo"). Ölçüm: plug.bottom 654.8, usb.bottom 634.4 → fiş çıkıntının
+   20.4px altına sarkıyordu. Fişi yukarı almak kabloyu koparırdı (kablo
+   eğrisi fişin strain-relief noktasında bitiyor), o yüzden KART fişe
+   doğru çıkarıldı: 177 → 196. Kartın altı kutunun içinde kalıyor
+   (883+19=902 < 916.6). */
+/* PORT TARAFINDAN (Arda, 2026-10-07: "Type-C port kısmından bakalım ki yazılar ters gelmesin"):
+   kart 180° döner, Type-C portu AŞAĞIDA; baskı yazıları (board-svg.css 180°) böylece ekranda düz
+   okunur. Kompozisyon dikeyde ters kuruldu: kart üstte, fiş aşağıdan takılır, laptop altta.
+   Ölçüler (kart 90 px, viewBox 10 12 152 300 → 0.592 px/birim; USB yerel y 18..32):
+   döndükten sonra USB'nin ağzı kart tepesinden 174.1 px aşağıda. top 12 → ağız 186.1. */
+#layer-kart {
+  position: absolute;
+  z-index: 1;
+  left: 125px;
+  top: 100px;
+  width: 90px;
+  height: auto;
+  transform: rotate(180deg);
+  /* Gölge: çizimdeki elips (portun karşı ucunda) dönünce kartın ÜSTÜNE çıkıyordu, gizli.
+     Süzgeç dönüşten önce uygulanır: −y ofseti döndükten sonra kartın altına düşer. */
+  filter: drop-shadow(0 -5px 6px rgba(43, 15, 12, 0.22));
+  transition: top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#layer-kart .bsvg-golge, .pg-board .bsvg-golge { display: none; }
+.connected #layer-kart {
+  top: 12px;
+}
+
+/* PWR ışığı: bağlantı yokken tamamen SÖNÜK/SİYAH, kart bilgisayara takılınca KIRMIZI yanar. */
+#layer-pwr-led { fill: #1a1410; filter: none; transition: fill 0.25s ease; }
+#layer-pwr-halo { opacity: 0; transition: opacity 0.25s ease; }
+.connected #layer-pwr-led {
+  fill: var(--color-danger);
+  filter: drop-shadow(0 0 6px var(--color-danger));
+  animation: pwrLedOn 0.7s ease-out;
+}
+.connected #layer-pwr-halo { opacity: 0.35; }
+@keyframes pwrLedOn {
+  0%   { filter: none; }
+  35%  { filter: drop-shadow(0 0 12px var(--color-danger)); }
+  55%  { filter: none; }
+  75%  { filter: drop-shadow(0 0 12px var(--color-danger)); }
+  100% { filter: drop-shadow(0 0 6px var(--color-danger)); }
+}
+
+#layer-glow { opacity: 0; transition: opacity 0.15s ease, filter 0.15s ease; pointer-events: none; }
+#layer-glow.active { opacity: 0.85; filter: drop-shadow(0 0 15px #6fa8ff) drop-shadow(0 0 30px var(--color-accent)); }
+
+#layer-led { opacity: 0.3; transition: opacity 0.15s ease, fill 0.15s ease; }
+#layer-led.active { opacity: 1; fill: #6fa8ff; filter: drop-shadow(0 0 6px #6fa8ff); }
+
+/* Laptop altta, biraz sağda (2026-10-07: kart üstte, port aşağıda). Sol yanındaki USB-C portu
+   (laptop viewBox x0..9, y121..134) sahnede ≈ (151, 352): kablo oradan çıkar, laptopun solundan
+   dolanıp fişe yukarı girer. */
+#layer-laptop {
+  z-index: 2;
+  position: absolute;
+  left: 150px;
+  top: 250px;
+  width: 160px;
+  height: auto;
+  opacity: 1;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
+  pointer-events: none;
+  display: none;
+}
+.connected #layer-laptop { display: block; }
+
+/* ---- Adım 3: kablo PC'de, Type-C ucu kartın hemen üstünde ----
+   Arda: "3. adımda kablo takılı halde olmasın, PC'ye takılı ama Type-C
+   kısmı biraz yukarıda ve güç gelmemiş halde olacak."
+   Eskiden Adım 3'e girer girmez .connected ekleniyordu: kablo kendiliğinden
+   takılıyor, kart yanıyordu — çocuk hiçbir şey yapmadan iş bitmiş
+   görünüyordu. Artık iki durum var:
+     .usb-ready  → laptop + kablo görünür, fiş soketin ÜSTÜNDE asılı,
+                   GÜÇ ışığı SÖNÜK (bu dosyada #layer-plug'ın
+                   varsayılan transform'u zaten translateY(-20px)).
+     .connected  → fiş yerine oturur, güç gelir, veri akışı başlar.
+   İkincisi ancak çocuk iki ucu da gerçekten taktığını işaretleyince. */
+.usb-ready #layer-laptop { display: block; }
+.usb-ready #layer-kablo  { opacity: 1; }
+.usb-ready #layer-plug   { display: block; }
+.usb-ready #layer-kart   { top: 12px; }
+/* 1–2. adımda (hedef, malzemeler) laptop ve kablo yok — önceki dersten kablo kaydı
+   kalsa bile (devam_v1). Kart ortada, tek başına. Arda, 2026-10-05. */
+body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-laptop, body[data-adim="2"]:not([data-kablo-goruldu]) #simulationBox #layer-laptop,
+body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-plug, body[data-adim="2"]:not([data-kablo-goruldu]) #simulationBox #layer-plug { display: none; }
+body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kablo, body[data-adim="2"]:not([data-kablo-goruldu]) #simulationBox #layer-kablo { opacity: 0; }
+body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[data-adim="2"]:not([data-kablo-goruldu]) #simulationBox #layer-kart { top: 100px; }
+
+/* Kablo 1. ve 2. adımda tamamen gizli (opacity: 0) */
+#layer-kablo {
+  z-index: 4;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 340px;
+  height: 380px;
+  opacity: 0;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.35));
+  pointer-events: none;
+}
+.connected #layer-kablo { opacity: 1; }
+
+/* Type-C Ucu: Kartın soketine tam girecek şekilde boyutlandırıldı. 2026-10-07'den beri port
+   aşağıda: fiş dikeyde çevrilir (ucu yukarı), soketin 20 px ALTINDA asılı durur, takılınca yukarı
+   kayar. Eski düzendeki ölçü korunur: ucun üstü soket ağzının 9.4 px içinde → top = 186.1 − 10.9. */
+#layer-plug {
+  z-index: 4;
+  position: absolute;
+  left: 158px;
+  top: 175px;
+  width: 24px;
+  height: auto;
+  transform: translateY(20px) scaleY(-1);
+  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+  pointer-events: none;
+  display: none;
+}
+.connected #layer-plug { transform: translateY(0) scaleY(-1); display: block; }
+
+/* Veri akışı topu #layer-kablo'daki kablo eğrisi (2026-10-07: "M151 352 C 105 348 100 262
+   130 240 C 150 226 170 236 170 209") üzerinden, uzunluğa göre eşit aralıkla örneklendi —
+   elle tahmin edilmedi. Laptoptan karta akar. */
+#layer-dataflow {
+  position: absolute;
+  left: 151px;
+  top: 352px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px var(--color-accent), 0 0 16px rgba(47, 111, 237, 0.6);
+  opacity: 0;
+  z-index: 6;
+  pointer-events: none;
+  margin: -3px 0 0 -3px; /* topu path noktasında ortala */
+}
+.connected #layer-dataflow { opacity: 1; animation: dataFlow 1.4s linear infinite; }
+
+@keyframes dataFlow {
+  0%   { top: 352px;   left: 151px;   opacity: 0; }
+  8%   { opacity: 1; }
+  25%  { top: 321.9px; left: 116.7px; }
+  50%  { top: 274.9px; left: 112.3px; }
+  75%  { top: 236.1px; left: 136.7px; }
+  92%  { opacity: 1; }
+  100% { top: 209px;   left: 170px;   opacity: 0; }
+}
+
+.sim-controls {
+  width: 100%;
+  background: var(--color-bg);
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: var(--border-w-thin) solid var(--color-border);
+}
+
+.sim-controls label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  display: flex;
+  justify-content: space-between;
+}
+
+.sim-controls input[type="range"] { width: 100%; margin: 8px 0; accent-color: var(--color-accent); cursor: pointer; }
+
+.math-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-primary-stroke);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-text-2);
+}
+
+.right-panel {
+  background: var(--color-surface-deep);
+  border: 1px solid var(--color-surface);
+  justify-content: space-between;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.step-content { flex: 1; min-height: 0; overflow: hidden; }
+.step-content h2 { font-size: 18px; color: var(--color-primary); margin-bottom: 10px; font-weight: 700; }
+/* DIKKAT: bu secici (0,1,1) `.step-card-desc`'i (0,1,0) yener. Sabit px
+   yazilirsa olcek token'i sessizce yutulur — 19 Eylul'de tam olarak bu
+   oldu (istenen 15px yerine 14px cikti). Token disinda deger yazma. */
+.step-content p { font-size: var(--text-lg); line-height: 1.55; color: var(--color-text-2); }
+.desc-emphasis { color: var(--color-text); font-weight: 800; }
+
+.steps-cards-container {
+  display: none;
+  flex-direction: column;
+  gap: 14px;
+  margin: 18px 0;
+}
+
+.step-card {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-clay-sm);
+  overflow: hidden;
+  transition: border-color var(--t-base) var(--easing-smooth), transform var(--t-press) var(--easing-default), box-shadow var(--t-press) var(--easing-default);
+}
+.step-card:hover,
+.step-card:focus-within {
+  border-color: var(--color-primary-stroke);
+}
+.step-card:has(.step-card-toggle:active) {
+  transform: scale(0.99);
+  box-shadow: var(--shadow-sm);
+}
+
+.step-card-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: var(--space-4) var(--space-7);
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.step-card-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.step-card-chevron {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform var(--t-mid) var(--easing-default), color var(--t-mid) var(--easing-default);
+}
+.step-card-toggle[aria-expanded="true"] .step-card-chevron {
+  transform: rotate(180deg);
+  color: var(--color-primary);
+}
+
+.step-card-body {
+  padding: 0 var(--space-7) var(--space-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  animation: accordionOpen var(--t-mid) var(--easing-default);
+}
+.step-card-body[hidden] { display: none; }
+
+@keyframes accordionOpen {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step-card-chevron,
+  .step-card-body,
+  .lesson-item,
+  .lesson-item.active,
+  .step-dot,
+  .badge-medal,
+  .step-card,
+  .quiz-option {
+    transition: none;
+    animation: none;
+  }
+  /* Giriş animasyonları "opacity:0" ile başlıyor — animation:none ile
+     birlikte görünür kalmaları için opacity'yi burada geri veriyoruz. */
+  .lesson-item,
+  .lesson-item.active,
+  .step-card,
+  .quiz-option {
+    opacity: 1;
+  }
+  .part-reveal { animation: none; opacity: 1; box-shadow: var(--shadow-sm); }
+}
+
+/* ========== RESPONSIVE: 768px ve altı (tablet + mobile) ========== */
+@media (max-width: 768px) {
+  .header-bar {
+    height: 48px;
+    padding: 0 14px;
+  }
+  .header-title { font-size: 14px; gap: 8px; }
+  .header-badge { font-size: 11px; padding: 2px 8px; }
+  .header-bar > div:last-child { font-size: 12px; }
+
+  .panel-toggle { display: flex; }
+
+  .sidebar-panel {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+  .lesson-item {
+    padding: 10px 14px;
+    font-size: var(--text-base);
+  }
+  .lesson-item.active {
+    padding: 12px 18px;
+    font-size: var(--text-md);
+  }
+  .lesson-item .lesson-name { display: none; }
+  .lesson-item.active .lesson-name { display: inline; }
+
+  .fentop-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px;
+    /* son terim alt gezinme çubuğu: --nav-h ile tek kaynaktan */
+    height: calc(100vh - 48px - 4px - 60px - var(--nav-h));
+    overflow-y: auto;
+  }
+
+  .left-panel {
+    max-width: 100%;
+    padding: 14px;
+    flex-direction: column;
+  }
+  .panel-toggle { display: none; }
+
+  .right-panel { padding: 14px; }
+  .step-content h2 { font-size: 18px; margin-bottom: 8px; }
+  .step-content p  { font-size: var(--text-md); line-height: 1.5; }
+
+  /* Mobilde çubuk bir tık kısa. Değer :root'ta EZİLİYOR, .bottom-nav'ın
+     içinde değil: body'nin padding-bottom'ı ve .fentop-container'ın
+     yükseklik hesabı da aynı değişkeni okuyor, çubuğun içinde tanımlansa
+     onlara ulaşmazdı. */
+  :root { --nav-h: 52px; }
+
+  /* Bu blokta bir zamanlar çubuğu küçülten bir dizi kural vardı
+     (.bottom-nav padding/gap, #stepIndicator, .step-dots, .step-dot ve
+     düğme boyutları); HEPSİ ÖLÜ KODDU ve 2026-09-21'de silindi. Sebep:
+     media sorgusu özgüllük EKLEMEZ, bu blok da dosyada ana `.bottom-nav`
+     bloğundan (satır ~1063) ÖNCE geliyor — aynı özgüllükteki her
+     bildirimi sonraki blok eziyordu.
+     Ölçüldü (320/390/768/1024px): padding 18px, gap 12px, #stepIndicator
+     15px/52px, nokta 8px — yani hiçbiri uygulanmıyordu. Silinince
+     görünen hiçbir şey değişmedi.
+     Silmek yerine bloğu aşağı taşıyıp CANLANDIRMAK da mümkündü;
+     taşınmadı çünkü ihtiyaç yok: 320px'te bile dokuz nokta görünüyor,
+     düğmeler 102x44 ve çubuk yatay taşmıyor. Küçültmek tester'ın
+     bulduğu sorunu ("düğmeler küçük, nereye basacağımı anlamadım")
+     geri getirirdi.
+     Sağ kalan tek bildirim aşağıdaki --nav-h: o AYRI bir seçicide
+     (:root) olduğu için gerçekten uygulanıyor. */
+}
+
+/* ========== RESPONSIVE: 480px ve altı (küçük mobile) ========== */
+@media (max-width: 480px) {
+  .header-title img { display: none; }
+  .header-badge { display: none; }
+  .sidebar-panel { padding: 8px 10px; }
+  .lesson-item { padding: 8px 12px; }
+  .lesson-item.active { padding: 10px 14px; }
+
+  .fentop-container { padding: 8px; gap: 8px; }
+  .left-panel { padding: 10px; flex-direction: column; }
+  .simulation-area { max-width: 100%; height: 180px; }
+
+  .step-card-toggle { padding: 10px 12px; }
+  .step-title-text  { font-size: var(--text-md); }
+
+  /* Adım 4: step description + video player kompakt */
+  .right-panel { padding: 10px; }
+  .step-content h2 { font-size: 16px; margin-bottom: 6px; }
+  .step-content p  { font-size: var(--text-base); line-height: 1.45; }
+  .ide-sim-wrapper { padding: 8px; margin: 8px 0; }
+  .callout { padding: 8px 12px; font-size: var(--text-md); line-height: 1.45; }
+  .callout code { font-size: var(--text-sm); }
+}
+
+.step-card-header { display: flex; align-items: center; gap: 12px; }
+
+.step-badge {
+  background: var(--color-accent);
+  color: #ffffff;
+  font-size: var(--text-base);
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  transition: background var(--t-base) var(--easing-smooth), transform var(--t-press) var(--easing-default);
+}
+.step-badge:hover {
+  background: var(--color-accent);
+  transform: scale(1.05);
+}
+
+.step-title-text { font-size: var(--text-xl); font-weight: 600; color: var(--color-text); }
+/* Ölçüm: adım açıklamaları geniş ekranda satır başına 129-197 karaktere
+   çıkıyordu. Göz bir satırın sonundan ötekinin başına dönerken kayboluyor;
+   okunabilir aralık 65-75 karakter. Kutu genişliği değişmiyor, yalnızca
+   METİN bloğu sınırlanıyor. */
+.step-card-desc { font-size: var(--text-lg); line-height: 1.6; color: var(--color-text-2); max-width: 68ch; }
+#stepDescription { max-width: 68ch; }
+
+/* Uyarı kutusu. Eskiden beyaz bir kartın içinde beyaz bir karttı ve solunda
+   4px kırmızı bir şerit vardı — ikisi de "üretilmiş arayüz"ün en tanıdık
+   işaretleri (iç içe kart + yan şerit), üstelik beyaz üzerine beyaz olduğu
+   için kutunun sınırı da görünmüyordu. Artık renkli bir ZEMİN: kartın
+   içinde ayrı bir kart değil, kartın içinde vurgulanmış bir blok. */
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-stroke);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-size: var(--text-lg);
+  line-height: 1.55;
+  color: var(--color-text-3);
+  margin-top: 4px;
+  max-width: 78ch;
+}
+.callout-icon { color: var(--color-primary); margin-top: 2px; }
+
+.callout.yellow { background: rgba(255, 182, 39, 0.16); border-color: rgba(255, 182, 39, 0.42); }
+.callout.yellow .callout-icon { color: var(--color-warning); }
+.callout.green { background: var(--color-success-soft); border-color: rgba(43, 182, 115, 0.42); }
+.callout.green .callout-icon { color: var(--color-success-3); }
+
+.callout code {
+  background: var(--color-surface-2);
+  color: var(--color-primary-hover);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: var(--text-md);
+}
+
+.quiz-box {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  margin-top: 14px;
+  box-shadow: var(--shadow-clay-sm);
+}
+
+/* Mini sinav kutusu bir tik genis: tester "yazilar kucuk" dedi, soru ve
+   siklar buyudu, ayni padding'de sikisik duruyordu. .quiz-box sinifini
+   pin haritasi, hata galerisi ve USB karti da kullaniyor; onlarin olcusu
+   degismesin diye genisleme sadece sinava ait bu sinifta. */
+.quiz-box.quiz-sinav { padding: var(--space-8); }
+
+/* ŞIKLAR ARTIK <button> (bkz. lesson-engine.js renderQuizQuestion):
+   eskiden `<div onclick>` idi, yani klavyeyle sınav ÇÖZÜLEMİYORDU —
+   Tab ile şıklara ulaşılmıyordu. Buradaki bildirimler düğmenin tarayıcı
+   varsayılanlarını (ortalı yazı, kendi yazı tipi, dar genişlik) sıfırlayıp
+   eski div görünümünü birebir koruyor. */
+.quiz-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  color: inherit;
+  background: var(--color-bg);
+  border: var(--border-w-thick) solid var(--color-border);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-3);
+  cursor: pointer;
+  transition: transform var(--t-press) var(--easing-default), background var(--t-press) var(--easing-default), border-color var(--t-press) var(--easing-default), color var(--t-press) var(--easing-default);
+  font-size: var(--text-md);
+  font-weight: 600;
+}
+.quiz-option:hover { border-color: var(--color-accent); background: var(--color-surface); transform: translateX(2px); }
+.quiz-option:active { transform: scale(0.98) translateX(2px); }
+.quiz-option.correct { background: var(--color-success-soft); border-color: var(--color-success); color: var(--color-success-2); }
+.quiz-option.wrong { background: var(--color-danger-soft); border-color: var(--color-danger); color: var(--color-danger-2); }
+
+/* Mini sınav ipucu: cevabı değil yolu verir, kapalı durur.
+   Kapalıyken DÜĞME gibi görünmeli — Arda (2026-09-29): kesik çizgili
+   kutu "boş kutu gibi, tıklanacağı belli olmuyor". Sağda "Göster ▾"
+   hapı + hover tepkisi tıklanabilirliği söylüyor. */
+.quiz-ipucu {
+  margin-top: var(--space-4);
+  background: rgba(255, 182, 39, 0.16);
+  border: var(--border-w-thick) solid rgba(255, 182, 39, 0.55);
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background var(--t-press) var(--easing-default), border-color var(--t-press) var(--easing-default);
+}
+.quiz-ipucu summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  font-weight: 700;
+  list-style: none;
+}
+.quiz-ipucu summary::-webkit-details-marker { display: none; }
+.quiz-ipucu summary .icon { color: var(--color-warning); flex: none; }
+.quiz-ipucu-baslik { flex: 1; }
+.quiz-ipucu-ac {
+  flex: none;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--color-warning);
+  color: #3D2A00;
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+.quiz-ipucu-ac::after { content: 'Göster ▾'; }
+.quiz-ipucu[open] .quiz-ipucu-ac::after { content: 'Gizle ▴'; }
+.quiz-ipucu:not([open]):hover { background: rgba(255, 182, 39, 0.28); border-color: var(--color-warning); }
+.quiz-ipucu summary:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; border-radius: var(--radius-md); }
+.quiz-ipucu-body { line-height: 1.6; padding: 0 var(--space-4) var(--space-3); }
+
+.ai-prompt-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--color-surface-2);
+  color: var(--color-text);
+  border: var(--border-w-thin) solid var(--color-border);
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform var(--t-press) var(--easing-default), border-color var(--t-press) var(--easing-default), color var(--t-press) var(--easing-default);
+  margin-top: 14px;
+}
+.ai-prompt-btn .icon { color: var(--color-primary); }
+.ai-prompt-btn:hover { transform: translateY(-2px); border-color: var(--color-primary-stroke); color: var(--color-primary); }
+.ai-prompt-btn:active { transform: translateY(0) scale(0.98); }
+
+.badge-card {
+  text-align: center;
+  padding: 20px;
+  background: radial-gradient(circle, var(--color-primary-soft) 0%, var(--color-surface) 70%);
+  border: var(--border-w-thick) dashed var(--color-primary);
+  border-radius: var(--radius-xl);
+  margin-top: 15px;
+  transition: transform var(--t-base) var(--easing-smooth), box-shadow var(--t-base) var(--easing-smooth), border-style var(--t-base) var(--easing-smooth);
+}
+.badge-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 30px var(--color-primary-stroke);
+  border-style: solid;
+}
+
+.badge-medal { width: 64px; height: 64px; color: var(--color-warning); margin-bottom: 10px; animation: pulse 2s infinite; filter: drop-shadow(0 4px 10px rgba(255, 182, 39, 0.55)); }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+
+.bottom-nav {
+  height: var(--nav-h);
+  background: var(--color-surface);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 18px;
+  border-top: 1px solid var(--color-border);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-overlay);
+  gap: 12px;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 -4px 16px rgba(43, 33, 24, 0.08);
+}
+
+/* Adım noktaları da bu barın içinde birer <button> — gezinme butonlarının
+   dolgusu/köşesi onları hap şekline sokmasın diye dışarıda tutuluyorlar. */
+.bottom-nav button:not(.step-dot) {
+  display: inline-flex;
+  align-items: center;
+  /* Ölçüler SİTENİN KENDİ düğme dilinden (.portal-btn: 12px 24px,
+     radius-md, --text-md, gap 8). İlk büyütmede 16px yazı + 4px gap +
+     düz bej zemin kullandım, sistemin dışına düştü ve Arda "estetik
+     durmuyor" dedi. Dokunma hedefi yine korunuyor: 11+11+21 = 43px. */
+  gap: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-2);
+  border: var(--border-w-thin) solid var(--color-border);
+  padding: 8px 24px;
+  /* Hap formu: sayfanın üstündeki ders sekmeleri de hap. Köşeli
+     dikdörtgen (radius-md) burada ağır bir blok gibi duruyordu —
+     Arda üç adayı gerçek sayfada görüp bunu seçti (2026-09-21). */
+  border-radius: var(--radius-pill);
+  font-weight: 700;
+  font-size: var(--text-md);
+  cursor: pointer;
+  transition: background var(--t-base) var(--easing-default), transform var(--t-press) var(--easing-default), box-shadow var(--t-press) var(--easing-default);
+  white-space: nowrap;
+  /* Düğmeler ASLA ezilmez. Büyütüldükten sonra 390px'te flex "İleri"yi
+     98px'ten 48px'e sıkıştırıp yazısını kırpıyordu — yani düğmeyi
+     bulunur yapmak için yaptığımız işi geri alıyordu. Sıkışacak olan
+     nokta şeridi, düğme değil. */
+  flex: 0 0 auto;
+}
+
+/* Yer darsa kısalacak olan burası: noktalar bilgi, düğme eylem. */
+/* flex BURADA VERILMEZ: asagidaki .step-dots blogu (ayni ozgulluk, daha
+   sonra) `flex: 1` yaziyor ve buradakini eziyordu. Olculdu: hesaplanan
+   deger 1 1 0%. Sonuc dogru zaten (min-width:0 ile serit yer darsa
+   kisaliyor, dugmeler flex:0 0 auto ile ezilmiyor), o yuzden davranis
+   degistirilmedi - yalnizca yalan soyleyen bildirim kaldirildi. */
+.step-dots { min-width: 0; overflow: hidden; }
+.nav-chevron { width: 16px; height: 16px; }
+/* İkincil (Geri) geri çekilir, birincil (İleri) öne çıkar — tester'ın
+   sorunu "nereye basacağım"dı, iki düğme eşit ağırlıkta olursa soru
+   cevaplanmıyor. Ghost hâli .portal-btn.ghost ile aynı dil. */
+.bottom-nav button:not(.step-dot):hover {
+  border-color: var(--color-primary-stroke);
+  color: var(--color-primary);
+  transform: translateY(-1px);
+}
+.bottom-nav button.primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
+  /* Keycap ofseti: portal-btn ve devre kurma çubuğuyla aynı dokunsal dil.
+     4px, hap forma geçince fazla kalın duruyordu. */
+  box-shadow: 0 3px 0 var(--color-primary-hover);
+}
+.bottom-nav button.primary:hover { color: #fff; border-color: transparent; }
+.bottom-nav button.primary:hover { background: var(--color-primary); transform: translateY(-1px); }
+.bottom-nav button.primary:active { box-shadow: 0 1px 0 var(--color-primary-hover); transform: translateY(2px); }
+
+#stepIndicator { font-weight: 700; color: var(--color-text-muted); font-size: 15px; min-width: 52px; text-align: center; }
+/* "Kaydedildi ✓" (lesson-engine.js devam_v1, 2026-10-04): akışa girmez (320px'te çubuk dar),
+   gezinme çubuğunun üstünde ortada süzülür, 1.6 sn sonra söner. */
+.kayit-isaret {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translate(-50%, 6px);
+  display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px;
+  background: var(--color-success, #16A34A); color: #fff; font: 700 12px/1 var(--font-body, inherit);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); opacity: 0; pointer-events: none; white-space: nowrap;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.kayit-isaret svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.kayit-isaret.is-gorunur { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .kayit-isaret { transition: none; } }
+
+/* Kompakt step göstergesi (9 nokta).
+   Noktalar <button>: eskiden düz <span> oldukları için klavye
+   kullanıcısı adımlar arasında hiç gezinemiyordu. */
+.step-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+.step-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  transition: background var(--t-base) var(--easing-default),
+              border-color var(--t-base) var(--easing-default),
+              transform var(--t-base) var(--easing-default),
+              opacity var(--t-base) var(--easing-default);
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.step-dot:hover { background: var(--color-text-dim); transform: scale(1.2); }
+.step-dot:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+/* Kilitli adım: henüz geçilemeyen bir kapının ötesinde. Tıklamak
+   engellenmez — basınca "neden geçemiyorsun" mesajı çıkar. */
+.step-dot.locked {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: transparent;
+  border-style: dashed;
+}
+.step-dot.locked:hover { background: transparent; transform: none; }
+.step-dot.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  width: 10px;
+  height: 10px;
+}
+.step-dot.done {
+  background: var(--color-success);
+  border-color: var(--color-success);
+}
+
+/* Tren hattı (hareket.js): noktalar istasyon, arkalarında ray, geçilen
+   kısım dolu ray, aktif istasyonu saran vagon. Ray yalnızca süs —
+   noktaların boyutu/sınıfları aynı kalır, üstlerinde durur (z-index). */
+/* safe center: dar ekranda dokuz nokta kutuya sığmıyor (390px'te kutu
+   63px). Düz center taşmayı İKİ yana verir ve soldaki kısım kaydırmayla
+   bile ulaşılamaz; safe taşmayı sağa alır, hareket.js aktif istasyonu
+   ortaya kaydırır — telefonda hat pencereden akıyor gibi görünür. */
+.step-dots.ray-kurulu {
+  position: relative;
+  min-height: 24px;
+  justify-content: safe center;
+  scrollbar-width: none;
+}
+.step-dots.ray-kurulu .step-dot { position: relative; z-index: 1; }
+/* Uçtaki istasyonda vagon (26px) kırpılmasın. Kutuya padding DEĞİL:
+   padding kutunun en küçük genişliğine eklenir ve 320px'te çubuğu 9px
+   taşırıyordu (test-wiring). Uç noktaların margin'i kaydırılabilir
+   içerikte kalır, çubuğu genişletmez. */
+.step-dots.ray-kurulu .step-dot:first-of-type { margin-left: 10px; }
+.step-dots.ray-kurulu .step-dot:last-of-type  { margin-right: 10px; }
+/* Henüz gelinmemiş istasyon rayın üstünde boş halka olarak okunsun. */
+.step-dots.ray-kurulu .step-dot:not(.done):not(.active):not(.locked) {
+  background: var(--color-bg);
+  border: 2px solid var(--color-text-dim);
+}
+.ray, .ray-dolu {
+  position: absolute;
+  top: 50%;
+  height: 3px;
+  margin-top: -1.5px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+.ray { background: var(--color-border); }
+.ray-dolu { background: var(--color-success); width: 0; }
+.ray-vagon {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 26px;
+  height: 18px;
+  margin-top: -9px;
+  border-radius: 999px;
+  background: var(--color-primary-soft);
+  border: 1.5px solid var(--color-primary);
+  pointer-events: none;
+  will-change: transform;
+}
+/* Masaüstünde istasyonlar arası mesafe açılıyor ki ray görünsün;
+   mobilde 320px'te dokuz nokta sığsın diye eski aralık kalıyor. */
+@media (min-width: 900px) {
+  .step-dots.ray-kurulu { gap: 16px; }
+}
+
+.header-lesson-title {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  /* Bilgilendirme toast'ları 2026-08-28'de kırmızıdan YEŞİLE çevrildi:
+     kırmızı "hata" gibi okunuyordu, oysa bu kutucukların çoğu olumlu
+     geri bildirim ("Doğru!", "Kopyalandı!", "Harika keşif!").
+     Uyarılar (.toast.warn) sarı kalmaya devam ediyor. */
+  background: var(--color-success-2);
+  color: #FFFFFF;
+  padding: 13px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-size: 14px;
+  border: 2px solid rgba(255,255,255,0.35);
+  box-shadow: 0 10px 26px rgba(43,182,115,0.42), 0 0 0 3px rgba(43,182,115,0.18);
+  opacity: 0;
+  transform: translateY(10px) scale(0.94);
+  transition: opacity var(--t-mid) var(--easing-default), transform var(--t-mid) var(--easing-default);
+  pointer-events: none;
+  z-index: 100;
+  max-width: 340px;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  animation: toastPop .4s var(--easing-default);
+}
+@keyframes toastPop {
+  0%   { transform: translateY(10px) scale(0.9); }
+  60%  { transform: translateY(-3px) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+.toast .icon { color: #FFFFFF; width: 18px; height: 18px; flex-shrink: 0; }
+.toast.warn { background: var(--color-warning); color: var(--color-text); box-shadow: 0 10px 26px rgba(255,182,39,0.4), 0 0 0 3px rgba(255,182,39,0.18); }
+.toast.warn .icon { color: var(--color-text); }
+
+/* ========== MODAL (Sorun Giderme, AI Yoldaşı) ========== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(43, 33, 24, 0.45);
+  backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--z-overlay);
+  padding: 24px;
+}
+.modal-backdrop.show { display: flex; animation: modalFadeIn var(--t-mid) var(--easing-default); }
+@keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-window {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 480px;
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modalPopIn var(--t-mid) var(--easing-default);
+}
+@keyframes modalPopIn {
+  from { opacity: 0; transform: scale(0.9) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--color-primary-hover);
+  flex-shrink: 0;
+}
+.modal-close {
+  background: var(--color-surface-2);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-text-2);
+  transition: background var(--t-base) var(--easing-default), color var(--t-base) var(--easing-default);
+}
+.modal-close:hover { background: var(--color-danger-soft); color: var(--color-danger-2); }
+.modal-close .icon { width: 14px; height: 14px; }
+.modal-body { padding: 18px 20px 22px; overflow-y: auto; }
+.modal-body .callout,
+.modal-body .ai-prompt-card { margin-top: 0; }
+.modal-body .ai-prompt-card + .ai-prompt-card { margin-top: 10px; }
+
+/* ========== KONFETİ ========== */
+.confetti-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: var(--z-toast);
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  opacity: 0.95;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  to { transform: translateY(110vh) rotate(540deg); opacity: 0.3; }
+}
+
+/* ========== ADIM İÇERİĞİ GEÇİŞİ ========== */
+.step-content.step-enter { animation: stepEnter var(--t-slow) var(--easing-default); }
+@keyframes stepEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* overflow: clip — sebep .fentop-container'daki notta (sticky arac cubugu). */
+.ide-sim-wrapper{ display:none; position:relative; background:#0b1220; border:var(--border-w-thin) solid var(--color-border); border-radius:var(--radius-lg); padding:12px; margin:10px 0; overflow:clip; }
+.ide-sim-wrapper.show{ display:block; }
+.ide-sim-toolbar{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+.sim-btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; background:var(--color-border); color:var(--color-text); border:none; padding:8px 14px; border-radius:var(--radius-md); font-size:12px; font-weight:700; cursor:pointer; transition: transform var(--t-press) var(--easing-default), opacity var(--t-press) var(--easing-default), background var(--t-press) var(--easing-default); }
+.sim-btn.primary{ background:var(--color-accent); }
+.sim-btn.copy-real{ background:var(--color-accent-2); }
+.sim-btn.copy-real:hover{ background:var(--color-accent-2-hover); }
+.sim-btn.copy-user{ background:var(--color-accent); color:#ffffff; }
+.sim-btn.copy-user:hover{ background:var(--color-accent-hover); }
+.sim-btn.arduino-download-btn{ background:var(--color-accent-2); }
+.sim-btn.arduino-download-btn:hover{ background:var(--color-accent-2-hover); }
+.sim-btn/* Kilitliyken de OKUNMALI: çocuk neyin geleceğini görüyor. Beyaz yazı
+   #7F6C58 üzerinde 3.5:1 kalıyordu; koyu zemine alındı (7.7:1).
+   grayscale filtresi kontrastı ayrıca düşürdüğü için kaldırıldı;
+   kilitli olduğunu imleç ve düşük doygunluk zaten söylüyor. */
+.arduino-download-btn.is-disabled{ background:var(--color-text-2); cursor:not-allowed; }
+.sim-btn.arduino-download-btn.is-disabled:hover{ background:var(--color-text-dim); transform:none; }
+.sim-btn:hover{ opacity:.9; transform: translateY(-2px); }
+.sim-btn:active{ transform: translateY(0) scale(0.97); }
+.sim-step-counter{ margin-left:auto; font-size:12px; color:var(--color-text-muted); font-weight:700; }
+
+.ide-tooltip{ position:absolute; top:-6px; left:50%; transform:translate(-50%,-100%); background:var(--color-primary); color:var(--color-bg); font-size:12px; font-weight:700; padding:6px 12px; border-radius:var(--radius-md); opacity:0; transition:opacity .25s; pointer-events:none; z-index:60; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,0.4); }
+.ide-tooltip.show{ opacity:1; }
+
+
+/* ========== ADIM 2 MALZEMELER ========== */
+.material-item {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--color-text-3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mat-num {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-stroke);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ========== ADIM 3 HOTSPOTLAR ========== */
+.hotspot-zone {
+  fill: #ffd60a;
+  fill-opacity: 0.14;
+  stroke: #ffd60a;
+  stroke-width: 2;
+  stroke-dasharray: 6 4;
+  cursor: pointer;
+  transition: fill-opacity .15s ease;
+}
+.hotspot-zone:hover { fill-opacity: 0.32; }
+.hotspot-label {
+  font-family: sans-serif;
+  font-size: 7px;
+  fill: #ffffff;
+  font-weight: 700;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(0,0,0,0.55);
+  stroke-width: 2.5px;
+}
+.step3-hotspots #hotspot-led, .step3-hotspots #hotspot-typec { animation: hotspotPulse 1.3s ease-in-out infinite; }
+@keyframes hotspotPulse {
+  0%, 100% { stroke-opacity: .4; fill-opacity: .12; filter: drop-shadow(0 0 0 transparent); }
+  50%      { stroke-opacity: 1;  fill-opacity: .38; filter: drop-shadow(0 0 9px #ffd60a); }
+}
+
+/* Vurgulanan bölgeye birkaç saniye tıklanmazsa beliren "buraya tıkla"
+   oku — öğrenci fiziksel karta basmaya çalışmasın diye ekranda net bir
+   yönlendirme. toggleStep3Hotspots() / showHotspotArrows() ile açılır.
+
+   RENK (2026-09-14): ok eskiden hotspot kutusuyla AYNI sarıydı (#ffd60a),
+   bu yüzden kutunun bir parçası gibi görünüyor, "yapılacak iş" olarak
+   okunmuyordu. Turkuaza alındı: sarı kutudan da kırmızı karttan da ayrışır,
+   koyu kontur zaten her zeminde okunur kılıyor. */
+.hotspot-arrow {
+  font-family: sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  fill: var(--color-accent-2);
+  paint-order: stroke;
+  stroke: rgba(0,0,0,0.6);
+  stroke-width: 3px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .25s ease;
+}
+.hotspot-arrow.show {
+  opacity: 1;
+  animation: hotspotArrowNudge 0.9s ease-in-out infinite;
+}
+@keyframes hotspotArrowNudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(6px); }
+}
+
+/* Adım 3'te keşfedilen parçaların açıklamaları burada BİRİKİR (üst üste
+   yazılmaz). Yeni bir kart geldiğinde önce sarı bir halka çakıp yeşile
+   dönüyor: öğrenci yazının "yeni geldiğini" kaçırmasın. */
+.parts-found {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.parts-found .part-card { margin-top: 0; }
+
+.part-reveal { animation: partReveal 0.75s var(--easing-default) both; }
+@keyframes partReveal {
+  0%   { opacity: 0; transform: translateY(-10px) scale(0.97); box-shadow: 0 0 0 7px rgba(255, 214, 10, 0.55); }
+  35%  { opacity: 1; transform: translateY(0) scale(1.02);     box-shadow: 0 0 0 7px rgba(255, 214, 10, 0.45); }
+  70%  { transform: scale(1.005);                              box-shadow: 0 0 0 5px rgba(43, 182, 115, 0.32); }
+  100% { transform: scale(1);                                  box-shadow: var(--shadow-sm); }
+}
+
+/* Keşfedilmiş bölge: kesik sarı çerçeve yerine dolu yeşil, nabız durur.
+   (#id seçicileri nabzı verdiği için burada da id ile susturuluyor.) */
+.hotspot-zone.discovered {
+  fill: #2BB673;
+  stroke: #2BB673;
+  stroke-dasharray: none;
+  fill-opacity: 0.3;
+}
+.step3-hotspots #hotspot-typec.discovered,
+.step3-hotspots #hotspot-led.discovered { animation: none; }
+
+/* Adım 5: "LED yandı mı?" kontrolü.
+   Site kartın gerçek durumunu bilemez (statik sayfanın donanıma erişimi
+   yok), tek kaynak çocuğun cevabı — bu yüzden butonlar cevap sonrası
+   kilitlenmez ve iki yönde de fikir değiştirilebilir. */
+.led-check {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-2);
+  border: var(--border-w-thin) dashed var(--color-border);
+}
+.led-check.answered { border-style: solid; }
+.led-check-q {
+  font-weight: 700;
+  font-size: var(--text-md);
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+.led-check-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+.led-check-btn {
+  flex: 1 1 160px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-2);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: var(--text-md);
+  cursor: pointer;
+  transition: background var(--t-base) var(--easing-default),
+              border-color var(--t-base) var(--easing-default),
+              color var(--t-base) var(--easing-default),
+              transform var(--t-base) var(--easing-default),
+              box-shadow var(--t-base) var(--easing-default);
+}
+.led-check-btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.led-check-btn.ok.selected {
+  border-color: var(--color-success-3);
+  background: var(--color-success-3);
+  color: #fff;
+}
+.led-check-btn.no.selected {
+  border-color: var(--color-warning);
+  background: var(--color-warning);
+  color: var(--color-text);
+}
+.led-check-btn:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+/* Her iki sonuçtan da diğerine geçiş: yardım hiçbir zaman bir tıktan uzak olmasın */
+.led-check-undo {
+  display: block;
+  margin: 10px 0 0 auto;
+  padding: 6px 2px;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: var(--text-base);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.led-check-undo:hover { color: var(--color-primary); }
+
+/* ========== ADIM 5 TIKLA-ÖĞREN KOD ========== */
+.ctl-card {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-top: 14px;
+  box-shadow: var(--shadow-clay-sm);
+}
+.ctl-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-primary-soft);
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary-hover);
+  border-bottom: 1px solid var(--color-border);
+}
+.ctl-code { padding: 8px 0; }
+.ctl-line {
+  display: flex;
+  gap: 12px;
+  padding: 4px 14px;
+  font-family: 'Fira Code', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-text-2);
+  cursor: pointer;
+  border-left: 3px solid transparent;
+  transition: background var(--t-press) var(--easing-default), color var(--t-press) var(--easing-default), border-color var(--t-press) var(--easing-default);
+  white-space: pre;
+}
+.ctl-line.alt { background: var(--color-surface-2); }
+.ctl-line:hover { background: var(--color-primary-soft); color: var(--color-text); }
+.ctl-line.active { background: var(--color-primary-soft); border-left-color: var(--color-primary); color: var(--color-primary-hover); font-weight: 600; }
+.ctl-num { color: var(--color-text-dim); user-select: none; width: 16px; text-align: right; flex-shrink: 0; display: inline-block; }
+.ctl-num::before { content: attr(data-n); }
+/* Okunan satır: numara yerine yeşil ✓ (Koda Tıkla ilerlemesi). */
+.ctl-line.okundu .ctl-num::before { content: "✓"; color: var(--color-success); font-weight: 800; }
+.ctl-line { position: relative; overflow: hidden; }
+/* Tarama ışığı: Hareket.kodSatiri ekleyip siler. */
+.ctl-tarama {
+  position: absolute; top: 0; bottom: 0; left: 0; width: 30%;
+  background: linear-gradient(90deg, transparent, var(--color-primary-soft), transparent);
+  pointer-events: none; opacity: 0;
+}
+.ctl-header .ctl-baslik { flex: 1; min-width: 0; }
+.ctl-ilerleme { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.ctl-bar { width: 72px; height: 6px; border-radius: 99px; background: var(--color-surface); overflow: hidden; border: 1px solid var(--color-border); }
+.ctl-bar i { display: block; height: 100%; background: var(--color-success); border-radius: inherit; transition: width 420ms cubic-bezier(0.23, 1, 0.32, 1); }
+.ctl-card.ctl-tamam .ctl-ilerleme b { color: var(--color-success-3); }
+@media (prefers-reduced-motion: reduce) { .ctl-bar i { transition: none; } }
+/* "Koda Tıkla, Her Satırı Öğren" kartının alt açıklama şeridi.
+   Eskiden beyaz zeminliydi ve satıra tıklayınca metnin değiştiği fark
+   edilmiyordu. Artık yeşil bir "cevap kutusu" gibi duruyor; metin her
+   değiştiğinde fx.js (FX.highlight) kısa bir yeşil flaş oynatıyor. */
+.ctl-desc {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--color-success-soft);
+  border-top: 2px solid var(--color-success);
+  border-left: 4px solid var(--color-success);
+  padding: 13px 14px;
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--color-success-3);
+}
+/* Açıklama satırın altına taşındığında: kodun içinde, satıra bağlı bir balon. */
+.ctl-desc.satir-ici {
+  margin: 2px 12px 8px 40px;
+  border-top: none;
+  border-radius: 0 var(--radius-md, 10px) var(--radius-md, 10px) 0;
+  font-family: inherit;
+  white-space: normal;
+}
+.ctl-desc .icon {
+  color: var(--color-success-2);
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Koda Tıkla kart sahnesi (lesson-engine.js kodSahneHtml, Hareket.kodSahne).
+   Açıklama kutusunun sağında; dar ekranda metnin altına iner. */
+.ctl-desc { flex-wrap: wrap; }
+.ctl-desc #ctlDescText { flex: 1 1 260px; min-width: 0; }
+.ctl-sahne { margin-left: auto; flex: 0 0 auto; max-width: 100%; }
+.ctl-sahne[hidden] { display: none; }
+.ks {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 12px; padding: 6px 12px; min-height: 64px;
+  color: var(--color-text-2); font-weight: 600; font-size: 13px;
+}
+.ks-not { font-size: 13px; line-height: 1.3; max-width: 150px; }
+.ks-not b { font-variant-numeric: tabular-nums; }
+.ks-cip {
+  font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 700;
+  background: #1F2430; color: #F5E6B8; border-radius: 6px; padding: 4px 8px;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, .35); white-space: nowrap;
+}
+.ks-cip small { font-size: 11px; color: #9FE3B0; }
+.ks-led { width: 64px; height: 64px; object-fit: contain; }
+.ks-led.is-acik { filter: drop-shadow(0 0 10px rgba(255, 220, 120, .55)); }
+.ks-tel { position: relative; width: 44px; height: 4px; border-radius: 4px; background: var(--color-border); }
+.ks-tel.is-akim { background: #F2B53A; }
+.ks-tel i { position: absolute; top: -3px; left: 100%; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #FFE27A; box-shadow: 0 0 8px #FFD23F; opacity: 0; }
+.ks-etiket {
+  font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 700;
+  background: var(--color-primary-soft); color: var(--color-primary-hover);
+  border: 1px dashed var(--color-primary); border-radius: 6px; padding: 3px 8px;
+}
+.ks-ok { color: var(--color-text-dim); }
+.ks-yon { position: relative; width: 36px; height: 20px; overflow: hidden; }
+.ks-yon i { position: absolute; top: 4px; left: 8px; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; }
+.ks-yon.is-cikis i { border-left: 14px solid var(--color-success); }
+.ks-yon.is-giris i { border-right: 14px solid var(--color-primary); }
+.ks-saat { position: relative; width: 60px; height: 60px; flex-shrink: 0; }
+.ks-saat img, .ks-saat svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Kadran görselde (Blender) boş; çizgiler ve ibre burada. Görselin kadranı
+   tam ortada değil (üstte düğme) → svg biraz aşağıda. */
+.ks-saat svg { top: 7%; transform: scale(.74); }
+.ks-cizgi line { stroke: #3A3A44; stroke-width: 2.4; stroke-linecap: round; }
+.ks-ibre { stroke: #E5484D; stroke-width: 4; stroke-linecap: round; transform-box: view-box; transform-origin: 50px 50px; }
+.ks-merkez { fill: #3A3A44; }
+.ks-pencere {
+  display: flex; flex-direction: column; min-width: 128px;
+  background: #11151C; border-radius: 8px; overflow: hidden;
+  font-family: 'Fira Code', monospace; font-size: 13px; color: #CFE8D6;
+}
+.ks-pencere-baslik { background: #2A303B; color: #AEB6C4; font-size: 10px; padding: 2px 8px; font-family: inherit; }
+.ks-satir, .ks-hiz { padding: 6px 8px; min-height: 1.4em; }
+.ks-satir.is-yaziyor::after { content: "▌"; color: #5CFF8A; }
+.ks-nokta { display: flex; gap: 4px; padding: 0 8px 6px; }
+.ks-nokta i { width: 6px; height: 6px; border-radius: 50%; background: #5CFF8A; }
+.ks-buton { width: 48px; height: 48px; object-fit: contain; }
+
+/* Merak Köşesi sahnesi (LessonEngine.merakSahneHtml). */
+.merak-sahne {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  background: var(--color-surface-2); border: 1px solid var(--color-border);
+  border-radius: 14px; padding: 14px 12px 10px; margin: 4px 0 12px;
+}
+.ms-kare { min-height: 84px; display: flex; align-items: center; justify-content: center; max-width: 100%; }
+.ms-yazi { margin: 0; text-align: center; font-weight: 700; font-size: 15px; line-height: 1.5; color: var(--color-text); min-height: 3em; max-width: 520px; }
+.ms-noktalar { display: flex; gap: 6px; }
+.ms-nokta { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: none; background: var(--color-border); cursor: pointer; }
+.ms-nokta.is-aktif { background: var(--color-primary); }
+.ks-sira { gap: 4px; }
+.ks-sira-led { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--color-text-dim); }
+.ks-kod-pencere { min-width: 180px; }
+.ks-kod-pencere mark { background: #F2B53A; color: #11151C; border-radius: 3px; padding: 0 2px; }
+.ks-direnc {
+  font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 700;
+  background: #D9B98A; color: #3A2A10; border-radius: 10px; padding: 2px 8px;
+  border-left: 4px solid #8B4A2B; border-right: 4px solid #E0A030;
+}
+.ks-direnc.is-yok { background: transparent; color: var(--color-text-dim); border: 1px dashed var(--color-text-dim); text-decoration: line-through; }
+.ks-deger {
+  font-family: 'Fira Code', monospace; font-size: 26px; font-weight: 800; min-width: 38px; text-align: center;
+  background: #11151C; color: #5CFF8A; border-radius: 8px; padding: 2px 8px;
+}
+.ks-buton.is-basili { transform: translateY(4px) scale(.94); }
+
+/* "Olmadı" hata sahneleri (LessonEngine.hataKartlariHtml). */
+.hata-sahne { margin: 12px 0; }
+.hata-sahne-baslik { margin: 0 0 8px; font-weight: 700; color: var(--color-text); }
+.hata-kartlar { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.hata-kart {
+  position: relative; display: flex; flex-direction: column; gap: 8px;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 14px; padding: 10px;
+}
+.hata-soru { display: flex; gap: 8px; align-items: flex-start; font-weight: 700; font-size: 14px; line-height: 1.4; }
+.hata-resim { border-radius: 10px; outline: 3px solid transparent; transition: outline-color 200ms; display: flex; justify-content: center; perspective: 600px; }
+.hata-resim.is-dogru { outline-color: rgba(43, 182, 115, .55); }
+.hata-resim.is-yanlis { outline-color: rgba(214, 39, 58, .55); }
+/* Blender yakın çekimi: yanlış ve doğru resim üst üste, çapraz erir. */
+.hata-foto { position: relative; width: 100%; aspect-ratio: 640 / 440; border-radius: 10px; overflow: hidden; background: #F3E6D2; }
+.hata-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity 450ms var(--easing-default, ease); }
+.hata-resim.is-dogru .hf-yanlis { opacity: 0; }
+.hata-resim.is-yanlis .hf-dogru { opacity: 0; }
+.hata-halka {
+  /* Ortalama ayrı `translate`ta: Motion scale animasyonu `transform`u ezer. */
+  position: absolute; width: 22%; aspect-ratio: 1; translate: -50% -50%;
+  border-radius: 50%; border: 3px solid #2BB673; box-shadow: 0 0 0 4px rgba(43, 182, 115, .22);
+  transition: left 600ms cubic-bezier(.23, 1, .32, 1), top 600ms cubic-bezier(.23, 1, .32, 1), border-color 300ms, box-shadow 300ms;
+  pointer-events: none;
+}
+.hata-resim.is-yanlis .hata-halka { border-color: #E5484D; box-shadow: 0 0 0 4px rgba(229, 72, 77, .25); animation: hataAt 1.1s ease-out infinite; }
+@keyframes hataAt { 0% { box-shadow: 0 0 0 0 rgba(229, 72, 77, .55); } 100% { box-shadow: 0 0 0 16px rgba(229, 72, 77, 0); } }
+@media (prefers-reduced-motion: reduce) { .hata-resim.is-yanlis .hata-halka { animation: none; } .hata-foto img, .hata-halka { transition: none; } }
+/* Seri hız kartı (motion design). */
+.hata-seri { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 8px; border-radius: 10px; background: #1A1F28; }
+.hata-seri .ks-pencere { width: 100%; max-width: 240px; }
+.hs-yazi { display: block; padding: 8px; min-height: 3.2em; white-space: pre-wrap; font-family: 'Fira Code', monospace; font-size: 14px; color: #CFE8D6; }
+.hata-resim.is-yanlis .hs-yazi { color: #F2B53A; }
+.hs-hiz { display: flex; align-items: baseline; gap: 6px; color: #AEB6C4; font-size: 12px; font-family: 'Fira Code', monospace; }
+.hs-hiz-deger { font-size: 20px; color: #5CFF8A; font-variant-numeric: tabular-nums; }
+.hata-resim.is-yanlis .hs-hiz-deger { color: #FF6B6B; }
+.hata-etiket { align-self: flex-start; font-size: 12px; font-weight: 800; border-radius: 99px; padding: 2px 10px; }
+.hata-etiket.is-dogru { background: var(--color-success-soft); color: var(--color-success-3); }
+.hata-etiket.is-yanlis { background: rgba(214, 39, 58, .12); color: #C4202F; }
+.hata-kart .err-fix { margin: 0; font-size: 14px; }
+
+/* ========== ADIM 6 ÇALIŞTIRMA ========== */
+.run-list { margin: 8px 0 0 18px; font-size: 13px; line-height: 1.9; color: var(--color-text-2); }
+.run-list code { background: var(--color-surface-2); color: var(--color-primary-hover); padding: 1px 6px; border-radius: 4px; font-family: monospace; }
+
+/* ========== ADIM 7 QUIZ ========== */
+.quiz-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-lg);
+  color: var(--color-text);
+}
+#quizCounter { font-size: var(--text-base); color: var(--color-text-muted); font-weight: 700; }
+.quiz-progress {
+  height: 8px;
+  background: var(--color-surface);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 12px 0;
+}
+.quiz-progress-fill {
+  height: 100%;
+  width: 0%;
+  /* Yönü ters çevrildi: eskiden yeşil başlayıp KIRMIZI bitiyordu, yani
+     sınav tamamlandığında çubuk kırmızı görünüyordu ("hata" gibi).
+     Artık ilerledikçe yeşile doğru koyulaşıyor. */
+  background: linear-gradient(90deg, var(--color-success), var(--color-success-2));
+  transition: width .4s ease;
+}
+.quiz-question { font-size: var(--text-lg); line-height: 1.6; color: var(--color-text-3); font-weight: 700; }
+
+/* ========== AI PROMPT KARTLARI ========== */
+#aiSection { margin-top: 16px; }
+.ai-prompt-card {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ai-prompt-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs); /* 11px taban: 10px islevsel yazi okunmuyor */
+  font-weight: 700;
+  letter-spacing: .4px;
+  color: var(--color-text-muted);
+}
+.ai-prompt-cat::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.ai-prompt-cat.cat-blue   { color: var(--color-primary); }
+.ai-prompt-cat.cat-amber  { color: var(--color-warning); }
+.ai-prompt-cat.cat-red    { color: var(--color-danger); }
+.ai-prompt-cat.cat-green  { color: var(--color-success); }
+.ai-prompt-title { font-size: 13px; font-weight: 700; color: var(--color-primary); }
+.ai-prompt-text { font-size: 12px; line-height: 1.55; color: var(--color-text-2); background: var(--color-bg); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 10px; }
+.ai-prompt-card .sim-btn.copy-user { display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+
+/* ============================================================
+   DERS 1.2 ADIM 5 — kod önizlemesi + Arduino yükleme adımları
+   ============================================================
+   Çocuk eskiden hiç görmediği bir kodu kopyalayıp nereye koyacağını
+   bilmeden ilerliyordu (kod ilk kez Adım 6'da açılıyor, Arduino tarafı
+   ise yalnızca Ders 1.1'in videolarında anlatılmış). */
+
+.left-panel.is-off { display: none; }
+
+.kod-onizleme {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  background: var(--color-bg-deep);
+  color: #E8EEF6;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  white-space: pre;
+  overflow-x: auto;
+  tab-size: 2;
+}
+
+/* Yorum satırları (// ile başlayanlar) sönük dursun: çocuk önce kodu
+   görsün, açıklamayı sonra okusun. İki satır da uzun, kaydırma yerine
+   sarmalarına izin veriliyor. */
+.kod-onizleme code { display: block; }
+
+.yukleme-adimlari {
+  margin: 10px 0 0;
+  padding-left: 22px;
+  display: grid;
+  gap: 7px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--color-text-2);
+}
+.yukleme-adimlari li::marker { font-weight: 800; color: var(--color-accent); }
+.yukleme-adimlari b { color: var(--color-text-3); }
+
+
+/* Adım 3 — iki portluk kablo kontrolü (script.js: usbBaglantiHtml). */
+.usb-ports {
+  display: grid;
+  gap: 8px;
+  margin: 10px 0;
+}
+@media (min-width: 720px) {
+  .usb-ports { grid-template-columns: 1fr 1fr; }
+}
+
+.usb-port {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  color: var(--color-text-2);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease;
+}
+.usb-port:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+
+.usb-port-no {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-surface-2);
+  color: var(--color-text-3);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 22px;
+  text-align: center;
+}
+
+.usb-port-txt { flex: 1 1 auto; line-height: 1.4; }
+.usb-port-txt b { color: var(--color-text-3); }
+
+/* Onay işareti yalnızca işaretliyken görünür: boş kutu "yapılacak",
+   yeşil tik "yapıldı" demek. */
+.usb-port-tick {
+  flex: 0 0 auto;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-success);
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity .18s ease, transform .18s var(--easing-default);
+}
+.usb-port.is-on {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+/* Beyaz yazı açık yeşil üzerinde 2.6:1 çıkıyordu (gereken 4.5).
+   Koyu yeşile alındı: aynı anlam, 6:1 kontrast. */
+.usb-port.is-on .usb-port-no { background: var(--color-success-2); color: #fff; }
+.usb-port.is-on .usb-port-tick { opacity: 1; transform: scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  .usb-port, .usb-port-tick { transition: none; }
+}
+
+/* "Bilgisayarım kartı görüyor mu?" — WebSerial ile gerçek algılama.
+   Yardımcı bir yol, kapı değil (bkz. script.js): sürücü Adım 4'te
+   kuruluyor, port o zamana kadar hiç görünmeyebilir. */
+.usb-detect {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: transparent;
+  border: 1.5px solid var(--color-accent);
+  border-radius: 999px;
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: background-color .18s ease, color .18s ease;
+}
+.usb-detect .icon { width: 16px; height: 16px; }
+.usb-detect:hover, .usb-detect:focus-visible { background: var(--color-accent); color: #fff; }
+.usb-detect[hidden] { display: none; }
+
+/* ---- "Bana bas" hâli (UsbLink.focusGate) ----------------------------
+   Arda: "butonu böyle efektli bir şekilde parlasın, ona basacağını
+   bilsin, vurgulansın." Çocuk kapıya takıldığında düğme çerçeveli
+   olmaktan çıkıp DOLU bir düğmeye dönüşüyor — dolu düğme "basılır"
+   demek, çerçeveli düğme "bilgi" gibi duruyordu — ve etrafına düzenli
+   aralıkla bir halka atıyor. Halka çizili bir süs değil, hareketin
+   kendisi: durduğunda hiçbir iz bırakmıyor. */
+.usb-detect.is-calling {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+  animation: usbDetectCall 1.7s ease-out infinite;
+}
+@keyframes usbDetectCall {
+  0%   { box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.45); }
+  55%  { box-shadow: 0 0 0 10px rgba(29, 78, 216, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(29, 78, 216, 0); }
+}
+
+/* Kutunun kendisi: çocuk buraya kaydırıldı, "geldiğin yer burası" desin.
+   Üç kere vurup susuyor — sürekli yanıp sönen bir kutu okunmuyor.
+   Aynı vurgu Adım 4'ün "Arduino IDE'de yükle" kutusunda da kullanılıyor:
+   iki yerde de olay aynı (kapı kapandı, çocuk buraya getirildi). */
+.usb-link.is-calling,
+#yuklemeKart.is-calling,
+#wd-stage.is-calling { animation: usbBoxCall 0.6s ease-out 3; }
+/* Sahne kutusu diğer ikisinden çok daha geniş: yayılan halka o boyda
+   zayıf okunuyor, bu yüzden kenarlık da vurgu süresince maviye dönüyor.
+   Yeni bir dil değil — halka aynı halka, yalnızca kenarlık ona eşlik
+   ediyor. */
+#wd-stage.is-calling { border-color: var(--color-accent); }
+@keyframes usbBoxCall {
+  from { box-shadow: 0 0 0 0 rgba(29, 78, 216, 0.38); }
+  to   { box-shadow: 0 0 0 14px rgba(29, 78, 216, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Hareket kalkıyor ama VURGU kalıyor: dolu düğme ve kutunun çerçevesi
+     bilgiyi tek başına taşıyor. */
+  .usb-detect.is-calling,
+  .usb-link.is-calling,
+  #yuklemeKart.is-calling,
+  #wd-stage.is-calling { animation: none; }
+  .usb-link.is-calling,
+  #yuklemeKart.is-calling,
+  #wd-stage.is-calling { box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.35); }
+}
+
+/* ---- Adım 4: "Yükledim, uyguladım" onayı ----------------------------
+   Arda: "Arduino IDE'de yükle kısmı vurgulansın ... uyguladım butonu
+   olsun, yapınca geçebilsin. LED'in yanıp yanmaması önemli değil, çünkü
+   hata var ama çocuk uyguladı; 5. adımda soruyor zaten."
+   Düğme kutunun İÇİNDE ve en altta: sıra listeyi okuyup Arduino'da
+   yapmak, sonra buraya dönüp "yaptım" demek. */
+.yukleme-onay { margin-top: 12px; }
+.yukleme-onay-not {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--color-text-dim);
+  text-align: center;
+}
+/* Basıldıktan sonra düğme "yapıldı" işaretine dönüşüyor: yeşil, sönük,
+   tıklanamaz. Kutunun kendisi de yeşil şeridi alıyor — çocuk adımlar
+   arasında gidip geldiğinde burayı bitirdiğini tek bakışta görsün. */
+.yukleme-onay.is-done {
+  background: var(--color-success-soft);
+  border-color: var(--color-success);
+  color: var(--color-success-2);
+  cursor: default;
+  opacity: 1;
+}
+.yukleme-onay.is-done:hover { transform: none; }
+/* Tik de yazıyla aynı yeşilde olsun: .ai-prompt-btn .icon kuralı bütün
+   ikonları marka kırmızısına boyuyor, "yapıldı" hâlinde kırmızı tik
+   yanlış sinyal. */
+.yukleme-onay.is-done .icon { color: inherit; }
+#yuklemeKart.is-done { border-color: var(--color-success); }
+
+/* ---------- AÇ-KAPA PANELİ (pin haritası, hata galerisi) ---------- */
+/* Kartta "D5" yazmadığı için resmi pin diyagramı dersin içinde duruyor.
+   Kapalı başlar: her çocuk ihtiyaç duymaz, duyan tek tıkla açar. */
+.pin-map { padding-bottom: 4px; }
+.pin-map-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  text-align: left;
+}
+.pin-map-chevron {
+  transition: transform var(--t-base, .18s) ease;
+  color: var(--color-text-muted, #7C6552);
+}
+.pin-map-toggle.is-open .pin-map-chevron { transform: rotate(180deg); }
+.pin-map-body { margin-top: 10px; }
+.pin-map-figure {
+  display: block;
+  margin-top: 10px;
+  border: var(--border-w-thin, 2px) solid var(--color-border, #E6D6BE);
+  border-radius: var(--radius-lg, 14px);
+  overflow: hidden;
+  background: #fff;
+}
+/* Diyagram ders panelini yutmasin: kucultulmus haliyle okunur duruyor,
+   detay gerekirse tiklayip tam boyutta acilir. */
+.pin-map-figure img { display: block; width: 100%; height: auto; max-height: 420px; object-fit: contain; }
+.pin-map-note { margin-top: 6px; opacity: 0.75; font-size: var(--text-md, 13px); }
+
+/* ============================================================
+   ETKİLEŞİM HİJYENİ (Web Interface Guidelines denetimi, 2026-09-21)
+   ============================================================ */
+
+/* Mobil tarayıcılar çift dokunuşla yakınlaştırmayı beklediği için her
+   dokunuşu ~300ms geciktiriyor. Bu sitede yakınlaştırılacak bir şey yok:
+   düğmeye basınca ANINDA tepki versin. Tablet/telefon en olası sınıf
+   ortamı, gecikme "bastım ama olmadı" hissi veriyordu. */
+button,
+a,
+[role="button"],
+.quiz-option,
+.step-dot,
+.lesson-item,
+.material-item {
+  touch-action: manipulation;
+}
+
+/* Modal/hesap kapısı açıkken tekerlek kutunun dibine gelince ARKADAKİ
+   sayfa kaymaya başlıyordu (kaydırma zinciri). */
+.modal-backdrop,
+.modal-body,
+.learner-gate {
+  overscroll-behavior: contain;
+}
+
+/* ---------- Siyah tema: değişkenin yetmediği yerler ----------
+   success-2/3 koyu temada YAZI rengi olarak açıldı (koyu zeminde okunsun);
+   ama şu üç yer onları beyaz yazılı ZEMİN olarak kullanıyor — orada eski
+   koyu yeşil kalır. Sarı zeminli şeylerin yazısı da koyu kalır: sarının
+   üstünde açık yazı okunmuyor. */
+:root[data-theme="dark"] .toast:not(.warn),
+:root[data-theme="dark"] .led-check-btn.ok.selected,
+:root[data-theme="dark"] .usb-port.is-on .usb-port-no { background: #157244; border-color: #157244; }
+:root[data-theme="dark"] .toast.warn,
+:root[data-theme="dark"] .toast.warn .icon { color: #23180F; }
+/* Alt gezinme çubuğu buzlu cam gibi yarı saydam beyazdı. */
+:root[data-theme="dark"] .bottom-nav { background: rgba(35, 27, 20, 0.92); box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4); }

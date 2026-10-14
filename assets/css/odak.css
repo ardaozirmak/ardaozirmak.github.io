@@ -1,0 +1,178 @@
+/* ============================================================
+   ODAK — sade çerçeve + "sıradaki bu" halkası (bkz. assets/js/odak.js)
+   Arda (2026-09-28): "çocuk sayfada basacağı 3-4 tane basması
+   gerekenler olsun, yolu biz göstereceğiz."
+   ============================================================ */
+
+:root {
+  --odak-renk: #2F6FEB;
+  --odak-halo: rgba(47, 111, 235, 0.22);
+}
+
+/* ---------- Çerçeve: ders sayfasında yol gösteren olmayan her şey ---------- */
+
+/* Ders sekmeleri görünür (Arda 2026-09-28: "o üstteki dersleri de ekle"),
+   yalnızca var olan derslerle — 1.4+ HTML'den çıkarıldı. */
+/* Modül rozeti bilgi değil süs; başlıkta ders adı zaten yazıyor. */
+.header-badge { display: none; }
+/* Sol üstteki "Deneyap Atölyem" portala götürüyor ama düz yazı gibi duruyordu
+   (Arda, 2026-10-07: "portala attığı belli değil"). Önünde geri oku, yanında
+   "Portal" hapı; üstüne gelince düğme gibi tepki verir. portal.html'deki başlık
+   da portal.html'e gider ama ayrı sınıfta (.portal-header-link): :not() ile dışarıda kalır. */
+.header-bar > a[href="portal.html"]:not(.portal-header-link) {
+  border-radius: 999px;
+  padding: 4px 6px 4px 4px;
+  margin-left: -4px;
+  transition: background-color .15s ease, box-shadow .15s ease;
+}
+.header-bar > a[href="portal.html"]:not(.portal-header-link) .header-title::before {
+  content: "";
+  width: 18px; height: 18px; flex: none;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform .15s ease;
+}
+.header-bar > a[href="portal.html"]:not(.portal-header-link) .header-title::after {
+  content: "Portal";
+  font-size: 12px; font-weight: 800; line-height: 1;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-stroke);
+}
+.header-bar > a[href="portal.html"]:not(.portal-header-link):hover,
+.header-bar > a[href="portal.html"]:not(.portal-header-link):focus-visible {
+  background: var(--color-primary-soft);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary-stroke);
+}
+.header-bar > a[href="portal.html"]:not(.portal-header-link):hover .header-title::before { transform: translateX(-3px); }
+@media (max-width: 480px) {
+  .header-bar > a[href="portal.html"]:not(.portal-header-link) .header-title::after { display: none; }
+}
+/* Adım noktaları yine basılır (Arda, 2026-09-30: "bir sonraki noktaya
+   bastığımda ileri butonuna basar gibi geçsin"; 09-28'deki "yalnız çizgi"
+   kararı çevrildi). Motorun navigate()'i İleri ile aynı: aradaki her kapı
+   kontrol edilir, kilitli noktada İleri'nin uyarısı çıkar. */
+#stepDots .step-dot { cursor: pointer; }
+#stepDots .step-dot.locked { cursor: not-allowed; }
+
+/* Giriş düğmesi: ders sayfasında başlıktaki küçük anahtar (learner-ui.js
+   onu .fx-hud'un içine taşır). Portalda eski büyük hali duruyor. */
+.learner-badge.is-baslikta {
+  /* relative: "Ben başkasıyım" menüsü (.learner-badge-pop) anahtarın
+     altından açılsın — static iken başlığa göre konumlanıyordu. */
+  position: relative;
+  /* .learner-badge'in sabit-köşe değerleri (top:56px, right:12px)
+     relative'de kaydırma olur — sıfırla. */
+  top: auto; right: auto; bottom: auto;
+  max-width: none;
+  z-index: auto;
+}
+/* Başlık, altındaki ders sekmeleriyle aynı z-index'teydi; sekmeler DOM'da
+   sonra geldiği için başlıktan açılan menüyü örtüyordu (Arda: "ben
+   başkasıyım kısmı adam akıllı gözükmüyor"). Başlık bir kat üstte. */
+.header-bar { z-index: calc(var(--z-sticky) + 1); }
+.learner-badge.is-baslikta .learner-badge-open {
+  padding: 0;
+  border-width: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.learner-badge.is-baslikta .learner-badge-open:hover,
+.learner-badge.is-baslikta .learner-badge-open:active { transform: none; box-shadow: none; }
+.learner-badge.is-baslikta .learner-badge-open-icon {
+  width: 34px;
+  height: 34px;
+  border: var(--border-w-thin, 1.5px) solid var(--color-border);
+  animation: none;
+}
+.learner-badge.is-baslikta .learner-badge-open-text,
+.learner-badge.is-baslikta .learner-badge-meta { display: none; }
+.learner-badge.is-baslikta .learner-badge-chip { padding: 3px; }
+
+/* Portalda başlıktaki giriş düğmesi yazısını taşır ("Giriş yap"): portalın asıl çağrısı bu. */
+.learner-badge.is-baslikta.is-portal .learner-badge-open {
+  padding: 3px 14px 3px 3px; gap: 8px;
+  border: 0; background: linear-gradient(165deg, var(--color-primary), var(--color-primary-hover));
+}
+.learner-badge.is-baslikta.is-portal .learner-badge-open-icon { width: 30px; height: 30px; border: 0; }
+.learner-badge.is-baslikta.is-portal .learner-badge-open-text { display: flex; }
+.learner-badge.is-baslikta.is-portal .learner-badge-open-sub { display: none; }
+.learner-badge.is-baslikta.is-portal .learner-badge-open-title { font-size: var(--text-sm); }
+/* Telefonda portal: sağ alt köşede yalnız anahtar (hero yazısını örtmesin). */
+@media (max-width: 768px) {
+  .learner-badge.is-portal .learner-badge-open { padding: 5px; }
+  .learner-badge.is-portal .learner-badge-open-text,
+  .learner-badge.is-portal .learner-badge-meta { display: none; }
+  .learner-badge.is-portal .learner-badge-chip { padding: 3px; }
+}
+
+/* Dar ekranda alt köşede kalıyor ama yine yalnızca anahtar. */
+@media (max-width: 768px) {
+  body:has(.bottom-nav) .learner-badge .learner-badge-open { padding: 5px; }
+  body:has(.bottom-nav) .learner-badge .learner-badge-open-text,
+  body:has(.bottom-nav) .learner-badge .learner-badge-meta { display: none; }
+  body:has(.bottom-nav) .learner-badge .learner-badge-chip { padding: 3px; }
+}
+
+/* ---------- Adımın içi ---------- */
+
+/* Ders 1.1 video: URL düğmesi yalnızca URL'nin anlatıldığı 2. videoda. */
+#ideSimWrapper:not([data-vp-index="1"]) [data-vp="board-url"] { display: none; }
+
+/* Sırası gelmemiş iş: hiç görünmez, gelince açılır. */
+.odak-sonra { display: none !important; }
+/* İkincil: "Daha fazlası" altında. */
+.odak-daha-gizli { display: none !important; }
+
+/* Sıradaki TEK şey. */
+.odak-simdi:not(#nextBtn) {
+  position: relative;
+  /* Ara çizgi: mavi düğmede (Hadi kuralım) de halka ayrı görünsün.
+     Açık temada beyaz, siyah temada zemin rengi (--odak-ara, styles.css). */
+  box-shadow: 0 0 0 3px var(--odak-ara, #fff), 0 0 0 6px var(--odak-renk), 0 0 0 6px var(--odak-halo);
+  animation: odakNefes 1.8s ease-in-out infinite;
+}
+@keyframes odakNefes {
+  0%, 100% { box-shadow: 0 0 0 3px var(--odak-ara, #fff), 0 0 0 6px var(--odak-renk), 0 0 0 6px var(--odak-halo); }
+  50%      { box-shadow: 0 0 0 3px var(--odak-ara, #fff), 0 0 0 6px var(--odak-renk), 0 0 0 14px var(--odak-halo); }
+}
+/* Kod satırları tam genişlik şerit: halka yerine sol çizgi + zemin. */
+.ctl-line.odak-simdi:not(#nextBtn) {
+  box-shadow: inset 4px 0 0 var(--odak-renk);
+  background: rgba(47, 111, 235, 0.10) !important;
+  animation: none;
+}
+/* İleri kendi rengiyle nefes alır (fx-ready ile aynı dil, biraz daha belirgin). */
+#nextBtn.odak-simdi { animation: odakIleri 1.8s ease-in-out infinite; }
+@keyframes odakIleri {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(214, 39, 58, 0); }
+  50%      { box-shadow: 0 0 0 9px rgba(214, 39, 58, 0.22); }
+}
+
+.odak-daha {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 18px auto 4px;
+  padding: 6px 16px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-pill, 999px);
+  background: transparent;
+  color: var(--color-text-muted);
+  font: 700 var(--text-sm, 14px) var(--font-body, inherit);
+  cursor: pointer;
+}
+.odak-daha:hover { color: var(--color-text-2); border-color: var(--color-text-muted); }
+.odak-daha[hidden] { display: none; }
+/* Bir şeridin içinde (video düğmeleri): komşu düğmeler kadar, ayrı satır yok. */
+.odak-daha.is-seritte { margin: 0; padding: 6px 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .odak-simdi:not(#nextBtn), #nextBtn.odak-simdi { animation: none; }
+  .odak-simdi:not(#nextBtn) { box-shadow: 0 0 0 3px var(--odak-ara, #fff), 0 0 0 6px var(--odak-renk), 0 0 0 10px var(--odak-halo); }
+  #nextBtn.odak-simdi { box-shadow: 0 0 0 5px rgba(214, 39, 58, 0.25); }
+}

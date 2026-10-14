@@ -1,0 +1,238 @@
+/* Hareket katmanı (hareket.js) — anime.js ve three.js parçalarının
+   görünümü. Tren hattı styles.css'te, adım noktalarının yanında. */
+
+/* ---------- kablo çizilirken kalem ucu ---------- */
+.hk-kalem {
+  fill: #FFE58A;
+  stroke: #FFC531;
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 4px rgba(255, 197, 49, 0.95));
+  pointer-events: none;
+}
+
+/* ---------- takma: CSS yerleşmesi anime.js'e devredildi ---------- */
+/* Yalnızca hareket açıkken (svg.hk-anime); kapalıyken wd-place oynar. */
+.wd-svg.hk-anime .wd-drop.is-placing { animation: none; }
+/* Kablo iğneleri sırayla deliğe bastırılır: ilki kalem kalkarken,
+   ikincisi kalem vardığında (620ms çizim). Kapalıyken wd-fade ikisini
+   birlikte gösterir. */
+.wd-svg.hk-anime .is-placing .wd-pin { animation: hk-pin-bas 240ms cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.wd-svg.hk-anime .is-placing .wd-pin:nth-of-type(2) { animation-delay: 560ms; }
+@keyframes hk-pin-bas {
+  from { opacity: 0; transform: translateY(-7px) scale(1.18); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.hk-tik { pointer-events: none; }
+/* Sütun dalgası: aynı sütunun delikleri sırayla parlar (bağlı olduklarını göster). */
+.hk-dalga { pointer-events: none; }
+.hk-dalga circle { fill: #FFC531; opacity: 0; filter: drop-shadow(0 0 2px rgba(255, 176, 32, 0.9)); }
+.hk-tik-halka { fill: none; stroke: #FFB020; }
+.hk-tik-nokta { fill: #3A2A10; }
+
+/* ---------- devre kapanış anı: akımın ilk turu ---------- */
+.hk-iz {
+  fill: none;
+  stroke: #FFE58A;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 3px rgba(255, 197, 49, 0.95));
+  pointer-events: none;
+}
+
+/* ---------- portal kod daktilosu ---------- */
+.hk-yaziliyor .hk-harf { visibility: hidden; }
+.hk-yaziliyor .hk-harf.hk-gorundu { visibility: visible; }
+.hk-imlec {
+  display: inline-block;
+  width: 0.55em;
+  height: 1.1em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: #FF5A4E;
+  animation: hk-imlec 1s steps(1, end) infinite;
+}
+@keyframes hk-imlec { 50% { opacity: 0; } }
+
+/* ---------- portal: 3B kart (kart3b.js) ---------- */
+/* Kurulmadıysa (hareket kapalı / WebGL yok) kap hiç yer kaplamaz:
+   hero bugünkü haliyle kalır. */
+.hero-3b { display: none; }
+.hero-3b.is-kurulu {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  width: 330px;
+  height: 270px;
+  /* Kod penceresinin sol alt köşesinden dışarı: kodu örtmesin, CTA
+     düğmelerinin altındaki boşluğa otursun (1536px'te ölçüldü). */
+  /* Arda (2026-09-28): "3d kartı hafif sola al" — -215 → -275. */
+  left: -275px;
+  bottom: -186px;
+  cursor: grab;
+  touch-action: pan-y;          /* dikey kaydırma sayfaya kalsın */
+}
+.hero-3b.is-surukleniyor { cursor: grabbing; }
+.hk-3b-tuval { display: block; width: 100%; height: 100%; }
+/* Kart kod penceresinin altından taşıyor; bilgi şeridine binmesin. */
+.portal-hero.hk-3b-acik { padding-bottom: 190px; }
+
+/* Tek sütunda kart KODUN ALTINDA: sıra "kod → ışık". */
+@media (max-width: 860px) {
+  .hero-sag { display: flex; flex-direction: column; }
+  .hero-3b.is-kurulu {
+    order: 2;
+    position: relative;
+    left: auto; bottom: auto;
+    width: 100%;
+    height: 240px;
+    margin: -18px 0 -24px;
+  }
+  .portal-hero.hk-3b-acik { padding-bottom: 32px; }
+}
+
+/* Koddaki çalışan satır: LED yanıkken "yak + bekle", sönükken
+   "söndür + bekle". Metnin arkasında, ona dokunmadan. */
+.hk-vurgulu { position: relative; }
+.hk-vurgulu > code { position: relative; z-index: 1; }
+.hk-satir-vurgu {
+  position: absolute;
+  left: 10px; right: 10px;
+  border-radius: 6px;
+  background: rgba(166, 149, 126, 0.12);
+  border-left: 3px solid #A6957E;
+  transition: top 260ms cubic-bezier(0.22, 1, 0.36, 1), background 260ms, border-color 260ms;
+  pointer-events: none;
+}
+.hk-satir-vurgu.is-yanik {
+  background: rgba(47, 123, 255, 0.16);
+  border-left-color: #5AA0FF;
+}
+/* Durum noktası da AYNI saate bağlanır (CSS'teki 1 sn'lik döngü
+   koddaki 2 sn'lik döngüyle uyuşmuyordu). */
+.led-dot.hk-senkron { animation: none; opacity: 0.15; box-shadow: none; }
+.led-dot.hk-senkron.is-yanik { opacity: 1; box-shadow: 0 0 8px 2px var(--color-accent); }
+
+/* ---------- Ders 1.1 / 1.3: kart sahnesi 3B (kart-sahne3b.js, 2026-10-04) ----------
+   SVG katmanları yerinde ama görünmez: ders mantığı (adım, LED ritmi) onlarda. */
+#simulationBox.ks3b-acik > #layer-kart,
+#simulationBox.ks3b-acik > #layer-kablo,
+#simulationBox.ks3b-acik > #layer-plug,
+#simulationBox.ks3b-acik > #layer-laptop,
+#simulationBox.ks3b-acik > #layer-dataflow { visibility: hidden; }
+.ks3b-tuval { position: absolute; inset: 0; z-index: 7; display: block; pointer-events: none; animation: ks3bBelir .45s ease-out; }
+@keyframes ks3bBelir { from { opacity: 0; } }
+/* 3B yüklenirken (kart-sahne3b.js html.ks3b-bekle): SVG gizli, yerinde Blender render'ı. */
+html.ks3b-bekle #simulationBox > #layer-kart,
+html.ks3b-bekle #simulationBox > #layer-kablo,
+html.ks3b-bekle #simulationBox > #layer-plug,
+html.ks3b-bekle #simulationBox > #layer-laptop,
+html.ks3b-bekle #simulationBox > #layer-dataflow { visibility: hidden; }
+html.ks3b-bekle #simulationBox::after {
+  content: ''; position: absolute; inset: 8% 15%; z-index: 6; pointer-events: none;
+  background: url("../img/kart/kart-led-kapali.webp") center / contain no-repeat;
+  animation: ks3bNefes 1.4s ease-in-out infinite alternate;
+}
+@keyframes ks3bNefes { from { opacity: .55; } to { opacity: .9; } }
+@media (prefers-reduced-motion: reduce) { .ks3b-tuval, html.ks3b-bekle #simulationBox::after { animation: none; } }
+.ks3b-hareketli .ks3b-tuval { pointer-events: auto; cursor: grab; touch-action: none; }
+.ks3b-hareketli .ks3b-tuval:active { cursor: grabbing; }
+.ks3b-hareket {
+  position: absolute; right: 10px; top: 10px; z-index: 8;   /* altta gezinme çubuğu örtüyordu (eski 3B çevir notu) */
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px 6px 10px;
+  border-radius: 999px; border: 2px solid var(--color-primary); background: var(--color-bg); color: var(--color-primary);
+  font: 700 13px/1 var(--font-body, inherit); cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: background var(--t-base, 160ms) ease, color var(--t-base, 160ms) ease;
+}
+.ks3b-hareket svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ks3b-hareket:hover { background: var(--color-primary-soft); }
+.ks3b-hareket[aria-pressed="true"] { background: var(--color-primary); color: #fff; }
+.ks3b-hareket:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.ks3b-ipucu {
+  position: absolute; left: 50%; bottom: 12px; z-index: 8; transform: translateX(-50%); margin: 0;
+  padding: 5px 12px; border-radius: 999px; background: rgba(15, 23, 42, 0.72); color: #fff;
+  font: 600 12px/1.2 var(--font-body, inherit); white-space: nowrap; pointer-events: none;
+}
+.ks3b-ipucu[hidden] { display: none; }
+
+/* ---------- Ders 1.1: "3B çevir" (eski; 2026-10-04'te kart sahnesi 3B oldu) ---------- */
+.hk-3b-ac {
+  position: absolute;
+  right: 10px;
+  top: 10px;          /* altta sabit gezinme çubuğu ve "Giriş yap" örtüyordu */
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--color-primary);
+  background: var(--color-bg);
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.hk-3b-ac span { font-size: 16px; }
+.hk-3b-ac:hover { background: var(--color-primary-soft); }
+.hk-3b-ac:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+.hk-3b-ac[hidden] { display: none; }
+
+.hk-3b-incele {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 40%, var(--color-bg) 0%, var(--color-surface) 100%);
+  overflow: hidden;
+}
+.hk-3b-sahne { position: absolute; inset: 0 0 34px 0; cursor: grab; touch-action: none; }
+.hk-3b-sahne.is-surukleniyor { cursor: grabbing; }
+.hk-3b-ipucu {
+  position: absolute; left: 0; right: 0; bottom: 8px; margin: 0;
+  text-align: center; font-size: 12px; color: var(--color-text-muted);
+}
+.hk-3b-kapat {
+  position: absolute; top: 10px; right: 10px; z-index: 2;
+  min-height: 34px; padding: 6px 12px; border-radius: 999px;
+  border: 1.5px solid var(--color-border); background: var(--color-bg);
+  color: var(--color-text); font-family: inherit; font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer;
+}
+.hk-3b-kapat:hover { border-color: var(--color-primary); color: var(--color-primary); }
+
+.hk-3b-etiketler { position: absolute; inset: 0; pointer-events: none; }
+.hk-3b-etiket {
+  position: absolute; left: 0; top: 0;
+  margin: -13px 0 0 -2px;             /* nokta etiketin sol-orta ucunda */
+  padding: 4px 8px 4px 14px;
+  border-radius: 999px;
+  background: rgba(27, 20, 15, 0.82);
+  color: #fff;
+  font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.1;
+  white-space: nowrap;
+  border: 0;
+  transition: opacity 180ms;
+}
+.hk-3b-etiket::before {
+  content: ''; position: absolute; left: 4px; top: 50%;
+  width: 6px; height: 6px; margin-top: -3px; border-radius: 50%; background: #FFC531;
+}
+.hk-3b-etiket.is-tiklanir { pointer-events: auto; cursor: pointer; background: var(--color-primary); }
+.hk-3b-etiket.is-gizli { opacity: 0; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hk-imlec { animation: none; }
+}
+
+/* Devre sahnesi 3B yüklenirken (sahne3b.js html.s3b-bekle): SVG gizli, breadboard render'ı nefes alır. */
+html.s3b-bekle #wd-svg { visibility: hidden; }
+html.s3b-bekle #wd-stage { position: relative; }
+html.s3b-bekle #wd-stage::after {
+  content: ''; position: absolute; inset: 10% 8%; z-index: 6; pointer-events: none;
+  background: url("../img/kart/breadboard.webp") center / contain no-repeat;
+  animation: ks3bNefes 1.4s ease-in-out infinite alternate;
+}
+@media (prefers-reduced-motion: reduce) { html.s3b-bekle #wd-stage::after { animation: none; } }

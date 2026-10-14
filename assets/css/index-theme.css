@@ -1,0 +1,380 @@
+/* ============================================================
+   DERS SAYFASI (index.html) — LAYOUT/ANİMASYON EZMELERİ
+   ============================================================
+   Renk paleti ve font token'ları artık styles.css'te site geneli
+   (portal.html + index.html) — burada SADECE ders sayfasına özgü
+   layout, geçiş ve giriş animasyonları var.
+   ============================================================ */
+
+body {
+  background-color: var(--color-bg);
+  height: auto;
+  min-height: 100vh;
+  overflow: visible;
+}
+
+/* Sabit tek-ekran kısıtı kaldırıldı — sayfa artık normal şekilde kayar.
+   Header + ders sekmeleri kaydırma sırasında görünür kalsın diye sticky. */
+.fentop-container {
+  height: auto;
+  min-height: calc(100vh - 160px);
+}
+@media (min-width: 769px) {
+  .fentop-container { align-items: flex-start; }
+}
+
+/* ========== ADIM 4: sol panel artık ORTALANMIYOR ==========
+   Eskiden `align-items: center` idi: adım 4'te sağ panel uzayınca sol
+   panel (Deneyap kartı) onunla birlikte aşağı insin diye. İKİ SEBEPLE
+   kaldırıldı:
+   1) Sol panel artık YAPIŞKAN (aşağıda) — kaydırırken kendisi takip
+      ediyor, ortalamaya gerek kalmadı.
+   2) Ortalama, sahne yüksekliği ölçümüne GERİ BESLEME sokuyordu: sahne
+      kısalınca panel kısalıyor, kap ortalayınca sahnenin offsetTop'u
+      büyüyor, ölçü bir sonraki turda sahneyi bir daha kısıyordu.
+      1920x1080'de sahne 620 yerine 517'de kalıyordu (ölçüldü).
+   Kap `align-items: flex-start` (index-theme'in genel kuralı) ile
+   kalıyor, sol panel kendi `align-self`i ile yönetiliyor. */
+
+/* ---------- ADIM 4: DİKEY BÜTÇE ----------
+   Arda: "video altındaki butonları scrollbar aşağı inince görüyorum;
+   scrollbarsız sığdır." Sahne yüksekliği görünümden türetiliyor
+   (bkz. video-player.css --vp-ust) ama sahnenin 300px'lik okunabilirlik
+   tabanı 1536x730'da tek başına yetmiyordu: 107px kaydırma kalıyordu.
+   Aradaki fark İÇERİKTEN değil BOŞLUKTAN kazanıldı — yalnızca Adım 4'te,
+   yalnızca dikeyde. Ölçülerek seçildi, göz kararı değil; başlık, açıklama,
+   altyazı ve düğmelerin hiçbiri küçülmedi.
+
+   Alt dolgular sıfıra iniyor çünkü sayfanın altında zaten body'nin
+   `padding-bottom: var(--nav-h)` boşluğu var — o 54px sabit gezinme
+   çubuğunun arkasına denk geliyor, üstüne dolgu koymak sadece kaydırma
+   üretiyordu. */
+/* `min-height: 0`: kabın genel kuralı `calc(100vh - 160px)` ve o 160,
+   üst barların ESKİ toplamı. Adım 4'te şerit sıkıştığı için üst bar 114px;
+   kap 46px fazla uzuyor, body'nin alt dolgusuyla birleşince sayfa
+   görünümden 8px uzun çıkıp boşuna kaydırma çubuğu gösteriyordu
+   (1536x900 ve 1920x1080'de ölçüldü). Bu adımda yüksekliği içerik
+   belirlesin. */
+.fentop-container.step4-ide { padding-top: 8px; padding-bottom: 0; min-height: 0; }
+.fentop-container.step4-ide .right-panel { padding-top: 10px; padding-bottom: 0; }
+.fentop-container.step4-ide .step-content h2 { margin-bottom: 6px; }
+.fentop-container.step4-ide .ide-sim-wrapper { margin: 6px 0 0; padding: 8px; }
+body:has(.fentop-container.step4-ide) .sidebar-panel { padding-top: 6px; padding-bottom: 6px; }
+
+/* body'nin `padding-bottom: var(--nav-h)`u DURUYOR (bir ara Adım 4'te
+   sıfırlanmıştı). O zaman sayfa tam sığıyordu ve dolgu tek başına 21px'lik
+   boş bir kaydırma üretiyordu. Artık sahne ekranın dibine kadar uzuyor
+   (bkz. video-player.js --vp-taban) ve sayfa GERÇEKTEN kayıyor — dolgu
+   kalkarsa son öğe, yani düğme çubuğu, sabit gezinme çubuğunun ARKASINA
+   düşüyor ve sonuna kadar kaydırsan bile görünmüyor.
+   Ölçüldü: çubuk [652,719], gezinme çubuğunun tepesi 676. */
+
+/* ---------- ADIM 4: DİKEY BÜTÇE ----------
+   Arda iki kez konuştu ve ikisi birlikte okunmalı:
+   (1) "video çok küçülmüş, büyültebildiğin kadar büyült"
+   (2) "4. adımdaki yazı yerini değiş, aynı yerinde kalsın; scrollbar da
+        ekle ne yapalım, elinden geldiği kadar video altındaki butonlar
+        altta kalmasın."
+
+   Yani başlık + açıklama VİDEONUN ÜSTÜNDE kalıyor (bir tur sol sütuna
+   taşınmıştı, Arda beğenmedi ve geri alındı) ve kaydırma serbest; iş,
+   kalan yeri videoya verip düğmeleri fold'a olabildiğince yaklaştırmak.
+
+   Kazanç iki yerden geldi, ikisi de metinden DEĞİL:
+   - Sahnenin en boy oranı 19/9 → 16/9 (bkz. video-player.css): videolar
+     zaten 16:9, kutunun yanlarındaki 100px siyah bant boşa gidiyordu.
+   - Adım 4'e özgü boşluk sıkıştırması (aşağıdaki kurallar): başlık,
+     açıklama, altyazı ve düğmelerin hiçbiri küçülmedi. */
+}
+.panel, .right-panel, .step-content {
+  overflow: visible;
+}
+.header-bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+.sidebar-panel {
+  position: sticky;
+  top: 48px;
+}
+
+.simulation-area {
+  transform: translate(-14px, 22px);
+}
+/* "Beyaz pencere" kaldırıldı: .left-panel artık kart değil, sayfa zeminiyle
+   aynı düzlemde — tek çerçeve .simulation-area'nın kendi border'ı. */
+/* SOL PANEL YAPIŞKAN — Arda: "kart ve pc svgsi scrollbarla birlikte insin,
+   sürekli görünsün." Sayfa kayarken kart ekranın dışında kalıyordu; öğrenci
+   sağdaki adımı okurken solda neyi kuracağını göremiyordu.
+   Çalışması kırpmaların `clip` olmasına bağlı (bkz. styles.css
+   .fentop-container notu) — `hidden` iken hiç yapışmıyordu.
+   `top` SABİT YAZILMAZ: üstte yapışkan başlık + ders şeridi var, ikisinin
+   toplam boyu ekrana/derse göre değişiyor; --ust-bar'ı lesson-page.js
+   ölçüp yazıyor. Mobilde (tek sütun) yapışkanlık anlamsız, kapalı. */
+@media (min-width: 769px) {
+  /* `:not(.step1-hero)` ŞART: Adım 1'de kap sütun yönünde ve
+     `align-items: center` ile kartı ORTALIYOR. Sütun düzeninde
+     `align-self` YATAY ekseni yönetiyor, yani buradaki `flex-start`
+     kartı ortadan sola kaydırıyordu (Arda, 2026-09-21: "1. adımda
+     deneyapın yeri değişmiş, ortada olması lazımdı"). Yapışkanlık
+     zaten yalnızca kaydırılan adımlar için anlamlı; hero tek ekran. */
+  .fentop-container:not(.step1-hero) .left-panel {
+    position: sticky;
+    top: calc(var(--ust-bar, 118px) + 8px);
+    align-self: flex-start;
+  }
+}
+/* ========== ADIM 4: SOL PANEL KALKAR, VIDEO TAM ALANI ALIR ==========
+   Arda (2026-09-22): "4. adimdaki soldaki svg karti kaldir, full video
+   kismina ver alani." O adimda sol paneldeki laptop+kart cizimi bir sey
+   anlatmiyor - anlatan sey videonun kendisi; panel yalnizca videodan
+   genislik caliyor. Sinif script.js'te body'ye adim degisiminde takiliyor.
+   Diger adimlarda panel duruyor: Adim 3'te tiklanabilir bolgeler onun
+   uzerinde, yani silinemez, sadece bu adimda gizleniyor. */
+body.adim4-tam-video .left-panel { display: none; }
+body.adim4-tam-video .fentop-container > .panel:not(.left-panel) {
+  flex: 1 1 100%;
+  max-width: none;
+}
+/* ===== ADIM 4: KONTROLLER YINE VIDEONUN ALTINDA =====
+   Arda (2026-09-22, ayni gun ikinci tur): "yan tarafta degil, o butonlari
+   yine alt tarafa koy; ekran yine buyuk kalsin ama scrollbar cok assagi
+   inmeden. Butonlara basarken videoda bir ani takip etmesi lazim, gorus
+   acisi oyle olmali."
+
+   YAN SUTUN DENENDI VE KALDIRILDI: dugmeler videonun SAGINDA olunca goz
+   ikiye boluyordu; "5sn geri" derken bakilan yer videonun kendisi.
+   Kural artik tek cumle: SAHNE + SERIT AYNI ANDA GORUNUR. Bunu saglayan
+   sey bu dosya degil, yukseklik butcesi (bkz. video-player.js
+   sahneYuksekligiAyarla: kaydirmadan video tam, kaydirinca video +
+   dugmeler birlikte).
+
+   Buradaki tek is HIZALAMA: kutu videodan genis olmasin. Sol SVG karti
+   Adim 4'te kalktigi icin kap 1474px'e cikiyor, video ise 16:9 oldugu
+   icin yuksekligine bagli (~800px) — kutuyu daraltmazsak altyazi ve
+   dugmeler videonun iki yanina tasiyor, serit videoya AIT gorunmuyordu.
+   Olcu videodan turuyor: --vp-h sarmalayicida tanimli (video-player.css),
+   genislik onun 16:9 karsiligi + kutunun kendi dolgusu.
+
+   Serit tek sutun: ilerleme cubugu, altyazi, dugmeler — hepsi videonun
+   genisliginde ve videonun altinda. */
+/* ===== ADIM 4: USTTEKI BLOK KISALIYOR, KAZANC VIDEOYA GIDIYOR =====
+   Arda (2026-09-22): "yanlarda o kadar bosluk var, bunlari
+   degerlendiremiyor muyuz, videoyu daha buyuk yapamiyor muyuz."
+
+   VIDEONUN GENISLIGI YUKSEKLIGINE ZINCIRLI (16:9). Yani yanlardaki
+   bosluk ancak sahne UZAYINCA kapanir; sahneyi uzatmanin tek yolu da
+   ustundeki blogu kisaltmak. Olculdu (1920x1080): ustten 100px alinca
+   video 1417x797 -> 1541x867 oluyor, yan bosluk 252 -> 190px.
+
+   Enine GERME (object-fit: fill) ve KIRPMA (cover) de denendi, Arda
+   gercek render'lara bakip ikisini de eledi: germe kart/yazilari yatayda
+   %29 sisiriyor (ekrandaki kart masadaki kartla ayni gorunmeli, dersin
+   ana iddiasi bu), kirpma ise ustten Chrome adres cubugunu, alttan
+   indirme bildirimini kesiyor - kurulum videosunda tam da gosterilmesi
+   gereken yerler. Karar: ORAN KORUNUR, yer ustten kazanilir.
+
+   Iki kalem:
+   1) Baslik ve aciklama TEK SATIR (yan yana) - ~30px.
+   2) Ders sekmeleri seridi yalnizca Adim 4'te gizli - ~70px. Diger
+      adimlarda yerinde; o adimlarda dikey sikisma yok.
+   768px altinda kompaktlik devrede degil: dar ekranda baslik + aciklama
+   tek satira sigmaz, ust uste binip okunmaz olurdu. */
+@media (min-width: 768px) {
+  body.adim4-tam-video .step-content > #stepTitle {
+    display: inline-block;
+    margin: 0 14px 0 0;
+    vertical-align: middle;
+  }
+  body.adim4-tam-video .step-content > #stepDescription {
+    display: inline;
+    vertical-align: middle;
+  }
+  body.adim4-tam-video .fentop-container.step4-ide .ide-sim-wrapper { margin-top: 10px; }
+}
+body.adim4-tam-video .sidebar-panel { display: none; }
+
+body.adim4-tam-video .fentop-container.step4-ide .ide-sim-wrapper {
+  width: 100%;
+  max-width: min(100%, calc(var(--vp-h) * 16 / 9 + 26px));
+  margin: 6px auto 0;
+}
+/* TAM EKRANDA O DARALTMA GECERSIZ: orada kutu ekranin kendisi, sahne de
+   kendi kuraliyla olculuyor (bkz. video-player.css :fullscreen bloku) ve
+   yukseklik butcesi hic calismiyor. Daraltma kalsaydi 1920'lik ekranda
+   video 1671 yerine 1428px'de kalirdi. Secici daha ozgul, yoksa
+   yukaridaki kural onu eziyor. */
+body.adim4-tam-video .fentop-container.step4-ide .ide-sim-wrapper:fullscreen,
+body.adim4-tam-video .fentop-container.step4-ide .ide-sim-wrapper:-webkit-full-screen {
+  max-width: none;
+}
+/* Dugmeler Adim 4'te bir tik kompakt. Sebep olculdu (1536x730): serit
+   videonun genisliginde, yani 810px; yedi dugme + sayac normal boyunda
+   816px istiyor ve TEK PIKSEL yuzunden ikinci satira dusup 24px daha
+   yiyordu. Kucultme yalnizca bu adimda, dokunma hedefi hala 36px.
+
+   768px ALTINDA DEVREDE DEGIL: telefonda dugmeler zaten kendi duzenine
+   geciyor (video-player.css'teki 480px bloku: uc satir, yuzde payli
+   flex) ve oradaki olculer bunlardan kucuk — buradaki kural daha ozgul
+   oldugu icin onlari sessizce ezerdi. */
+@media (min-width: 768px) {
+  body.adim4-tam-video .fentop-container.step4-ide .vp-toolbar {
+    gap: 6px;
+    padding: 8px 10px;
+  }
+  body.adim4-tam-video .fentop-container.step4-ide .vp-btn {
+    font-size: 12.5px;
+    padding: 8px 11px;
+    white-space: nowrap;
+  }
+}
+.left-panel {
+  margin-top: 36px;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+.step1-hero .left-panel {
+  margin-top: 0;
+}
+
+/* ========== ADIM 1: GENİŞ HERO DÜZENİ ========== */
+.fentop-container.step1-hero {
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-top: 32px;
+}
+.step1-hero .right-panel {
+  order: -1;
+  width: 100%;
+  max-width: 1200px;
+  background: transparent;
+  border: none;
+  padding: 0 16px;
+  text-align: center;
+}
+.step1-hero #stepTitle {
+  font-size: 56px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.step1-hero #stepDescription {
+  max-width: 680px;
+  margin: 0 auto 20px;
+  font-size: 20px;
+  line-height: 1.6;
+}
+.step1-hero .left-panel {
+  width: 100%;
+  max-width: 620px;
+  border: none;
+  background: transparent;
+  padding-top: 24px;
+  flex-direction: column;
+}
+.step1-hero .panel-toggle {
+  display: none;
+}
+/* Kart 1.5 kat büyük, sabit (Arda, 2026-10-06: "kart kısmını bu kadar küçük yapmayalım";
+   10-05'teki ekrana göre küçültme geri alındı). Kutu 380px; büyütmenin taştığı 190·(s−1)
+   kadar pay üstte ve altta bırakılır, yazıya binmez. */
+.step1-hero .simulation-area {
+  --s: 1.5;
+  max-width: 340px;
+  height: 380px;
+  flex-shrink: 1;
+  transform: scale(var(--s));
+  margin: calc(190px * (var(--s) - 1) + 8px) 0 calc(190px * (var(--s) - 1) + 24px);
+}
+/* Ders 1.2 Adım 1: statik breadboard fotoğrafı, hero'nun eski 340x380/scale(1.5)
+   boyutu yerine diğer adımlarla aynı 420x280/scale(1.15) kutuyu kullansın. */
+.step1-hero .simulation-area.simulation-area--diagram {
+  max-width: 420px;
+  height: 280px;
+  transform: scale(1.15);
+  margin: 0;
+}
+
+/* Ders 1.2 sol paneli artık etkileşimli devre şeması (wiring-diagram.js).
+   Fotoğraf kutusuna uygulanan kaydırma ve ölçekleme burada geçerli değil:
+   scale(1.15) düğme ve adım şeridi metnini bulanıklaştırır, translate ise
+   tıklama hedeflerini panelin dışına kaydırır. Kutu hero'da da, normal
+   adımlarda da aynı: gerçek boyut, ekrana göre yükseklik. */
+.simulation-area.simulation-area--wiring,
+.step1-hero .simulation-area.simulation-area--wiring {
+  max-width: 100%;
+  height: clamp(380px, 62vh, 560px);
+  transform: none;
+  margin: 0;
+}
+/* Adım 1'de üstte büyük başlık + açıklama var; şemaya kalan yer daha az.
+   Yükseklik oradan kısılır, yoksa adım şeridi alt navigasyonun altına kaçıyor. */
+.step1-hero .simulation-area.simulation-area--wiring {
+  max-width: 620px;
+  height: clamp(240px, 34vh, 420px);
+}
+/* Adım 1 bir kapak: devre tamamlanmış halde, akım akarken durur. Adım şeridi
+   ve düğmeler burada gizli — devreyi kurma anlatımı Adım 3'te başlıyor ve
+   ekranın bu kısmında zaten yer yok (üstte 56px başlık + açıklama var). */
+.step1-hero .wd-caption,
+.step1-hero .wd-hint,
+.step1-hero .wd-strip,
+/* .wd-footer: serit ve dugme cubugunu saran satir (2026-09-19). Ikisi
+   burada zaten gizli; sarmalayici da gizlenmezse geriye yalnizca
+   .wd-root'un 10px'lik bosluk payi kalirdi. */
+.step1-hero .wd-footer,
+.step1-hero .wd-bar { display: none; }
+
+@media (max-width: 1100px) {
+  .step1-hero #stepTitle { white-space: normal; }
+}
+@media (max-width: 768px) {
+  .step1-hero #stepTitle { font-size: 28px; }
+  .step1-hero .simulation-area { transform: scale(1.15); margin: 20px 0 32px; }
+}
+@media (max-width: 420px) {
+  .step1-hero .simulation-area { transform: scale(1); margin: 16px 0 24px; }
+}
+
+/* ========== GİRİŞ ANİMASYONLARI (yayvan/canlı "spring" his) ========== */
+.lesson-item {
+  opacity: 0;
+  animation: nodePopIn var(--t-slow) var(--easing-default) both;
+}
+.lesson-item:nth-child(1) { animation-delay:  60ms; }
+.lesson-item:nth-child(2) { animation-delay: 120ms; }
+.lesson-item:nth-child(3) { animation-delay: 180ms; }
+.lesson-item:nth-child(4) { animation-delay: 240ms; }
+.lesson-item:nth-child(5) { animation-delay: 300ms; }
+.lesson-item:nth-child(6) { animation-delay: 360ms; }
+@keyframes nodePopIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.92); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.step-card {
+  opacity: 0;
+  animation: cardPopIn var(--t-slow) var(--easing-default) both;
+}
+.step-card:nth-of-type(1) { animation-delay:  60ms; }
+.step-card:nth-of-type(2) { animation-delay: 130ms; }
+.step-card:nth-of-type(3) { animation-delay: 200ms; }
+@keyframes cardPopIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.quiz-option {
+  opacity: 0;
+  animation: optionPopIn var(--t-mid) var(--easing-default) both;
+}
+.quiz-option:nth-of-type(1) { animation-delay:  40ms; }
+.quiz-option:nth-of-type(2) { animation-delay:  90ms; }
+.quiz-option:nth-of-type(3) { animation-delay: 140ms; }
+.quiz-option:nth-of-type(4) { animation-delay: 190ms; }
+@keyframes optionPopIn {
+  from { opacity: 0; transform: translateX(-10px) scale(0.97); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}

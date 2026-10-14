@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tarayıcı çubuğu sayfanın zeminiyle aynı renk olsun (--color-bg). -->
+  <meta name="theme-color" content="#FFF8F0">
+  <title>Deneyap Atölyem - Eğitim Portalı</title>
+
+  <!-- Baloo 2 (başlık/UI) + Nunito (gövde metni, Türkçe tam kapsamalı) + Fira Code (kod) — index.html ile aynı marka kimliği -->
+  <!-- Hız (2026-10-05): senkron Supabase betiği ve bulut isteği için bağlantı önceden açılır. -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://odozoqsqnapiyweugfth.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="assets/js/tema.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="assets/css/hareket.css">
+  <link rel="stylesheet" href="assets/css/portal.css">
+  <link rel="stylesheet" href="assets/css/fx.css">
+  <link rel="stylesheet" href="assets/css/ikonlar.css">
+  <link rel="stylesheet" href="assets/css/panel.css">
+  <link rel="stylesheet" href="assets/css/learner.css">
+  <link rel="stylesheet" href="assets/css/ai-helper.css">
+  <link rel="stylesheet" href="assets/css/oku.css">
+  <link rel="stylesheet" href="assets/css/odak.css">
+</head>
+<body class="portal-body">
+
+  <!-- İkon seti: tek stroke ailesi, outline, currentColor -->
+  <svg class="icon-sprite" aria-hidden="true">
+    <defs>
+      <symbol id="icon-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M13 7 8 13h4l-1 4 5-6h-4l1-4Z" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="icon-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.4 10.9c.5.4.9 1 .9 1.6V16h5v-.5c0-.6.3-1.2.9-1.6A6 6 0 0 0 12 3Z"/></symbol>
+      <symbol id="icon-breadboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></symbol>
+      <symbol id="icon-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></symbol>
+      <symbol id="icon-broadcast" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-7M8.5 9.5a5 5 0 0 1 7 0M5.5 6.5a9 9 0 0 1 13 0"/><circle cx="12" cy="13" r="2"/></symbol>
+      <symbol id="icon-dice" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15.5" r="1.1" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="icon-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="icon-play" viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4Z" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="header-bar">
+    <a class="portal-header-link" href="portal.html">
+      <div class="header-title">
+        <svg class="icon icon-logo"><use href="#icon-logo"/></svg>
+        Deneyap Atölyem
+        <span class="header-badge">TEKNOFEST 2026</span>
+      </div>
+    </a>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div style="font-size: 13px; color: var(--color-text-muted);">
+        Modül 1: LED
+      </div>
+      <button type="button" id="profileHeaderBtn" class="portal-btn ghost" style="padding:6px 14px; font-size:12px;"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true" style="width:15px;height:15px;vertical-align:-3px"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg> Profilim</button>
+    </div>
+  </header>
+
+  <main class="portal-main">
+
+    <section class="portal-hero">
+      <div class="portal-hero-text">
+        <h1>Kodla, yükle, <span class="hl">ışığın yanmasını</span> izle.</h1>
+        <p>
+          Deneyap Atölyem, Deneyap Mini v2 kartın için hazırlanmış interaktif bir öğrenme rehberi.
+          Tarayıcından adım adım ilerle, kodu tek tıkla kopyala, kendi Arduino IDE'ne yapıştır ve
+          gerçek donanımda çalıştığını gözünle gör.
+        </p>
+        <div class="portal-hero-actions">
+          <a class="portal-btn primary" id="heroCta" href="index.html">Ders 1.1'e Başla →</a>
+        </div>
+      </div>
+
+      <!-- Sağ sütun: kod penceresi + 3B kart (hareket.js/kart3b.js). 3B
+           kart yalnızca hareket açık ve WebGL varsa kurulur; yoksa .hero-3b
+           boş kalır ve hero bugünkü gibi görünür. -->
+      <div class="hero-sag">
+      <div class="hero-3b" id="hero3b" aria-hidden="true"></div>
+      <div class="code-preview" aria-hidden="true">
+        <div class="code-preview-bar">
+          <span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span>
+          <span class="code-preview-name">ders_1_1.ino</span>
+        </div>
+        <pre class="code-preview-body"><code><span class="c-kw">void</span> <span class="c-fn">setup</span>() {
+}
+
+<span class="c-kw">void</span> <span class="c-fn">loop</span>() {
+  <span class="c-fn">neopixelWrite</span>(RGBLED, 0, 0, 40);
+  <span class="c-fn">delay</span>(1000);
+  <span class="c-fn">neopixelWrite</span>(RGBLED, 0, 0, 0);
+  <span class="c-fn">delay</span>(1000);
+}</code></pre>
+        <div class="code-preview-status"><span class="led-dot"></span>RGBLED · canlı yayında</div>
+      </div>
+      </div>
+    </section>
+
+    <section class="portal-info-strip">
+      <!-- Arda (2026-09-28): "Tek ihtiyacın Type-C kablo" ve "ek donanım
+           maliyeti" kutuları kalktı. Ders sayısı açık derslerden sayılır
+           (portal.js), henüz yapılmamış dersler sayılmaz. -->
+      <div class="portal-info-item">
+        <div class="num" id="statToplam">3</div>
+        <div class="label">Açık Ders</div>
+      </div>
+      <div class="portal-info-item">
+        <div class="num" id="statStarted">0</div>
+        <div class="label">Tamamlanan Ders</div>
+      </div>
+    </section>
+
+    <section class="module-card" id="modul1">
+      <div class="module-card-head">
+        <div>
+          <h2>Modül 1: LED</h2>
+          <div class="module-sub">Temel Donanım &amp; Algoritma — Deneyap Mini v2 ile başlangıç yolculuğu.</div>
+        </div>
+        <span class="module-progress-pill" id="modulePill">0 / 3 Ders Tamamlandı</span>
+      </div>
+      <div class="module-progress-track">
+        <div class="module-progress-fill" id="moduleProgressFill"></div>
+      </div>
+
+      <div class="lesson-grid" id="lessonGrid">
+        <!-- assets/js/portal.js tarafından doldurulur -->
+      </div>
+    </section>
+
+    <!-- Modül 2 (2026-10-06, Ders 2.1): açık dersi yoksa portal.js gizler. -->
+    <section class="module-card" id="modul2" hidden>
+      <div class="module-card-head">
+        <div>
+          <h2>Modül 2: LED + Seri Port</h2>
+          <div class="module-sub">Kartın içinde ne oluyor? Kart bilgisayara yazı göndersin, sen oku.</div>
+        </div>
+        <span class="module-progress-pill" id="modulePill2">0 / 1 Ders Tamamlandı</span>
+      </div>
+      <div class="module-progress-track">
+        <div class="module-progress-fill" id="moduleProgressFill2"></div>
+      </div>
+
+      <div class="lesson-grid" id="lessonGrid2">
+        <!-- assets/js/portal.js tarafından doldurulur -->
+      </div>
+    </section>
+
+    <!-- Modül 3 (2026-10-06, Ders 3.1): açık dersi yoksa portal.js gizler. -->
+    <section class="module-card" id="modul3" hidden>
+      <div class="module-card-head">
+        <div>
+          <h2>Modül 3: Buton</h2>
+          <div class="module-sub">Kart artık seni dinliyor: buton, dijital giriş ve karar verme.</div>
+        </div>
+        <span class="module-progress-pill" id="modulePill3">0 / 1 Ders Tamamlandı</span>
+      </div>
+      <div class="module-progress-track">
+        <div class="module-progress-fill" id="moduleProgressFill3"></div>
+      </div>
+
+      <div class="lesson-grid" id="lessonGrid3">
+        <!-- assets/js/portal.js tarafından doldurulur -->
+      </div>
+    </section>
+
+    <!-- "İlerlemeni Kaydet / Geri Yükle" (yedek kodu) kalktı: hesap sistemi
+         ilerlemeyi zaten taşıyor (Arda, 2026-09-28). -->
+
+    <div class="portal-footer">
+      Deneyap Atölyem · TEKNOFEST 2026 Eğitim, Kültür ve Dijital Deneyim Teknolojileri<br>
+      İlerlemen ve rozetlerin bu tarayıcıda saklanır. Giriş yaparsan hesabına da kaydedilir, başka bilgisayardan kaldığın yerden devam edersin.
+    </div>
+
+  </main>
+
+  <script src="assets/js/storage.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/cloud-config.js" onerror="/* hesapsız mod */"></script>
+  <script src="assets/js/cloud.js"></script>
+  <script src="assets/js/sync.js"></script>
+  <script src="assets/js/learner.js"></script>
+  <script src="assets/js/yonetici.js"></script>
+  <script src="assets/js/fx.js"></script>
+  <script src="assets/vendor/motion.min.js"></script>
+  <script src="assets/vendor/anime.umd.min.js"></script>
+  <script src="assets/js/hareket.js"></script>
+  <script src="assets/js/ikonlar.js"></script>
+  <script src="assets/js/seviye-yolu.js"></script>
+  <script src="assets/js/kart3b.js"></script>
+  <script src="assets/js/profile.js"></script>
+  <script src="assets/js/learner-ui.js"></script>
+  <script src="assets/js/portal.js"></script>
+  <script src="assets/js/atolyem.js"></script>
+  <script src="assets/js/ai-helper.js"></script>
+  <!-- Sesli okuma: zamanlamalar URETILMIS bir JS dosyasindan gelir.
+       file:// altinda fetch() yok, ders verisiyle ayni desen. -->
+  <script src="assets/ses/zamanlar.js"></script>
+  <script src="assets/js/oku.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var btn = document.getElementById('profileHeaderBtn');
+      if (btn) btn.addEventListener('click', function () { Profile.openModal(null, true); });
+      // Hesabı olmayan ziyaretçiye KİLİTLİ giriş ekranı açılır: köşedeki
+      // düğmeyi bulması beklenmez, kapatması da mümkün değil (Arda:
+      // "siteyi açınca hesabı olmayan erişim sağlayamaz"). Eski profil
+      // modalı aynı soruyu (ad/yaş) soruyor ve z-index 9999 ile giriş
+      // ekranının üstüne biniyordu — artık yalnızca hesap açılamadığında,
+      // yani bulut kapalıyken devreye giriyor.
+      var kilitKuruldu = window.LearnerUI && LearnerUI.requireAccount();
+      var hesapVar = window.Learner && Learner.isActive();
+      if (!kilitKuruldu && !hesapVar && !Profile.isSet()) {
+        setTimeout(function () { Profile.openModal(null, true); }, 600);
+      }
+    });
+  </script>
+</body>
+</html>

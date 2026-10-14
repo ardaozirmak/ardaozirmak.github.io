@@ -1,0 +1,579 @@
+/* ============================================================
+   fx.css — "DOPAMİN KATMANI"
+   ============================================================
+   Görsel geri bildirim efektlerinin stil tarafı. Mantık tarafı:
+   assets/js/fx.js (window.FX). Üç sayfada da (portal.html,
+   index.html, lesson-1-2.html) styles.css'ten SONRA yüklenir,
+   böylece renk değişkenlerini (--color-*) doğrudan kullanır.
+
+   Kural: bu dosya mevcut hiçbir elemanın layout'unu (width/height/
+   position) değiştirmez. Sadece üst katmanlar (fixed overlay),
+   ::after/::before süsleri ve animasyonlar ekler — sol kart
+   simülasyonunun koordinatlarına dokunulmaz.
+   ============================================================ */
+
+/* ---------- 0. EFEKT KATMANI (tüm parçacıklar burada doğar) ---------- */
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 9000;
+}
+
+/* ---------- 1. TIKLAMA DALGASI (ripple) ---------- */
+.fx-ripple {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary, #D6273A);
+  background: rgba(214, 39, 58, 0.14);
+  pointer-events: none;
+  z-index: 9001;
+}
+.fx-ripple.accent { border-color: var(--color-accent, #1D4ED8); background: rgba(29, 78, 216, 0.14); }
+.fx-ripple.good   { border-color: var(--color-success, #2BB673); background: rgba(43, 182, 115, 0.16); }
+
+/* ---------- 2. PARÇACIKLAR (kıvılcım / konfeti) ---------- */
+.fx-particle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  will-change: transform, opacity;
+}
+.fx-particle.round { border-radius: 50%; }
+.fx-particle.star {
+  width: 16px;
+  height: 16px;
+  background: none !important;
+  font-size: 15px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Blender render'lı parçacık (fx.js FX_RESIM): emojiden biraz iri, 3B. */
+.fx-particle.star.resim { width: 24px; height: 24px; }
+.fx-particle.resim img { width: 100%; height: 100%; display: block; }
+
+/* ---------- 3. UÇAN PUAN YAZISI (+10) ---------- */
+.fx-float {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading, sans-serif);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--color-success-2, #1B8F53);
+  text-shadow: 0 2px 0 #fff, 0 4px 12px rgba(0,0,0,0.18);
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 9002;
+}
+.fx-float.warn { color: var(--color-warning, #FFB627); }
+.fx-float.hot  { color: var(--color-primary, #D6273A); }
+
+/* ---------- 4. EKRAN PARLAMASI ---------- */
+.fx-flash {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 8999;
+  background: radial-gradient(circle at 50% 55%, rgba(43,182,115,0.30), rgba(43,182,115,0) 62%);
+}
+.fx-flash.hot  { background: radial-gradient(circle at 50% 55%, rgba(214,39,58,0.28), rgba(214,39,58,0) 62%); }
+.fx-flash.gold { background: radial-gradient(circle at 50% 55%, rgba(255,182,39,0.36), rgba(255,182,39,0) 65%); }
+
+/* ---------- 5. HALKA DALGASI (başarı vurgusu) ---------- */
+.fx-ring {
+  position: fixed;
+  border-radius: 50%;
+  border: 3px solid var(--color-success, #2BB673);
+  pointer-events: none;
+  z-index: 9001;
+}
+.fx-ring.hot  { border-color: var(--color-primary, #D6273A); }
+.fx-ring.gold { border-color: var(--color-warning, #FFB627); }
+
+/* ---------- 6. KUTLAMA: DAMGA (rozet / seviye atlama) ----------------
+   Arda: "rozet ağırlıkla ekrana MÜHÜR gibi insin: hafif sarsıntı, toz,
+   eğik oturuş, gerçek gölge." Eski perde dönen konik ışınlar + çıplak
+   emoji + altın flaştı — üretilmiş kutlama ekranlarının ortak imzası.
+   Buradaki her şey tek bir fiziksel olayı anlatıyor: ağır bir nesne
+   düşüyor, vuruyor, oturuyor. Yazılar vuruştan SONRA giriyor (.hit). */
+.fx-celebrate {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  /* Düz perde: eski radyal "spot" ışığı sahte bir sahne kuruyordu.
+     Koyuluk keyfi değil — sayfanın kendi metni okunur kalırsa göz
+     damgaya değil arkadaki cümleye gidiyor (ilk denemede 0.42 ile tam
+     olarak bu oldu). Hafif bulanıklık da aynı işi yapıyor. */
+  background: rgba(32, 21, 11, 0.66);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  cursor: pointer;
+  animation: fxCelebIn .22s ease;
+}
+.fx-celebrate.leaving { animation: fxCelebOut .35s ease forwards; }
+@keyframes fxCelebIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fxCelebOut { to { opacity: 0; transform: scale(1.04); } }
+
+/* Toz, perdenin (9500) ÜSTÜNDE olmalı; parçacık katmanı normalde 9000,
+   yani damganın tozu perdenin arkasında kalıyordu. Kutlama boyunca
+   katman yukarı alınıyor, sonra eski yerine dönüyor. */
+.fx-layer.above { z-index: 9600; }
+
+.fx-stamp {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Damga başlığı: MÜHÜR. Krem bir kutu krem sayfanın üstünde kayboluyordu
+   (ilk deneme), mühür kırmızısı hem markanın rengi hem de damganın
+   gerçek rengi. Emoji onun üzerindeki motif; kenarındaki krem halka
+   mühürlerin kabartma çemberi. */
+.fx-stamp-disc {
+  width: clamp(112px, 26vw, 152px);
+  height: clamp(112px, 26vw, 152px);
+  border-radius: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(54px, 12vw, 72px);
+  line-height: 1;
+  background: linear-gradient(160deg, #E0384A 0%, #C41F32 55%, #9E1526 100%);
+  box-shadow:
+    inset 0 0 0 4px rgba(255, 244, 230, 0.92),
+    inset 0 0 0 7px rgba(158, 21, 38, 0.55),
+    inset 0 -10px 18px rgba(88, 8, 20, 0.45),
+    inset 0 8px 14px rgba(255, 255, 255, 0.22),
+    0 20px 36px rgba(0, 0, 0, 0.45);
+  animation: fxStampDrop .42s cubic-bezier(.36,.02,.2,1) both;
+  will-change: transform;
+}
+/* Motif kendi açısında duruyor: damga eğik oturduğunda içindeki şeklin
+   de eğik olması onu "basılmış" gösteriyor. */
+.fx-stamp-motif {
+  display: block;
+  transform: rotate(3deg);
+  filter: drop-shadow(0 3px 5px rgba(60, 6, 14, 0.5));
+}
+.fx-stamp-motif img { display: block; width: clamp(76px, 17vw, 100px); height: auto; }
+
+/* Yere düşen gölge: nesne uzaktayken küçük ve koyu, oturduğunda
+   genişleyip yumuşuyor — düşüşün yüksekliğini bu anlatıyor. */
+.fx-stamp-shadow {
+  width: clamp(112px, 26vw, 152px);
+  height: 16px;
+  margin-top: 8px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.38);
+  filter: blur(7px);
+  animation: fxStampShadow .42s cubic-bezier(.36,.02,.2,1) both;
+}
+
+@keyframes fxStampDrop {
+  0%   { transform: translate3d(0,-52vh,0) scale(1.75) rotate(-17deg); opacity: 0; }
+  35%  { opacity: 1; }
+  100% { transform: translate3d(0,0,0) scale(1) rotate(-7deg); opacity: 1; }
+}
+@keyframes fxStampShadow {
+  0%   { transform: scale(0.25); opacity: 0.1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Vuruş: damga bir an eziliyor ve yerine oturuyor (kil gibi). */
+.fx-celebrate.hit .fx-stamp-disc { animation: fxStampSettle .46s cubic-bezier(.26,1.3,.5,1) both; }
+@keyframes fxStampSettle {
+  0%   { transform: scale(1.09, 0.88) rotate(-7deg); }
+  55%  { transform: scale(0.985, 1.02) rotate(-6.2deg); }
+  100% { transform: scale(1) rotate(-6deg); }
+}
+
+/* Vuruş halkası: damganın ittiği hava. Tek dalga, sonra iz bırakmıyor. */
+.fx-celebrate.hit .fx-stamp::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  margin: -75px 0 0 -75px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 246, 232, 0.75);
+  animation: fxStampWave .55s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes fxStampWave {
+  from { transform: scale(0.7); opacity: 0.85; }
+  to   { transform: scale(2.3); opacity: 0; }
+}
+
+/* Yazılar vuruştan sonra: önce olay olur, sonra anlatılır. */
+.fx-celebrate-title,
+.fx-celebrate-sub,
+.fx-celebrate-hint { position: relative; opacity: 0; text-align: center; }
+
+.fx-celebrate-title {
+  margin-top: 6px;
+  font-family: var(--font-heading, sans-serif);
+  font-weight: 800;
+  font-size: clamp(24px, 5vw, 40px);
+  color: #FFF8F0;
+}
+.fx-celebrate-sub {
+  font-family: var(--font-heading, sans-serif);
+  font-weight: 700;
+  font-size: 15px;
+  color: rgba(255, 248, 240, 0.85);
+  max-width: 32ch;
+}
+.fx-celebrate-sub strong { color: #FFD08A; }
+.fx-celebrate-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 248, 240, 0.55);
+}
+.fx-celebrate.hit .fx-celebrate-title { animation: fxTitleUp .42s both cubic-bezier(.22,1,.36,1); }
+.fx-celebrate.hit .fx-celebrate-sub   { animation: fxTitleUp .42s .09s both cubic-bezier(.22,1,.36,1); }
+.fx-celebrate.hit .fx-celebrate-hint  { animation: fxTitleUp .42s .2s both ease; }
+@keyframes fxTitleUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ---------- 7. HUD: XP / SEVİYE / SES DÜĞMESİ ---------- */
+.fx-hud {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.fx-hud-xp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--color-surface-2, #FCE6C8), var(--color-surface, #fff));
+  border: 2px solid var(--color-border, #EAD3AE);
+  border-radius: 999px;
+  padding: 4px 12px 4px 8px;
+  font-family: var(--font-heading, sans-serif);
+  cursor: pointer;   /* kupa yolunu açar (seviye-yolu.js) */
+  transition: transform .18s var(--easing-default, cubic-bezier(.23,1,.32,1)), box-shadow .18s ease;
+}
+.fx-hud-xp:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,182,39,0.3); }
+.fx-hud-xp:focus-visible { outline: 3px solid var(--color-accent, #1D4ED8); outline-offset: 2px; }
+.fx-hud-xp.bump {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 4px rgba(255,182,39,0.28), 0 8px 20px rgba(214,39,58,0.18);
+}
+.fx-hud-bolt {
+  width: 18px;
+  height: 18px;
+  color: var(--color-warning, #FFB627);
+  filter: drop-shadow(0 1px 3px rgba(255,182,39,0.6));
+  flex-shrink: 0;
+}
+/* min-width:0 olmadan flex cocugu kuculemiyor: seviye adi dar ekranda
+   kutusunu 36px asiyordu (olculdu). Sabit 52px'lik sihirli genislik
+   yerine artik gercek siniri kutunun kendisi veriyor. */
+.fx-hud-meta { display: flex; flex-direction: column; line-height: 1.05; min-width: 0; }
+.fx-hud-level { font-size: 11px; font-weight: 800; color: var(--color-primary, #D6273A); }
+.fx-hud-value { font-size: 12px; font-weight: 800; color: var(--color-text-2, #5C4B3A); }
+.fx-hud-track {
+  width: 54px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.10);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.fx-hud-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-warning, #FFB627), var(--color-primary, #D6273A));
+  transition: width .6s cubic-bezier(.22,1,.36,1);
+}
+.fx-hud-sound {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border, #EAD3AE);
+  background: var(--color-surface, #fff);
+  color: var(--color-text-2, #5C4B3A);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+  transition: transform .16s var(--easing-default, cubic-bezier(.23,1,.32,1)), background .16s ease, color .16s ease, border-color .16s ease;
+}
+.fx-hud-sound:hover { transform: scale(1.12) rotate(-6deg); border-color: var(--color-primary-stroke, rgba(214,39,58,.32)); color: var(--color-primary, #D6273A); }
+.fx-hud-sound:active { transform: scale(0.94); }
+.fx-hud-sound svg { width: 16px; height: 16px; }
+.fx-hud-sound.muted { background: var(--color-surface-2, #FCE6C8); color: var(--color-text-dim, #B8A896); }
+
+/* Seri (streak) rozeti — üst üste doğru cevapta belirir */
+.fx-streak {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, #FF8A3D, #D6273A);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 11px;
+  font-family: var(--font-heading, sans-serif);
+  font-weight: 800;
+  font-size: 12px;
+  box-shadow: 0 6px 16px rgba(214,39,58,0.36);
+}
+.fx-streak.show { display: inline-flex; animation: fxStreakPop .45s cubic-bezier(.34,1.7,.5,1); }
+@keyframes fxStreakPop {
+  0%   { transform: scale(0.4) rotate(-12deg); opacity: 0; }
+  65%  { transform: scale(1.2) rotate(5deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  /* HUD, header'a üçüncü eleman olarak giriyor. Dar ekranda başlık +
+     açıklama metni + HUD aynı 48px'lik şeride sığmayıp satır atlıyordu.
+     Açıklama metni ("Ders 1.1: ...") zaten hemen altındaki ders şeridinde
+     tekrar ettiği için mobilde onu gizleyip yeri HUD'a bırakıyoruz. */
+  .header-bar > div:not(.fx-hud) { display: none; }
+  /* Ders sayfalarında açıklama bir <h1> (div değil), yukarıdaki kural onu
+     yakalamıyordu: 390px'te sıkışıp iki satıra kırılıyor, 320px'te sayfayı
+     yatay taşırıyordu (ölçüldü, 2026-09-30). Başlık sayfanın h1'i, ekran
+     okuyucu için yerinde kalır; yalnız görsel olarak gizlenir. */
+  .header-bar > .header-lesson-title {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+  .header-bar .header-title { white-space: nowrap; }
+  .fx-hud { gap: 6px; }
+  .fx-hud-sound { width: 28px; height: 28px; }
+  .fx-hud-sound svg { width: 14px; height: 14px; }
+}
+
+@media (max-width: 640px) {
+  .fx-hud-track { display: none; }
+  .fx-hud-xp { padding: 3px 9px 3px 7px; }
+  .fx-hud-level { font-size: 11px; } /* 11px taban, altina inmiyor */
+}
+
+@media (max-width: 480px) {
+  /* Ölçüm: 390px'te "Sv.1 · Çırak Mucit" kutusunu 28px aşıyordu; eşik
+     430'dan 480'e alındı ki kısaltma taşmadan ÖNCE devreye girsin. */
+  .fx-hud-level { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fx-streak { padding: 3px 8px; font-size: 11px; }
+  /* Tema düğmesi (2026-09-30) başlığa 34px ekledi, 390px'te sayfa 10px
+     yatay taştı (ölçüldü). Aradaki boşluklar ve yuvarlak düğmeler biraz
+     sıkışıyor; dokunma hedefi 26px'in altına inmiyor. */
+  .fx-hud { gap: 3px; }
+  .fx-hud-sound { width: 26px; height: 26px; }
+  .fx-hud-xp { padding: 3px 6px 3px 5px; gap: 4px; }
+  .fx-hud-bolt { width: 15px; height: 15px; }
+  /* Bakır göstergesi (2026-09-30) başlığa bir kutu daha ekledi; 390px'te
+     45px taştı (ölçüldü). Seviye adı dar ekranda gizlenir — XP sayısı
+     kalır; seviye mağazada ve seviye atlama kutlamasında görünüyor. */
+  .fx-hud-level { display: none; }
+}
+
+/* ---------- 8. MEVCUT BİLEŞENLERİN "SULU" HALİ ---------- */
+
+/* Doğru cevap: soldan sağa parlama.
+   ⚠️ DİKKAT — buraya `animation:` YAZMA. `.quiz-option` (index-theme.css)
+   `opacity: 0` ile başlayıp `optionPopIn` giriş animasyonuyla görünür
+   oluyor; bu seçiciye ikinci bir `animation` yazmak o girişi ezip şıkkı
+   tamamen görünmez bırakıyor (2026-08-28'de doğru cevap kayboldu).
+   Aynı kural `.lesson-item`, `.step-card`, `.ai-prompt-card` için de
+   geçerli. Eleman üzerinde vurgu gerekiyorsa CSS sınıfı değil,
+   fx.js'teki WAAPI yardımcıları (FX.pop / FX.hit / FX.glow …) kullanılır —
+   onlar CSS animasyonunu ezmeden üstüne biner. Pseudo-element
+   (::after) animasyonu güvenli, çünkü ayrı bir kutu. */
+.quiz-option.correct {
+  position: relative;
+  overflow: hidden;
+}
+.quiz-option.correct::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255,255,255,0.85) 50%, transparent 80%);
+  transform: translateX(-120%);
+  animation: fxShineSweep .85s .06s ease-out;
+  pointer-events: none;
+}
+@keyframes fxShineSweep { to { transform: translateX(120%); } }
+
+/* Yanlış cevabın sallanması da fx.js'te WAAPI ile yapılıyor (FX.wrong) —
+   yukarıdaki uyarı gereği burada `animation` tanımlanmaz. */
+
+/* İlerleme çubukları: akan parıltı + dolarken yumuşak geçiş */
+.lesson-progress-fill,
+.quiz-progress-fill,
+.module-progress-fill {
+  position: relative;
+  overflow: hidden;
+  transition: width .55s cubic-bezier(.22,1,.36,1);
+}
+.lesson-progress-fill::after,
+.quiz-progress-fill::after,
+.module-progress-fill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 25%, rgba(255,255,255,0.65) 50%, transparent 75%);
+  transform: translateX(-100%);
+  animation: fxBarShimmer 2.4s ease-in-out infinite;
+}
+@keyframes fxBarShimmer { 0% { transform: translateX(-100%); } 55%, 100% { transform: translateX(200%); } }
+
+/* Adım noktalarının zıplaması, kilit açılması, kopyalama flaşı ve keşif
+   parlaması artık fx.js'te WAAPI ile yapılıyor (FX.hit / FX.unlocked /
+   FX.copied / FX.discover) — CSS `animation` ile yapılsaydı hedef
+   elemanların giriş animasyonlarını ezerlerdi (bkz. yukarıdaki uyarı). */
+
+/* Birincil butonlarda hover parlaması */
+.ai-prompt-btn,
+.portal-btn.primary,
+.bottom-nav button.primary,
+.sim-btn.primary {
+  position: relative;
+  overflow: hidden;
+}
+.ai-prompt-btn::after,
+.portal-btn.primary::after,
+.bottom-nav button.primary::after,
+.sim-btn.primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255,255,255,0.55), transparent);
+  transform: translateX(-180%) skewX(-18deg);
+  pointer-events: none;
+}
+.ai-prompt-btn:hover::after,
+.portal-btn.primary:hover::after,
+.bottom-nav button.primary:hover::after,
+.sim-btn.primary:hover::after { animation: fxBtnShine .75s ease-out; }
+@keyframes fxBtnShine { to { transform: translateX(320%) skewX(-18deg); } }
+
+/* İleri butonu, adım geçmeye hazırken hafifçe nefes alır */
+.bottom-nav button.primary.fx-ready { animation: fxReadyBreathe 2.2s ease-in-out infinite; }
+@keyframes fxReadyBreathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(214,39,58,0.0); }
+  50%      { box-shadow: 0 0 0 7px rgba(214,39,58,0.16); }
+}
+
+/* Rozet kartı: arkasında dönen ışınlar */
+.badge-card { position: relative; overflow: hidden; }
+.badge-card::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 380px;
+  height: 380px;
+  margin: -190px 0 0 -190px;
+  background: conic-gradient(from 0deg,
+    rgba(255,182,39,0.22) 0deg 10deg, transparent 10deg 30deg,
+    rgba(214,39,58,0.14) 30deg 40deg, transparent 40deg 60deg);
+  animation: fxRaysSpin 18s linear infinite;
+  pointer-events: none;
+}
+.badge-card > * { position: relative; }
+
+/* ---------- 9. HAREKET AZALTMA ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .fx-layer,
+  .fx-ripple,
+  .fx-particle,
+  .fx-float,
+  .fx-flash,
+  .fx-ring { display: none !important; }
+
+  .fx-streak.show,
+  .bottom-nav button.primary.fx-ready { animation: none; }
+
+  .quiz-option.correct::after,
+  .lesson-progress-fill::after,
+  .quiz-progress-fill::after,
+  .module-progress-fill::after,
+  .badge-card::before { animation: none; display: none; }
+  /* Damganın vuruş halkası hareketin kendisi: hareket kapalıysa hiç yok. */
+  .fx-celebrate.hit .fx-stamp::after { display: none; }
+
+  .ai-prompt-btn:hover::after,
+  .portal-btn.primary:hover::after,
+  .bottom-nav button.primary:hover::after,
+  .sim-btn.primary:hover::after { animation: none; }
+
+  /* Hareket yok ama PERDE duruyor: düşüş/sarsıntı/toz kalkıyor, damga
+     ve yazılar olduğu yerde görünür oluyor. */
+  .fx-celebrate,
+  .fx-stamp-disc,
+  .fx-stamp-shadow,
+  .fx-celebrate.hit .fx-stamp-disc,
+  .fx-celebrate-title,
+  .fx-celebrate-sub,
+  .fx-celebrate-hint { animation: none; }
+  .fx-stamp-disc { transform: rotate(-6deg); }
+  .fx-celebrate-title,
+  .fx-celebrate-sub,
+  .fx-celebrate-hint { opacity: 1; }
+}
+
+/* ---------- 3B ödül nesnesi (fx.js nesne3b, blender/efekt3b.py) ----------
+   Mühür kutusu yok: nesne kendi başına sahnede. Aşağıdan büyüyerek gelir,
+   arkasında altın ışıma; dönüşü Blender karelerinde. */
+.fx-3b .fx-stamp-disc {
+  width: clamp(180px, 34vw, 250px); height: clamp(180px, 34vw, 250px);
+  background: none; box-shadow: none; border-radius: 0;
+  animation: fxNesneGel .5s cubic-bezier(.2,1.2,.4,1) both;
+}
+.fx-3b .fx-stamp-motif { transform: none; filter: drop-shadow(0 14px 18px rgba(0,0,0,.45)); }
+.fx-3b .fx-stamp-motif img.fx-nesne { width: clamp(170px, 32vw, 240px); height: auto; }
+.fx-3b .fx-stamp-shadow { width: clamp(120px, 22vw, 170px); }
+.fx-3b .fx-stamp::before {
+  content: ''; position: absolute; left: 50%; top: 42%;
+  width: clamp(260px, 50vw, 380px); height: clamp(260px, 50vw, 380px);
+  transform: translate(-50%, -50%);
+  /* Işıma LED'in ışık renginde (--led1-isik tanımlıysa); yoksa altın sarısı. */
+  background: radial-gradient(circle, color-mix(in srgb, var(--led1-isik, #FFD250) 60%, transparent) 0%,
+              color-mix(in srgb, var(--led1-isik, #FFAA28) 20%, transparent) 40%, transparent 70%);
+  border-radius: 50%; pointer-events: none;
+  animation: fxNesneIsik 1.8s ease-in-out .3s infinite alternate both;
+}
+.fx-3b.hit .fx-stamp-disc { animation: fxNesneOtur .45s cubic-bezier(.26,1.3,.5,1) both; }
+@keyframes fxNesneGel {
+  0%   { transform: translate3d(0, 30vh, 0) scale(.35); opacity: 0; }
+  40%  { opacity: 1; }
+  100% { transform: translate3d(0, 0, 0) scale(1); opacity: 1; }
+}
+@keyframes fxNesneOtur {
+  0%   { transform: scale(1.08, .94); }
+  60%  { transform: scale(.98, 1.02); }
+  100% { transform: scale(1); }
+}
+@keyframes fxNesneIsik { from { opacity: .7; transform: translate(-50%, -50%) scale(.92); } to { opacity: 1; transform: translate(-50%, -50%) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .fx-3b .fx-stamp-disc, .fx-3b.hit .fx-stamp-disc, .fx-3b .fx-stamp::before { animation: none; }
+}
+
+/* Metin içi Blender simgesi (eski emojilerin yerine; fx-*.webp). */
+.fx-ikon { display: inline-block; width: 1.3em; height: 1.3em; vertical-align: -0.3em; object-fit: contain; }

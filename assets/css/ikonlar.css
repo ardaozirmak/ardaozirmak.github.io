@@ -1,0 +1,5 @@
+/* İkonlar (alev, pul, kalkan) Blender render'ı, <img> (assets/js/ikonlar.js,
+   kaynak blender/). Renk resmin kendisinde: açık ve siyah temada aynı nesne.
+   Pul sabit durur, yalnız kazanç anında hareket eder (seri-ani.js); alev
+   kendi döngüsünde oynar, hareket kapalıysa ilk karesi. */
+.ikon { display: inline-block; vertical-align: middle; flex-shrink: 0; object-fit: contain; user-select: none; }

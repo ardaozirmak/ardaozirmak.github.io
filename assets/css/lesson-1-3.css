@@ -1,0 +1,112 @@
+/* ============================================================
+   Ders 1.3 — LED'i Hızlandır: yalnızca bu derse özgü görünüm.
+   Ortak parçalar (quiz-box, callout, led-check-btn, pin-map, kod
+   önizleme, yükleme kartı) styles.css'te; burada tekrar yazılmaz.
+   ============================================================ */
+
+/* Şemadaki LED kodla aynı ritimde yanıp sönsün. wiring-diagram.css
+   varsayılanı 2 sn'lik tur (Ders 1.2: 1000 + 1000 ms). Bu dersin kodu
+   yüklendikten sonra tur 1 sn (500 + 500 ms). */
+.l13-hizli .wd-svg.is-live .wd-led-bulb,
+.l13-hizli .wd-svg.is-live .wd-led-glow { animation-duration: 1s; }
+
+/* Kapalı kapıda çocuğun götürüldüğü kutular: #yuklemeKart ile aynı
+   "üç kez vur, sus" dili (styles.css usbBoxCall). */
+#devreOnayKart.is-calling,
+.l13-basamak.is-calling { animation: usbBoxCall 0.6s ease-out 3; }
+
+/* ---- Hız merdiveni ---- */
+.l13-merdiven {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.l13-basamak {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(260px, 1.6fr);
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 12px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: border-color .18s ease, background-color .18s ease;
+}
+.l13-basamak.is-done {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+.l13-basamak-hiz {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--text-md);
+  color: var(--color-text);
+}
+.l13-no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 800;
+  font-size: 13px;
+}
+.l13-basamak.is-done .l13-no { background: var(--color-success); color: #fff; }
+.l13-basamak-kod code { font-size: 14px; font-weight: 600; }
+.l13-basamak-kod span {
+  display: block;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+.l13-basamak-sec { display: flex; gap: 8px; }
+.l13-basamak-sec .led-check-btn {
+  flex: 1 1 0;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.l13-kalan { margin-top: 10px; }
+
+@media (max-width: 760px) {
+  .l13-basamak { grid-template-columns: 1fr 1fr; }
+  .l13-basamak-sec { grid-column: 1 / -1; }
+}
+
+.l13-liste {
+  margin: 10px 0 0 18px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-text-2);
+}
+
+/* ---- Adım 6: frekans tablosu ---- */
+.l13-tablo {
+  width: 100%;
+  max-width: 420px;
+  margin: 12px 0;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.l13-tablo th,
+.l13-tablo td {
+  text-align: left;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--color-border-soft);
+}
+.l13-tablo th {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #devreOnayKart.is-calling,
+  .l13-basamak.is-calling { animation: none; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.35); }
+}

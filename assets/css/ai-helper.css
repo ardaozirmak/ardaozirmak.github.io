@@ -1,0 +1,145 @@
+/* ============================================================
+   AI YARDIMCISI — köşedeki yuvarlak düğme + balon
+   (assets/js/ai-helper.js, spec: docs/superpowers/specs/
+    2026-09-21-ai-yardimci-design.md)
+
+   Renk/ölçü/gölge tek bir yerden: styles.css token'ları. Yeni bir
+   renk dili icat edilmedi — düğme kartın kendi mavisi (--color-accent),
+   balon site kartlarının zemini.
+   ============================================================ */
+
+.ai-helper {
+  position: fixed;
+  right: 16px;
+  /* Ders sayfalarında altta SABİT gezinme çubuğu var (.bottom-nav,
+     --nav-h). Düğme onun üstünde durur; portalda çubuk yok, o sayfada
+     --nav-h tanımlı olmadığı için yedek 0 devreye girer. */
+  bottom: calc(var(--nav-h, 0px) + 14px);
+  z-index: var(--z-floating);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  /* Kap tıklamaları yutmasın: yalnızca düğme ve balon tıklanabilir. */
+  pointer-events: none;
+}
+.ai-helper > * { pointer-events: auto; }
+
+/* Hesap kapısı ya da modal açıkken gizlenir: çocuğa iki ayrı kapı
+   varmış gibi görünmesin (aynı gerekçeyle köşedeki giriş rozeti de
+   gizleniyor, bkz. learner-ui.js setScreen). JS tarafı da aynı kararı
+   veriyor (AiHelper.gizliMi) — CSS görünürlüğü, JS davranışı kesiyor. */
+body.learner-gate-locked .ai-helper,
+body:has(.learner-gate) .ai-helper,
+body:has(.modal-backdrop.show) .ai-helper {
+  display: none;
+}
+
+.ai-helper-dugme {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: 50%;
+  /* Zemin küre çiziminin kendisi (ai-helper.js); bu renk yalnız yedek. */
+  background: #1537A8;
+  color: #fff;
+  border: none;
+  /* Diğer birincil düğmelerle aynı "keycap" dili: ofset gölge, basınca
+     düğme içeri giriyor (bkz. .vp-btn.primary, .portal-btn). */
+  box-shadow: 0 4px 0 var(--color-accent-hover), 0 6px 18px rgba(43, 33, 24, 0.18);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--t-press) var(--easing-default),
+              box-shadow var(--t-press) var(--easing-default);
+}
+.ai-helper-dugme .ai-kure { width: 56px; height: 56px; display: block; border-radius: 50%; user-select: none;
+  transition: transform .3s var(--easing-default); }
+.ai-helper-dugme:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 3px; }
+/* Üstüne gelince küre hafifçe döner — döngü yok. */
+.ai-helper-dugme:hover .ai-kure { transform: rotate(-8deg) scale(1.04); }
+/* Robot arkadaş gösterince: üç nabız. */
+.ai-helper-dugme.ai-vurgu { animation: ai-nabiz 1s ease-out 3; }
+@keyframes ai-nabiz {
+  0% { box-shadow: 0 4px 0 var(--color-accent-hover), 0 0 0 0 rgba(58, 123, 240, .6); }
+  100% { box-shadow: 0 4px 0 var(--color-accent-hover), 0 0 0 18px rgba(58, 123, 240, 0); }
+}
+.ai-helper-dugme:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--color-accent-hover), 0 8px 22px rgba(43, 33, 24, 0.22);
+}
+.ai-helper-dugme:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--color-accent-hover);
+}
+
+.ai-helper-balon {
+  max-width: 300px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  box-shadow: var(--shadow-clay-sm), 0 10px 28px rgba(43, 33, 24, 0.16);
+  animation: aiHelperIn var(--t-base) var(--easing-default);
+}
+.ai-helper-balon[hidden] { display: none; }
+
+@keyframes aiHelperIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.ai-helper-soz {
+  margin: 0 0 12px;
+  font-size: var(--text-md);
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.ai-helper-btns {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-helper-btns button {
+  flex: 1 1 auto;
+  /* Dokunma hedefi 44px: mini sınav şıklarında konan ölçünün aynısı. */
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--text-md);
+  font-weight: 700;
+  cursor: pointer;
+  border: var(--border-w-thin) solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  transition: transform var(--t-press) var(--easing-default),
+              border-color var(--t-press) var(--easing-default);
+}
+.ai-helper-btns button:hover { border-color: var(--color-accent); }
+.ai-helper-btns button:active { transform: scale(0.97); }
+
+.ai-helper-evet {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.ai-helper-evet:hover { border-color: var(--color-accent-hover); }
+
+@media (max-width: 480px) {
+  .ai-helper { right: 10px; bottom: calc(var(--nav-h, 0px) + 10px); }
+  .ai-helper-dugme { width: 50px; height: 50px; }
+  .ai-helper-dugme .ai-kure { width: 50px; height: 50px; }
+  .ai-helper-balon { max-width: calc(100vw - 32px); }
+}
+
+/* Hareketi azalt tercihi: balon belirme animasyonu kapanır. */
+@media (prefers-reduced-motion: reduce) {
+  .ai-helper-balon { animation: none; }
+  .ai-helper-dugme.ai-vurgu { animation: none; }
+  .ai-helper-dugme:hover .ai-kure { transform: none; }
+  .ai-helper-dugme.ai-vurgu { outline: 3px solid #FFD23F; outline-offset: 3px; }
+}

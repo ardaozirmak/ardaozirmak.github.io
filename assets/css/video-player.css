@@ -1,0 +1,536 @@
+/* ============================================================
+   ADIM 4 — VİDEO PLAYER (Ders 1.1 IDE Kurulum Sihirbazı)
+   ============================================================ */
+
+/* SAHNE YUKSEKLIGI GORUNUME BAGLI (Arda, 2026-09-21: "video altindaki
+   butonlari scrollbar asagi inince goruyorum" / 2026-09-22: "butonlari
+   yine alt tarafa koy, ekran yine buyuk kalsin ama scrollbar cok assagi
+   inmeden; butonlara basarken videoda bir ani takip etmesi lazim").
+
+   KURAL: sahne + ALTINDAKI SERIT (ilerleme cubugu, altyazi, dugmeler)
+   birlikte gorunume sigar. Ikisi ayni anda ekranda olmazsa dugmeye
+   basarken videoda ne oldugu goruleMIYOR - Adim 4'un butun isi o.
+
+   Olcuyu video-player.js yaziyor, SABIT YAZILMAZ: seritin boyu derse,
+   ekrana ve arac cubugunun satir sayisina gore degisiyor, sabit bir
+   sayi bir gun sessizce yanlis olurdu.
+     --vp-ust  = sahnenin ALTINDA kalan her sey + alt gezinme cubugu + pay.
+                 Sahnenin SAYFA TEPESINE uzakligi bilerek YOK: o blok
+                 (ust bar, ders seridi, baslik, aciklama) kaydirilinca
+                 zaten cikiyor, sahneden kesilmesi bosuna kucultuyordu.
+     --vp-taban = okunabilirlik tabani (300px), yalnizca cok basik
+                 pencerelerde devrede.
+   Geri besleme dongusu yok: sahnenin KENDI yuksekligi altindaki seritin
+   boyunu etkilemiyor.
+
+   Tavan 1080px (620 -> 820 -> 1080): tavan KAYNAK VIDEONUN kendi boyu.
+   Kaynak dosyalar 1920x1080 (ffprobe ile dogrulandi), yani 1080'e kadar
+   hala KUCULTME - bir pikseli bile buyutmuyoruz. Daha yukarisi upscale
+   olurdu, bulanik goruntu demek. 820 bir ara degerdi ve 1920x1080
+   ekranda sahneyi gereksiz yere kesiyordu. */
+/* EN BOY ORANI 16/9 — eskiden 19/9 idi ve o oran HİÇBİR VİDEOYA
+   uymuyordu. Videolar 1920x1080, yani 16:9 (ffprobe ile doğrulandı).
+   `object-fit: contain` videoyu kutunun içine yüksekliğine göre
+   oturttuğu için 19:9'luk kutunun yanlarında 100px SİYAH BANT kalıyordu:
+   1536x730'da kutu 633px genişken video yalnızca 533px görünüyordu.
+   Boşa giden o genişlik, oran düzeltilince YÜKSEKLİĞE dönüşüyor —
+   video büyüdü, hiçbir şey kırpılmadı. */
+/* OLCU SARMALAYICIDA TANIMLI, SAHNEDE DEGIL (2026-09-22): Adim 4'te
+   sahnenin ALTINDAKI serit de (ilerleme cubugu + altyazi + dugmeler)
+   videonun genisligine gore hizalaniyor, yani --vp-h'i sahnenin
+   KARDESLERININ de gormesi gerekiyor. Degisken kalitimla sahneye iniyor,
+   sahnenin kendi kurallari degismedi. */
+.ide-sim-wrapper {
+  --vp-h: clamp(var(--vp-taban, 300px), calc(100vh - var(--vp-ust, 430px)), 1080px);
+}
+
+.vp-stage {
+  position: relative;
+  background: var(--color-bg-deep);
+  border: var(--border-w-thick) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  aspect-ratio: 16 / 9;
+  max-height: var(--vp-h);
+  max-width: min(99%, calc(var(--vp-h) * 16 / 9));
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vp-btn-pulse {
+  animation: vpBtnPulse 1.1s ease-in-out infinite;
+}
+@keyframes vpBtnPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--color-primary-stroke); }
+  50%      { box-shadow: 0 0 0 7px transparent; }
+}
+
+.vp-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+/* Durdu göstergesi (Arda, 2026-10-06): ortadaki büyük oynat düğmesi kalktı, takılan
+   kareyi kapatıyordu. Bir kez oynamış video durunca sol üstte küçük, yarı saydam
+   "Durdu" etiketi ve kareye çok hafif karartma: durduğu belli, görüntü açık. */
+.vp-durdu {
+  position: absolute; top: 10px; left: 10px; z-index: 6;
+  display: none; align-items: center; gap: 6px;
+  padding: 6px 12px 6px 10px; border-radius: 999px;
+  background: rgba(11, 18, 32, 0.72); color: #fff;
+  font: 700 14px/1 var(--font-body); letter-spacing: .02em;
+  pointer-events: none;
+}
+.vp-durdu svg { width: 12px; height: 12px; flex: none; }
+.vp-basladi:not(.vp-oynuyor):not(.vp-bitti) .vp-durdu { display: inline-flex; }
+.vp-basladi:not(.vp-oynuyor):not(.vp-bitti) .vp-video { filter: brightness(0.9); }
+
+/* Video sahnesinin sağ üstünde duran büyüt/küçült butonu. */
+.vp-fullscreen-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: rgba(11, 18, 32, 0.65);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  z-index: 7;
+  transition: opacity var(--t-press) var(--easing-default), transform var(--t-press) var(--easing-default), background var(--t-press) var(--easing-default);
+}
+.vp-fullscreen-btn:hover { background: rgba(11, 18, 32, 0.85); transform: translateY(-1px); }
+.vp-fullscreen-btn:active { transform: translateY(0) scale(0.95); }
+.vp-fullscreen-btn .icon { width: 18px; height: 18px; }
+
+/* Tam ekran modu: .ide-sim-wrapper doğrudan fullscreen elemanı olur,
+   video sahnesi kalan alanı doldurur, altyazı/toolbar altta kalır. */
+.ide-sim-wrapper:fullscreen,
+.ide-sim-wrapper:-webkit-full-screen {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  overflow-y: auto;
+  background: #05070d;
+  padding: 16px;
+}
+.ide-sim-wrapper:fullscreen .vp-stage,
+.ide-sim-wrapper:-webkit-full-screen .vp-stage {
+  max-width: 100%;
+  max-height: calc(100vh - 140px);
+  flex: 1;
+  min-height: 0;
+}
+/* .vp-toolbar normalde sayfa içinde position:sticky;bottom:0 ile ekranda
+   kalır — ama tam ekranda #ideSimWrapper'ın kendisi scroll konteyneri
+   olunca (overflow-y:auto) bu sticky, içerik ekran boyunu aşar aşmaz
+   toolbar'ı yukarı çekip .vp-caption'ın ÜSTÜNE bindiriyordu (altyazı
+   yarım görünüyordu). Tam ekranda sticky'e gerek yok, static'e alınır. */
+.ide-sim-wrapper:fullscreen .vp-toolbar,
+.ide-sim-wrapper:-webkit-full-screen .vp-toolbar {
+  position: static;
+}
+.ide-sim-wrapper:fullscreen .vp-caption,
+.ide-sim-wrapper:-webkit-full-screen .vp-caption,
+.ide-sim-wrapper:fullscreen .vp-toolbar,
+.ide-sim-wrapper:-webkit-full-screen .vp-toolbar,
+.ide-sim-wrapper:fullscreen .vp-seek,
+.ide-sim-wrapper:-webkit-full-screen .vp-seek {
+  max-width: min(99%, calc(min(74vh, 620px) * 16 / 9));
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+/* İlerleme çubuğu (seek bar) — video sahnesinin hemen altında, süre
+   etiketleriyle birlikte. Sürükleyip istediği yere atlayabilsin diye
+   native <input type="range">, dolu kısmı --vp-seek-pct ile boyanıyor. */
+.vp-seek {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.vp-seek-time {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-muted);
+  min-width: 30px;
+  text-align: center;
+}
+.vp-seek-range {
+  --vp-seek-pct: 0%;
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(to right,
+    var(--color-primary) var(--vp-seek-pct),
+    var(--color-surface-2) var(--vp-seek-pct));
+  cursor: pointer;
+}
+.vp-seek-range:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--color-primary-stroke);
+}
+.vp-seek-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  cursor: pointer;
+  margin-top: 0;
+}
+.vp-seek-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  cursor: pointer;
+}
+.vp-seek-range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+/* Video bitince görünen, gözden kaçmayan "sonraki adıma geç" uyarısı.
+   Next butonundaki sessiz pulse yetmediği için (kullanıcı adımın bittiğini
+   fark etmiyordu) doğrudan videonun üstünde büyük/sarı/hareketli bir çağrı. */
+.vp-next-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translate(-50%, 14px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffd60a;
+  color: #1a1410;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 3px rgba(255,214,10,0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease, transform .25s ease;
+  cursor: pointer;
+  z-index: 8;
+  max-width: 90%;
+}
+.vp-next-hint.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+  animation: vpNextHintPulse 1.2s ease-in-out infinite;
+}
+.vp-next-hint-arrow {
+  font-size: 11px;
+  animation: vpNextHintArrow 1.2s ease-in-out infinite;
+}
+@keyframes vpNextHintPulse {
+  0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,0.45), 0 0 0 3px rgba(255,214,10,0.4); }
+  50%      { box-shadow: 0 8px 28px rgba(0,0,0,0.55), 0 0 0 8px rgba(255,214,10,0.15); }
+}
+@keyframes vpNextHintArrow {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(4px); }
+}
+
+/* Adım açıklaması artık videonun İÇİNE gömülü soluk bir yazı değil,
+   sahnenin ALTINDA kendi net/okunur şeridi — koyu zemin + krem yazı,
+   sol tarafta kırmızı adım rozeti ile "belli bir yer" oluşturuyor. */
+/* Sol kenardaki 4px renkli şerit kaldırıldı: zemin zaten koyu ve altyazı
+   kutusu kendi başına ayrışıyordu; şerit yalnızca "üretilmiş arayüz"
+   işaretiydi. */
+.vp-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 6px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+}
+.vp-caption-badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 4px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+}
+.vp-caption-text {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.vp-placeholder {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: radial-gradient(circle at center, var(--color-surface) 0%, var(--color-bg) 100%);
+  padding: 14px;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.vp-placeholder.show { display: flex; }
+
+.vp-placeholder-icon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary);
+  opacity: 0.85;
+}
+
+.vp-placeholder-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.vp-placeholder-desc {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.vp-placeholder-desc code {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.vp-progress-row {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.vp-progress-track {
+  width: 100%;
+  max-width: 260px;
+  height: 6px;
+  background: var(--color-surface-2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.vp-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  transition: width 0.4s ease;
+}
+
+/* ARAC CUBUGU NORMAL AKISTA — eskiden `position: sticky; bottom: 0` idi.
+   IKI SEBEPLE kaldirildi:
+   1) ARTIK GEREKMIYOR: Adim 4 sigiyor (metin sol sutuna tasindi, sahne
+      yuksekligi gorunumden turuyor), yani cubugun yapisacagi bir durum
+      kalmadi. 1920x1080, 1536x730 ve 1440x700'de cubuk kendi yerinde
+      ve ekranda (olculdu).
+   2) YAPISTIGINDA YANLIS YERE YAPISIYORDU: ustteki `.fentop-container`
+      `overflow: clip` oldugu icin sticky ONA baglaniyor, goruntu alanina
+      degil. Kabin dibi ekranin dibinden yukarida oldugu icin cubuk
+      44px yukari cekilip ALTYAZININ USTUNE biniyordu (olculdu: cubuk
+      [550,617], altyazi [546,588] — altyazi tamamen gorunmez).
+   Cok basik ekranlarda (<=640px) sayfa hala kayiyor; orada cocuk
+   kaydirip ulasiyor ve altyazi gorunur kaliyor. Ikisinden biri
+   secilecekse gorunur altyazi tercih edildi. */
+.vp-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  box-shadow: var(--shadow-clay-sm);
+  z-index: 5;
+}
+
+.vp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: var(--border-w-thin) solid var(--color-border);
+  padding: 9px 14px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity var(--t-press) var(--easing-default), transform var(--t-press) var(--easing-default), border-color var(--t-press) var(--easing-default), box-shadow var(--t-press) var(--easing-default);
+}
+
+.vp-btn:hover:not(:disabled) {
+  opacity: .9;
+  transform: translateY(-2px);
+  border-color: var(--color-primary-stroke);
+}
+.vp-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+}
+
+/* Diğer birincil butonlarla (bottom-nav, portal-btn) aynı dokunsal "keycap"
+   dili: dolgu renk + ofset gölge, basınca gölge çöküp buton "içeri girer". */
+.vp-btn.primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+  box-shadow: 0 4px 0 var(--color-accent-hover);
+}
+
+.vp-btn.primary:hover:not(:disabled) {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--color-accent-hover);
+}
+.vp-btn.primary:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 var(--color-accent-hover);
+}
+
+.vp-btn:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+/* Oynat/Durdur butonu — video ilerleme uyarısıyla (vp-next-hint) aynı
+   sarı yuvarlak "pill" formatında, toolbar'daki en dikkat çeken kontrol. */
+.vp-btn.vp-btn-pill {
+  border-radius: 999px;
+  background: #ffd60a;
+  color: #1a1410;
+  border: none;
+  font-weight: 800;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+}
+.vp-btn.vp-btn-pill:hover:not(:disabled) {
+  background: #ffd60a;
+  border-color: transparent;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.25);
+}
+.vp-btn.vp-btn-pill:active:not(:disabled) {
+  box-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  transform: translateY(3px);
+}
+.vp-btn-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.vp-counter {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+/* Mevcut .ide-sim-wrapper class'ı ile uyumluluk — show class'ı changeStep tarafından eklenir */
+.ide-sim-wrapper.show { display: block; }
+
+/* ========== RESPONSIVE: 480px ve altı ========== */
+@media (max-width: 480px) {
+  .vp-stage {
+    aspect-ratio: auto;
+    height: 56vw;
+    max-height: 280px;
+    min-height: 180px;
+    border-radius: var(--radius-md);
+  }
+  .vp-caption {
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .vp-caption-text {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .vp-placeholder {
+    padding: 14px;
+    gap: 8px;
+  }
+  .vp-placeholder-icon  { font-size: 36px; }
+  .vp-placeholder-title { font-size: 14px; }
+  .vp-placeholder-desc  { font-size: 11px; line-height: 1.4; max-width: 100%; }
+  .vp-placeholder-desc code { font-size: 11px; }
+  .vp-progress-row { font-size: 11px; }
+  .vp-progress-track { max-width: 200px; }
+
+  .vp-toolbar {
+    margin-top: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .vp-btn {
+    padding: 7px 10px;
+    font-size: 11px;
+    flex: 1;
+    min-width: 0;
+  }
+  /* Satır 1: Önceki | 5sn geri | Oynat | 5sn ileri — satır 2: Tekrar İzle | Sonraki — satır 3: Kart Yöneticisi URL */
+  .vp-btn[data-vp="prev"],
+  .vp-btn[data-vp="back5"],
+  .vp-btn[data-vp="fwd5"] { flex: 0 1 21%; white-space: nowrap; padding-left: 4px; padding-right: 4px; }
+  .vp-btn[data-vp="play"] { flex: 0 1 30%; }
+  .vp-btn[data-vp="replay"],
+  .vp-btn[data-vp="next"] { flex: 0 1 47%; }
+  .vp-btn[data-vp="board-url"] { flex: 0 1 100%; }
+  .vp-counter {
+    font-size: 11px; /* 11px taban: 10px islevsel yazi okunmuyor */
+    margin-left: 0;
+    flex-basis: 100%;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .vp-next-hint {
+    font-size: 12px;
+    padding: 9px 14px;
+    bottom: 10px;
+  }
+}

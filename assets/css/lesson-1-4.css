@@ -1,0 +1,118 @@
+/* ============================================================
+   Ders 1.4 — İki LED: yalnızca bu derse özgü görünüm.
+   Ortak parçalar (quiz-box, callout, led-check-btn, pin-map, kod
+   önizleme, yükleme kartı, quiz-ipucu) styles.css'te.
+   ============================================================ */
+
+/* Şemadaki LED'ler kodla aynı ritimde: 300 ms yanık + 300 ms sönük,
+   ikisi ZIT fazda. Kod yüklenmeden önce (kartta 1.3'ün kodu) yalnızca
+   birinci LED 1 sn'lik turla yanıp söner — wiring-diagram.css .is-live1.
+   Animasyon ADI değişiyor (…-b): ikisi aynı karede, is-live eklendiği
+   an birlikte başlasın; yalnızca süre değişseydi birinci LED eski
+   turunun ortasından devam eder, faz kayardı. */
+.l14-kod .wd-svg.is-iki.is-live #wd-part-led .wd-led-bulb { animation: l14-bulb1 .6s steps(1, end) infinite; }
+.l14-kod .wd-svg.is-iki.is-live #wd-part-led .wd-led-glow { animation: l14-glow .6s steps(1, end) infinite; }
+.l14-kod .wd-svg.is-iki.is-live #wd-part-led2 .wd-led-bulb { animation: l14-bulb2 .6s steps(1, end) infinite; }
+.l14-kod .wd-svg.is-iki.is-live #wd-part-led2 .wd-led-glow { animation: l14-glow2 .6s steps(1, end) infinite; }
+@keyframes l14-bulb1 { 0% { fill: var(--led1-yanik, #FF3B26); } 50% { fill: var(--led1-kapali, #B9463E); } }
+@keyframes l14-glow  { 0% { opacity: 0.6; }  50% { opacity: 0; } }
+@keyframes l14-bulb2 { 0% { fill: var(--led2-kapali, #3E8A55); } 50% { fill: var(--led2-yanik, #3BE36B); } }
+@keyframes l14-glow2 { 0% { opacity: 0; }    50% { opacity: 0.6; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .l14-kod .wd-svg.is-iki.is-live #wd-part-led .wd-led-bulb,
+  .l14-kod .wd-svg.is-iki.is-live #wd-part-led .wd-led-glow,
+  .l14-kod .wd-svg.is-iki.is-live #wd-part-led2 .wd-led-bulb,
+  .l14-kod .wd-svg.is-iki.is-live #wd-part-led2 .wd-led-glow { animation: none; }
+}
+
+/* ---- SEN YAP ---- */
+.l14-gorevler {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.l14-gorev {
+  padding: 12px 14px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  transition: border-color .18s ease, background-color .18s ease;
+}
+.l14-gorev.is-done {
+  border-color: var(--color-success);
+  background: var(--color-success-soft);
+}
+.l14-gorev.is-calling { animation: usbBoxCall 0.6s ease-out 3; }
+.l14-gorev-bas {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: var(--text-md);
+  line-height: 1.55;
+  color: var(--color-text);
+}
+.l14-gorev-bas .l13-no { margin-top: 1px; }
+.l14-gorev.is-done .l13-no { background: var(--color-success); color: #fff; }
+.l14-gorev .quiz-ipucu { margin-top: 10px; }
+.l14-gorev .ai-prompt-btn { margin-top: 10px; }
+.l14-sec { display: flex; gap: 8px; margin-top: 10px; }
+.l14-sec .led-check-btn { flex: 1 1 0; padding: 8px 10px; font-size: 13px; }
+.l14-sayi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.l14-sayi .l14-soru {
+  flex: 1 0 100%;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text, #23180F);
+}
+.l14-sayi input {
+  width: 72px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.l14-sayi input:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.l14-sayi .ai-prompt-btn { width: auto; margin-top: 0; padding: 10px 16px; }
+.l14-geri .callout { margin-top: 10px; }
+.l14-geri > p { margin-top: 8px; }
+
+/* l13-liste / l13-no 1.3'ün CSS'inde; bu sayfa o dosyayı yüklemiyor. */
+.l13-no {
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: 800;
+  font-size: 13px;
+}
+.l13-liste {
+  margin: 10px 0 0 18px;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-text-2);
+}
+
+@media (max-width: 760px) {
+  .l14-sec { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .l14-gorev.is-calling { animation: none; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.35); }
+}

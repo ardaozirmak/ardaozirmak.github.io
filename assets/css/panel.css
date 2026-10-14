@@ -1,0 +1,134 @@
+/* Paneller: kupa yolu (seviye-yolu.js) ve yönetici (yonetici.js).
+   2026-10-06: mağaza kalkınca magaza.css'ten buraya taşındı; Altın ve eşya
+   stilleri onlarla gitti. Renkler styles.css değişkenlerinden. */
+
+/* ---------- kupa yolu (assets/js/seviye-yolu.js) ---------- */
+.yol[hidden] { display: none; }
+.yol { position: fixed; inset: 0; z-index: 9200; display: grid; place-items: center; padding: 16px;
+  background: rgba(10, 12, 24, 0.62); backdrop-filter: blur(3px); overscroll-behavior: contain; }
+.yol-pencere { width: min(620px, 100%); max-height: min(760px, calc(100vh - 32px)); display: flex; flex-direction: column;
+  overflow: hidden; background: var(--color-surface); color: var(--color-text); border-radius: var(--radius-xl);
+  box-shadow: 0 30px 80px rgba(5, 8, 20, 0.5), 0 0 0 2px rgba(255, 210, 63, 0.55); }
+.yol-vitrin { flex: none; padding: 16px 20px 18px; color: #fff;
+  background: radial-gradient(120% 140% at 90% -30%, rgba(255, 210, 63, 0.35), transparent 55%),
+              linear-gradient(135deg, #111A38, #22377A); }
+.yol-vitrin-ust { display: flex; align-items: center; justify-content: space-between; }
+.yol-vitrin h2 { display: flex; align-items: center; gap: 8px; font: 800 24px/1 var(--font-heading); }
+.yol-vitrin h2 svg { width: 26px; height: 26px; color: #FFD23F; }
+.yol-kapat { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,.3); background: rgba(0,0,0,.2);
+  color: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
+.yol-kapat:focus-visible { outline: 3px solid #FFD23F; outline-offset: 2px; }
+.yol-durum { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+.yol-sv { flex: none; width: 78px; height: 78px; border-radius: 50%; display: grid; place-content: center; text-align: center;
+  background: radial-gradient(circle at 35% 30%, #FFE680, #FFB627 60%, #C77A0A); color: #3A2400;
+  box-shadow: 0 0 0 4px rgba(255,210,63,.3), 0 8px 18px rgba(0,0,0,.35); }
+.yol-sv span { font: 800 13px/1 var(--font-heading); }
+.yol-sv b { font: 800 36px/0.9 var(--font-heading); }
+.yol-sv-sag { flex: 1; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.yol-sv-sag strong { font: 800 22px/1.1 var(--font-heading); }
+.yol-sv-sag > span:not(.yol-cubuk) { font: 600 var(--text-md)/1.3 var(--font-body); color: #C9D4FF; }
+.yol-sv-sag > span b { color: #FFD23F; }
+.yol-cubuk { height: 10px; border-radius: 999px; background: rgba(255,255,255,.14); overflow: hidden; }
+.yol-cubuk i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #FFB627, #FFE680); }
+
+.yol-icerik { overflow-y: auto; overscroll-behavior: contain; padding: 18px 20px 14px; min-height: 0; }
+.yol-liste { list-style: none; margin: 0; padding: 0; position: relative; }
+.yol-dugum { position: relative; display: flex; gap: 14px; padding-bottom: 14px; }
+/* Yolun çizgisi: düğümden bir sonrakine; geçilen kısım altın. */
+.yol-dugum::before { content: ""; position: absolute; left: 21px; top: 44px; bottom: -2px; width: 4px; border-radius: 2px;
+  background: var(--color-border); }
+.yol-dugum:last-child::before { display: none; }
+.yol-dugum[data-durum="gecti"]::before { background: #FFB627; }
+.yol-rozet { position: relative; z-index: 1; flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+  font: 800 18px/1 var(--font-heading); border: 3px solid var(--color-border); background: var(--color-surface); color: var(--color-text-muted); }
+.yol-rozet svg { width: 20px; height: 20px; }
+.yol-dugum[data-durum="gecti"] .yol-rozet { background: #FFB627; border-color: #E0980F; color: #3A2400; }
+.yol-dugum[data-durum="simdi"] .yol-rozet { background: radial-gradient(circle at 35% 30%, #FFE680, #FFB627); border-color: #C77A0A; color: #3A2400;
+  box-shadow: 0 0 0 0 rgba(255, 182, 39, .55); animation: yol-nabiz 2s ease-out infinite; }
+@keyframes yol-nabiz { 70% { box-shadow: 0 0 0 12px rgba(255, 182, 39, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 182, 39, 0); } }
+/* Blender madalyonları (blender/rozet.py, 2026-10-04): düz daire yerine kademeli metal.
+   Sayı/tik HTML'de üstte kalır; ulaşılmamış seviye soluk ve renksiz. */
+/* Seçiciler .yol-dugum[data-durum] ile aynı ağırlıkta ve sonra: yukarıdaki gecti/simdi
+   `background` kısaltması madalyonu ezmesin (ezdi, ekran görüntüsünde görüldü). */
+.yol-dugum[data-durum] .yol-rozet[data-kademe] { border: 0; background: center / 100% no-repeat; color: #3A2400; text-shadow: 0 1px 0 rgba(255,255,255,.55); }
+.yol-dugum[data-durum] .yol-rozet[data-kademe="bronz"] { background-image: url("../img/fx/rozet-bronz.webp"); color: #4A2508; }
+.yol-dugum[data-durum] .yol-rozet[data-kademe="gumus"] { background-image: url("../img/fx/rozet-gumus.webp"); color: #2C3440; }
+.yol-dugum[data-durum] .yol-rozet[data-kademe="altin"] { background-image: url("../img/fx/rozet-altin.webp"); }
+.yol-dugum[data-durum] .yol-rozet[data-kademe="efsane"] { background-image: url("../img/fx/rozet-efsane.webp"); color: #fff; text-shadow: 0 1px 2px rgba(40,10,90,.7);
+  width: 52px; height: 52px; margin: -4px -3px 0; }
+.yol-dugum[data-durum="gelecek"] .yol-rozet[data-kademe] { filter: grayscale(1) opacity(.5); }
+.yol-kart { flex: 1; min-width: 0; padding: 12px 14px; border-radius: var(--radius-lg); border: 2px solid var(--color-border-soft); background: var(--color-bg); }
+.yol-dugum[data-durum="simdi"] .yol-kart { border-color: #FFB627; box-shadow: 0 6px 18px rgba(255, 182, 39, .22); }
+.yol-dugum[data-durum="gelecek"] .yol-kart { background: transparent; border-style: dashed; }
+.yol-kart-ust { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.yol-kart h3 { font: 800 var(--text-lg)/1.2 var(--font-heading); }
+.yol-dugum[data-durum="gelecek"] .yol-kart h3 { color: var(--color-text-2); }
+.yol-esik { font: 700 var(--text-xs)/1 var(--font-body); color: var(--color-text-muted); }
+.yol-buradasin { display: inline-block; margin-top: 6px; padding: 3px 9px; border-radius: 999px; background: #FFB627; color: #3A2400;
+  font: 800 11px/1.2 var(--font-body); letter-spacing: .4px; text-transform: uppercase; }
+.yol-dip { margin-top: 4px; font-size: var(--text-xs); color: var(--color-text-muted); text-align: center; }
+@media (max-width: 480px) {
+  .yol { padding: 8px; }
+  .yol-vitrin { padding: 14px; }
+  .yol-sv { width: 62px; height: 62px; }
+  .yol-sv b { font-size: 28px; }
+  .yol-sv-sag strong { font-size: 18px; }
+  .yol-icerik { padding: 14px 12px 10px; }
+  .yol-dugum { gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .yol-dugum[data-durum="simdi"] .yol-rozet { animation: none; } }
+
+/* ---------- yönetici (assets/js/yonetici.js) ---------- */
+.yonetici-btn { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
+  border: 2px solid #6D28D9; background: linear-gradient(135deg, #8B5CF6, #6D28D9); color: #fff;
+  transition: transform var(--t-press) var(--easing-default); }
+.yonetici-btn:hover { transform: scale(1.08); }
+.yonetici-btn:active { transform: scale(0.94); }
+.yonetici-btn:focus-visible { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.yonetici-btn svg { width: 16px; height: 16px; }
+.yonetici[hidden] { display: none; }
+.yonetici { position: fixed; inset: 0; z-index: 9250; display: grid; place-items: center; padding: 16px;
+  background: rgba(20, 14, 8, 0.6); backdrop-filter: blur(3px); overscroll-behavior: contain; }
+.yon-pencere { width: min(420px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--color-surface); color: var(--color-text); border-radius: var(--radius-xl);
+  box-shadow: 0 30px 80px rgba(20, 10, 2, 0.45), 0 0 0 2px rgba(109, 40, 217, 0.55); }
+.yon-baslik { display: flex; align-items: center; gap: 12px; padding: 16px 18px; color: #fff;
+  background: linear-gradient(135deg, #3B1A78, #6D28D9 60%, #8B5CF6); }
+.yon-baslik > svg { width: 30px; height: 30px; flex: none; }
+.yon-baslik div { flex: 1; }
+.yon-baslik h2 { font: 800 22px/1.1 var(--font-heading); }
+.yon-baslik span { font: 600 var(--text-sm)/1.2 var(--font-body); color: #DDD6FE; }
+.yon-kapat { width: 34px; height: 34px; border-radius: 50%; border: 2px solid rgba(255,255,255,.35); background: rgba(0,0,0,.15);
+  color: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
+.yon-govde { padding: 14px 18px 18px; }
+.yon-grup { display: flex; flex-direction: column; gap: 8px; }
+.yon-satir { position: relative; display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer;
+  border-radius: var(--radius-md); background: var(--color-bg); border: 2px solid var(--color-border-soft); }
+.yon-metin { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.yon-metin b { font: 800 var(--text-md)/1.2 var(--font-body); }
+.yon-metin small { font-size: var(--text-xs); color: var(--color-text-muted); line-height: 1.35; }
+.yon-satir input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.yon-anahtar { flex: none; width: 44px; height: 26px; border-radius: 999px; background: var(--color-border); position: relative;
+  transition: background var(--t-base) var(--easing-default); }
+.yon-anahtar::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  background: #fff; box-shadow: var(--shadow-sm); transition: transform var(--t-base) var(--easing-default); }
+.yon-satir input:checked + .yon-anahtar { background: #6D28D9; }
+.yon-satir input:checked + .yon-anahtar::after { transform: translateX(18px); }
+.yon-satir input:focus-visible + .yon-anahtar { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+.yon-not { margin: 8px 2px 0; font-size: var(--text-xs); color: var(--color-text-muted); }
+.yon-alt { margin: 14px 2px 8px; font: 800 var(--text-sm)/1 var(--font-body); color: var(--color-text-2); text-transform: uppercase; letter-spacing: .5px; }
+.yon-dersler { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.yon-ders { padding: 9px 4px; text-align: center; border-radius: var(--radius-sm); border: 2px solid var(--color-border);
+  color: var(--color-text); font: 800 var(--text-sm)/1 var(--font-body); text-decoration: none; }
+.yon-ders:hover { border-color: #6D28D9; color: #6D28D9; }
+:root[data-theme="dark"] .yon-ders:hover { border-color: #A78BFA; color: #C4B5FD; }
+/* 320px + yönetici kalkanı: başlık 19px taşıyordu (ölçüldü, 2026-10-04).
+   Yalnız kalkan varken kenar boşluğu ve site adı biraz sıkışır. */
+@media (max-width: 340px) {
+  .header-bar:has(#yoneticiBtn) { padding: 0 8px; }
+  .header-bar:has(#yoneticiBtn) .header-title { font-size: 12px; }
+}
+@media (max-width: 480px) {
+  .yonetici-btn { width: 26px; height: 26px; }
+  .yonetici-btn svg { width: 13px; height: 13px; }
+}

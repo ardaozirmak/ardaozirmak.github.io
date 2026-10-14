@@ -1,0 +1,468 @@
+/* ============================================================
+   PORTAL (ANASAYFA) STİLLERİ
+   ============================================================
+   styles.css içindeki :root değişkenlerini (renk/spacing/font)
+   kullanır. Bu dosya sadece portale özgü layout'u tanımlar.
+   Lesson sayfası (index.html) body'sini tek-ekran/overflow:hidden
+   kurgular; portal ise normal kaydırılabilir bir sayfa olduğu
+   için body davranışını burada geçersiz kılıyoruz.
+   ============================================================ */
+
+body.portal-body {
+  height: auto;
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 0;
+}
+
+.icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  vertical-align: -3px;
+}
+.icon-logo { width: 20px; height: 20px; color: var(--color-primary); }
+
+.portal-header-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.portal-main {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+/* ---------- HERO ---------- */
+.portal-hero {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 48px;
+  padding: 32px 0 64px;
+  background-image: radial-gradient(var(--color-border-soft) 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: -8px -8px;
+}
+.portal-hero-text,
+.hero-sag,
+.code-preview { min-width: 0; }
+.hero-sag { position: relative; }
+
+/* .portal-hero-eyebrow kaldırıldı: başlığın üstündeki küçük etiket çipi
+   ("kaş") üretilmiş sayfaların en tanıdık kalıbı; başlık kendi ağırlığını
+   taşıyor. Kural gereği geri gelmiyor. */
+
+.portal-hero h1 {
+  font-size: var(--text-3xl);
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 16px 0 16px;
+  letter-spacing: -0.5px;
+}
+.portal-hero h1 .hl {
+  color: var(--color-primary);
+}
+
+.portal-hero p {
+  max-width: 480px;
+  color: var(--color-text-muted);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+}
+
+.portal-hero-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+/* ---------- HERO: CODE PREVIEW ----------
+   Sitenin geneli sıcak/açık bir tema kullanıyor, ama bir IDE penceresi
+   olduğu için bilinçli olarak koyu kalıyor — gerçek bir kod editörü hissi
+   ("Bento Background Diversity": hero'daki tek görsel çeşitliliği). Renkleri
+   site paletinden değil kendi sabit "dark IDE" skalasından alır. */
+.code-preview {
+  background: #1B140F;
+  border: var(--border-w-thick) solid #2E241B;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-clay-lg);
+  overflow: hidden;
+  transform: rotate(-1.2deg);
+  transition: transform var(--t-mid) var(--easing-default);
+}
+@media (hover: hover) and (pointer: fine) {
+  .code-preview:hover { transform: rotate(0deg) translateY(-4px); }
+}
+
+.code-preview-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #241A12;
+  border-bottom: 1px solid #2E241B;
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot-r { background: var(--color-danger); }
+.dot-y { background: var(--color-warning); }
+.dot-g { background: var(--color-success); }
+.code-preview-name {
+  margin-left: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #A6957E;
+}
+
+.code-preview-body {
+  padding: 24px;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  line-height: 1.9;
+  color: #E9DFCF;
+  overflow-x: auto;
+}
+.code-preview-body .c-kw   { color: #6FB7FF; }
+.code-preview-body .c-fn   { color: #FFB84D; }
+.code-preview-body .c-const{ color: #6FDBA8; font-weight: 600; }
+
+.code-preview-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid #2E241B;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: #A6957E;
+}
+.led-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 8px 2px var(--color-accent);
+  animation: led-blink 1s step-end infinite;
+}
+@keyframes led-blink {
+  0%, 49%   { opacity: 1; }
+  50%, 100% { opacity: 0.15; box-shadow: none; }
+}
+
+@media (max-width: 860px) {
+  .portal-hero { grid-template-columns: 1fr; text-align: left; }
+  .portal-hero p { max-width: none; }
+  .code-preview { transform: none; }
+}
+
+.portal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-size: var(--text-md);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: transform var(--t-base) var(--easing-default), background var(--t-base) var(--easing-default), box-shadow var(--t-base) var(--easing-default);
+}
+/* Diagonal "AI-purple" tarzı gradyan yerine kartın kendi fiziksel butonlarıyla
+   (bkz. .bottom-nav button.primary) aynı dilde konuşan, dokunsal/basılabilir
+   tek renkli buton — offset gölge basınca "içeri girer" gibi davranır. */
+.portal-btn.primary {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 5px 0 var(--color-primary-hover);
+}
+.portal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--color-primary-hover); }
+.portal-btn.primary:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--color-primary-hover); }
+.portal-btn.ghost {
+  background: var(--color-surface);
+  color: var(--color-text-2);
+  border-width: var(--border-w-thin);
+  border-color: var(--color-border);
+}
+.portal-btn.ghost:hover { border-color: var(--color-primary-stroke); color: var(--color-primary); transform: translateY(-2px); }
+.portal-btn.ghost:active { transform: translateY(0); }
+
+/* ---------- MODÜL KARTI + İLERLEME ---------- */
+.module-card {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-clay-sm);
+  padding: 24px;
+  margin-top: 8px;
+}
+
+.module-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.module-card-head h2 {
+  font-size: var(--text-2xl);
+  color: var(--color-text);
+  font-weight: 700;
+}
+.module-card-head .module-sub {
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  margin-top: 4px;
+}
+
+.module-progress-pill {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-stroke);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.module-progress-track {
+  height: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+.module-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+  transition: width 0.5s var(--easing-default);
+}
+
+/* ---------- DERS KARTLARI GRID ---------- */
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-auto-flow: dense;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.lesson-card {
+  position: relative;
+  background: var(--color-bg);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-clay-sm);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-decoration: none;
+  color: inherit;
+  opacity: 0;
+  animation: lessonCardPopIn var(--t-slow) var(--easing-default) both;
+  transition: transform var(--t-press) var(--easing-default), border-color var(--t-base) var(--easing-default), box-shadow var(--t-press) var(--easing-default);
+}
+.lesson-card:nth-child(1) { animation-delay:  60ms; }
+.lesson-card:nth-child(2) { animation-delay: 120ms; }
+.lesson-card:nth-child(3) { animation-delay: 180ms; }
+.lesson-card:nth-child(4) { animation-delay: 240ms; }
+.lesson-card:nth-child(5) { animation-delay: 300ms; }
+.lesson-card:nth-child(6) { animation-delay: 360ms; }
+@keyframes lessonCardPopIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson-card { animation: none; opacity: 1; }
+}
+
+.lesson-card.is-open {
+  cursor: pointer;
+}
+.lesson-card.is-open:hover {
+  transform: translateY(-3px);
+  border-color: var(--color-primary-stroke);
+  box-shadow: var(--shadow-clay-md);
+}
+.lesson-card.is-open:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--shadow-sm);
+}
+.lesson-card.is-locked {
+  /* Eskiden tüm karta opacity:0.6 uygulanıyordu — bu metni de
+     zeminle birlikte soldurup WCAG kontrastını (bazı öğeler 2:1'e
+     kadar) düşürüyordu. "Kilitli" hissi artık sadece dekoratif
+     ikon üstünde, metin tam opaklıkta kalıyor. */
+  filter: saturate(0.55);
+  cursor: not-allowed;
+}
+.lesson-card.is-locked .lesson-card-icon {
+  opacity: 0.5;
+}
+
+/* Aktif/sıradaki ders — grid'i kıran öne çıkan kart */
+.lesson-card.is-featured {
+  grid-column: span 2;
+  background: var(--color-surface);
+  border-color: var(--color-primary);
+  padding: 24px;
+  box-shadow: 0 0 0 2px var(--color-primary-stroke) inset, var(--shadow-clay-md);
+}
+.lesson-card.is-featured .lesson-card-icon { width: 28px; height: 28px; }
+.lesson-card.is-featured .lesson-card-title { font-size: var(--text-xl); }
+@media (max-width: 640px) {
+  .lesson-card.is-featured { grid-column: span 1; }
+}
+
+.lesson-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lesson-card-num {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-dim);
+  letter-spacing: 0.5px;
+}
+
+.lesson-card-icon { width: 20px; height: 20px; color: var(--color-primary); }
+
+.lesson-card-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  align-self: flex-start;
+}
+.lesson-card-status .icon { width: 11px; height: 11px; }
+.lesson-card-status.done { background: var(--color-success-soft); color: var(--color-success-2); }
+.lesson-card-status.open { background: var(--color-primary-soft); color: var(--color-primary); }
+.lesson-card-status.soon { background: var(--color-surface-2); color: var(--color-text-2); }
+
+.lesson-card-title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.lesson-card-desc {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--color-text-muted);
+  flex: 1;
+}
+
+.lesson-card-hw {
+  font-size: 12px;
+  color: var(--color-text-dim);
+  border-top: 1px solid var(--color-border-soft);
+  padding-top: 8px;
+  line-height: 1.5;
+}
+.lesson-card-hw strong { color: var(--color-text-2); }
+
+/* ---------- BİLGİ ŞERİDİ ---------- */
+.portal-info-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+.portal-info-item {
+  background: var(--color-surface);
+  border: var(--border-w-thin) solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-clay-sm);
+  padding: 16px;
+  text-align: center;
+}
+.portal-info-item .num {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+}
+.portal-info-item .label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+
+.portal-footer {
+  text-align: center;
+  margin-top: 48px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-soft);
+  color: var(--color-text-dim);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+}
+
+@media (max-width: 768px) {
+  .portal-main { padding: 24px 16px 48px; }
+  .portal-hero { padding: 16px 0 32px; gap: 32px; }
+  .portal-hero h1 { font-size: 28px; }
+  .portal-hero p { font-size: var(--text-md); }
+  .module-card { padding: 16px; }
+  .lesson-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .header-bar > div:last-child { display: none; }
+  .header-title { font-size: 13px; gap: 6px; }
+  .header-badge { display: none; }
+}
+
+
+/* ---------- Atölyem (assets/js/atolyem.js): robot, rozet albümü, günlük görev, veli özeti ---------- */
+.atolyem { margin-top: 22px; }
+.atolyem > h2 { margin: 0 0 12px; font: 800 var(--text-xl, 20px)/1.2 var(--font-heading); }
+.atl-izgara { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+.atl-kart { padding: 16px; border-radius: var(--radius-lg); background: var(--color-surface); border: var(--border-w-thin, 1px) solid var(--color-border);
+  box-shadow: var(--shadow-clay-sm, 0 4px 14px rgba(0,0,0,.06)); display: flex; flex-direction: column; gap: 10px; }
+.atl-kart h3 { margin: 0; font: 800 var(--text-lg, 17px)/1.2 var(--font-heading); }
+.atl-gorev-metin, .atl-gorev-not { margin: 0; font-size: var(--text-md); color: var(--color-text-2); line-height: 1.45; }
+.atl-rozetler { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.atl-rozet { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+.atl-cerceve { position: relative; width: 100%; max-width: 64px; aspect-ratio: 1; height: auto; display: grid; place-items: center; border-radius: 14px;
+  border: 2px dashed var(--color-border); background: var(--color-bg); }
+.atl-cerceve b { font: 800 22px/1 var(--font-heading); color: var(--color-text-muted); }
+.atl-rozet.is-var .atl-cerceve { border-style: solid; border-color: #E8B53A; background: radial-gradient(circle, rgba(255, 210, 80, .35), transparent 70%), var(--color-bg); }
+.atl-cerceve > img:first-child { width: 90%; height: 90%; object-fit: contain; }
+.atl-foto { position: absolute; right: -8px; bottom: -8px; width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-surface); box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.atl-rozet-ad { font: 700 11px/1.2 var(--font-body); color: var(--color-text-2); overflow-wrap: anywhere; }
+.atl-gorev.is-hazir { border-color: var(--bakir-3, #E8A70C); }
+.atl-gorev.is-bitti { opacity: .85; }
+.atl-gorev-al { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; border: 0; cursor: pointer;
+  background: linear-gradient(135deg, var(--bakir-3, #E8A70C), var(--bakir-2, #C98A0B)); color: var(--altin-yazi, #3A2600); font: 800 var(--text-sm)/1 var(--font-body);
+  box-shadow: 0 2px 0 var(--bakir-1, #8A5A00); }
+.atl-gorev-tik { font: 700 var(--text-sm)/1.4 var(--font-body); color: var(--color-success-2); }
+.atl-veli summary { cursor: pointer; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+.atl-veli summary::-webkit-details-marker { display: none; }
+.atl-veli summary span { font-size: var(--text-sm); color: var(--color-text-muted); }
+.atl-veli ul { margin: 6px 0 0; padding-left: 18px; font-size: var(--text-sm); color: var(--color-text-2); line-height: 1.5; }
+.atl-veli-kopyala { align-self: flex-start; margin-top: 4px; padding: 7px 14px; border-radius: 999px; border: 2px solid var(--color-border); background: var(--color-bg);
+  color: var(--color-text); font: 800 var(--text-sm)/1 var(--font-body); cursor: pointer; }
+@media (max-width: 400px) { .atl-rozetler { grid-template-columns: repeat(2, 1fr); } }

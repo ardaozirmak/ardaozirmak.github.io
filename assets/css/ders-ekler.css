@@ -1,0 +1,39 @@
+/* ============================================================
+   DERS EKLERİ (assets/js/ders-ekler.js): yakın hedef, merak, mucit fotoğrafı
+   ============================================================ */
+.yakin-hedef {
+  position: fixed; z-index: var(--z-floating, 40);
+  padding: 6px 12px; border-radius: 999px;
+  background: var(--color-surface); color: var(--color-text-2);
+  border: 1px solid var(--color-border); box-shadow: 0 6px 18px rgba(0,0,0,.12);
+  font: 700 12.5px/1.2 var(--font-body); white-space: nowrap; pointer-events: none;
+  opacity: 0; transform: translateY(-6px);
+  transition: opacity .25s ease, transform .3s cubic-bezier(.2,.9,.3,1.2);
+}
+.yakin-hedef.is-gorunur { opacity: 1; transform: translateY(0); }
+.yakin-hedef b { color: var(--color-text); }
+
+
+.merak-kanca { display: block; margin-bottom: 8px; font: 800 var(--text-md)/1.4 var(--font-body); color: var(--color-text); }
+.merak-cagri { display: inline-block; margin-top: 8px; font: 800 var(--text-sm)/1 var(--font-body); color: var(--color-primary); }
+
+.mucit-foto {
+  display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 14px 16px;
+  border-radius: var(--radius-md, 12px); background: var(--color-surface); border: 2px solid var(--color-border);
+}
+.mucit-foto > div:last-child { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.mucit-foto b { font: 800 var(--text-md)/1.2 var(--font-heading); }
+.mucit-foto span { font-size: var(--text-sm); color: var(--color-text-2); line-height: 1.4; }
+.mucit-foto small { font-size: 11.5px; color: var(--color-text-muted); }
+.mucit-onizleme { width: 76px; height: 76px; flex: none; border-radius: 14px; overflow: hidden; display: grid; place-items: center;
+  background: radial-gradient(circle, rgba(255, 210, 80, .3), transparent 70%), var(--color-bg); border: 2px dashed var(--color-border); }
+.mucit-onizleme img { width: 100%; height: 100%; object-fit: cover; }
+.mucit-onizleme img.mucit-bos { width: 44px; height: 44px; object-fit: contain; opacity: .8; }
+.mucit-dugme { margin-top: 4px; padding: 7px 14px; border-radius: 999px; cursor: pointer; font: 800 var(--text-sm)/1 var(--font-body);
+  background: linear-gradient(135deg, var(--bakir-3, #E8A70C), var(--bakir-2, #C98A0B)); color: var(--altin-yazi, #3A2600); box-shadow: 0 2px 0 var(--bakir-1, #8A5A00); }
+.mucit-dugme:focus-within { outline: 3px solid var(--color-accent); outline-offset: 2px; }
+
+/* Rozet kartındaki madalya artık Blender render'ı (assets/img/fx/madalya.webp). */
+img.badge-medal { width: 84px; height: 84px; object-fit: contain; }
+
+@media (prefers-reduced-motion: reduce) { .yakin-hedef { animation: none; transition: none; } }

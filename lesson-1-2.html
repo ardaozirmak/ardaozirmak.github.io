@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Tarayıcı çubuğu sayfanın zeminiyle aynı renk olsun (--color-bg). -->
+  <meta name="theme-color" content="#FFF8F0">
+  <title>Deneyap Atölyem - Ders 1.2 Harici LED Devresi</title>
+
+  <!-- Hız (2026-10-05): senkron Supabase betiği ve bulut isteği için bağlantı önceden açılır. -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://odozoqsqnapiyweugfth.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+  <script src="assets/js/tema.js"></script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="assets/css/hareket.css">
+  <link rel="stylesheet" href="assets/css/index-theme.css">
+  <link rel="stylesheet" href="assets/css/fx.css">
+  <link rel="stylesheet" href="assets/css/ikonlar.css">
+  <link rel="stylesheet" href="assets/css/panel.css">
+  <link rel="stylesheet" href="assets/css/ders-ekler.css">
+  <link rel="stylesheet" href="assets/css/board-svg.css">
+  <link rel="stylesheet" href="assets/css/wiring-diagram.css">
+  <link rel="stylesheet" href="assets/css/parts-gallery.css">
+  <link rel="stylesheet" href="assets/css/learner.css">
+  <link rel="stylesheet" href="assets/css/ai-helper.css">
+  <link rel="stylesheet" href="assets/css/oku.css">
+  <link rel="stylesheet" href="assets/css/odak.css">
+</head>
+<body>
+
+  <!--
+    ============================================================
+    DERS 1.2 — HARİCİ LED DEVRESİ
+    ============================================================
+    İçerik dk0020_hariciLed_ArdayaVerilecekler_ders1.2 (resmi ders.md)
+    kaynağından alınmıştır. Veri assets/data/lesson-1-2.js'te,
+    ortak mantık assets/js/lesson-engine.js'te.
+    ============================================================
+  -->
+
+  <svg class="icon-sprite" aria-hidden="true">
+    <defs>
+      <symbol id="icon-logo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="M13 7 8 13h4l-1 4 5-6h-4l1-4Z" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="icon-bolt" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-bulb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.4 10.9c.5.4.9 1 .9 1.6V16h5v-.5c0-.6.3-1.2.9-1.6A6 6 0 0 0 12 3Z"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+      <symbol id="icon-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+      <symbol id="icon-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2v6M15 2v6M7 8h10v4a5 5 0 0 1-10 0V8Z"/><path d="M12 17v5"/></symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+      <symbol id="icon-wrench" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.8 2.8-2-2 2.8-2.8Z"/></symbol>
+      <symbol id="icon-clipboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h6"/></symbol>
+      <symbol id="icon-brain" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5h2a2 2 0 0 0 2-2V6a2 2 0 0 0-1-2Z"/><path d="M15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5h-2a2 2 0 0 1-2-2V6a2 2 0 0 1 1-2Z"/></symbol>
+      <symbol id="icon-robot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1" fill="currentColor" stroke="none"/><path d="M9 13v2M15 13v2M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+      <symbol id="icon-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8 12 3 3 8l9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></symbol>
+      <symbol id="icon-medal" viewBox="0 0 24 24"><circle cx="12" cy="14" r="7" fill="none" stroke="currentColor" stroke-width="1.75"/><path d="m9 9-3-6M15 9l3-6M6 3h3l1.5 3M18 3h-3l-1.5 3" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/><path d="m12 10.5 1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4 1.3-2.6Z" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 2 20h20L12 3Z"/><path d="M12 10v4"/><circle cx="12" cy="17" r="0.5" fill="currentColor" stroke="none"/></symbol>
+      <symbol id="icon-breadboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="1.5"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></symbol>
+      <symbol id="icon-cursor" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v9M9 3l7 7M4 12v6a2 2 0 0 0 2 2h6l4-4-2-2-3 1V3H9"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="header-bar">
+    <a href="portal.html" style="text-decoration:none; color:inherit;">
+      <div class="header-title">
+        <svg class="icon icon-logo"><use href="#icon-logo"/></svg>
+        Deneyap Atölyem
+        <span class="header-badge">Modül 1: Temel Donanım &amp; Algoritma</span>
+      </div>
+    </a>
+    <h1 class="header-lesson-title">Ders 1.2: Harici LED Devresi</h1>
+  </header>
+  <div class="lesson-progress-track"><div class="lesson-progress-fill" id="lessonProgressFill"></div></div>
+
+  <nav class="sidebar-panel" aria-label="Ders modülleri">
+    <!-- Yalnızca bu modülün var olan dersleri (Arda, 2026-09-28: açılmayan ders "yakında" diye durmasın; 2026-10-06: modül modül). -->
+    <div class="lesson-list" id="lessonList">
+      <a href="index.html" class="lesson-item" data-step="1" style="text-decoration:none;">
+        <span class="lesson-num">1.1</span>
+        <span class="lesson-name">Dahili LED</span>
+        <span class="lesson-status"><svg class="icon"><use href="#icon-check"/></svg></span>
+      </a>
+      <div class="lesson-item active" data-step="2">
+        <span class="lesson-num">1.2</span>
+        <span class="lesson-name">Harici LED</span>
+      </div>
+      <a href="lesson-1-3.html" class="lesson-item" data-step="3" style="text-decoration:none;">
+        <span class="lesson-num">1.3</span>
+        <span class="lesson-name">LED'i Hızlandır</span>
+      </a>
+      <a href="lesson-1-4.html" class="lesson-item" data-step="4" style="text-decoration:none;">
+        <span class="lesson-num">1.4</span>
+        <span class="lesson-name">İki LED</span>
+      </a>
+      <div class="lesson-item locked" data-step="5">
+        <span class="lesson-num">1.5</span>
+        <span class="lesson-name">Kara Şimşek</span>
+      </div>
+      <div class="lesson-item locked" data-step="6">
+        <span class="lesson-num">1.6</span>
+        <span class="lesson-name">Trafik Lambası</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="fentop-container">
+
+    <!-- SOL PANEL: BREADBOARD DEVRE ŞEMASI (adım adım etkileşimli; JS yoksa PNG fallback) -->
+    <section class="panel left-panel" id="leftPanel">
+      <button class="panel-toggle" id="leftPanelToggle" type="button" aria-expanded="true" aria-controls="simulationBox">
+        <span class="panel-toggle-icon">▼</span>
+        <span class="panel-toggle-label">Küçült</span>
+      </button>
+      <!-- Ortak kart+laptop sahnesi (Ders 1.1 ile aynı desen, bkz. index.html).
+           Devre şeması artık burada DEĞİL — Adım 4'te ana alanda büyük çıkıyor
+           (bkz. #wiringHero / mountMainWiring() lesson-1-2.js'te). Kart zaten
+           bağlı geldiği için "connected" sınıfı sabit; yeniden bağlanma
+           animasyonu bu derste anlatılmıyor. -->
+      <div class="simulation-area" id="simulationBox">
+
+        <svg id="layer-kart" viewBox="10 12 152 300" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
+
+        <svg id="layer-kablo" viewBox="0 0 340 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cableGrad" x1="0" y1="0" x2="0.4" y2="1">
+              <stop offset="0" stop-color="#fbfbfc"/>
+              <stop offset="0.5" stop-color="#dcdee2"/>
+              <stop offset="1" stop-color="#b6bbc3"/>
+            </linearGradient>
+          </defs>
+          <path d="M152 353 C 106 349 101 263 131 241 C 151 227 171 237 171 210" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>
+          <path d="M151 352 C 105 348 100 262 130 240 C 150 226 170 236 170 209" stroke="url(#cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+          <path d="M150.4 351.3 C 104.4 347.3 99.4 261.3 129.4 239.3 C 149.4 225.3 169.4 235.3 169.4 208.3" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>
+        </svg>
+
+        <svg id="layer-plug" viewBox="0 0 32 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="plugGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f2f4f7"/>
+              <stop offset="0.45" stop-color="#ced3da"/>
+              <stop offset="1" stop-color="#93a0ac"/>
+            </linearGradient>
+          </defs>
+          <rect x="14" y="-1" width="4" height="17" rx="1.5" fill="#dcdfe3" stroke="#aeb3ba" stroke-width="0.5"/>
+          <rect x="15" y="1" width="1.2" height="13" fill="#ffffff" opacity="0.5"/>
+          <rect x="0" y="16" width="32" height="20" rx="4" fill="url(#plugGrad)" stroke="#727d89" stroke-width="1.5"/>
+          <rect x="2" y="18" width="6" height="16" rx="2" fill="#ffffff" opacity="0.35"/>
+          <rect x="5" y="18" width="22" height="8" rx="2" fill="#dfe1e5" opacity="0.5"/>
+          <circle cx="16" cy="30" r="1.1" fill="#727d89" opacity="0.6"/>
+          <rect x="8" y="36" width="16" height="8" rx="2" fill="#2b333d" stroke="#4a545f" stroke-width="1"/>
+          <rect x="10" y="37" width="12" height="2" rx="1" fill="#4a545f" opacity="0.8"/>
+        </svg>
+
+        <div id="layer-dataflow"></div>
+
+        <svg id="layer-laptop" viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="screenGlare" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+              <stop offset="0.35" stop-color="#ffffff" stop-opacity="0"/>
+              <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="deckGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#333f4d"/>
+              <stop offset="1" stop-color="#242e39"/>
+            </linearGradient>
+            <linearGradient id="trackpadGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#2d3844"/>
+              <stop offset="1" stop-color="#1c242d"/>
+            </linearGradient>
+          </defs>
+
+          <ellipse cx="100" cy="140" rx="96" ry="5" fill="#000000" opacity="0.18"/>
+          <rect x="94" y="135" width="12" height="5" fill="#0b0f14" stroke="#3a4450" stroke-width="1"/>
+          <rect x="12" y="4" width="176" height="112" rx="10" fill="#171c24" stroke="#2c3540" stroke-width="2"/>
+          <rect class="lt-ekran" x="24" y="14" width="152" height="92" rx="5" fill="#0b1220"/>
+
+          <circle cx="31" cy="20" r="2" fill="#ef4444"/>
+          <circle cx="38" cy="20" r="2" fill="#f59e0b"/>
+          <circle cx="45" cy="20" r="2" fill="#22c55e"/>
+          <line x1="24" y1="26" x2="176" y2="26" stroke="#1e293b" stroke-width="1"/>
+
+          <text x="100" y="58" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6FB7FF" text-anchor="middle">DENEYAP ATÖLYEM</text>
+          <text x="100" y="76" font-family="Arial, sans-serif" font-size="7" fill="#A6957E" text-anchor="middle">Arduino IDE 2.3.10</text>
+
+          <g opacity="0.55">
+            <rect x="30" y="34" width="18" height="2.4" rx="1.2" fill="#334155"/>
+            <rect x="30" y="40" width="28" height="2.4" rx="1.2" fill="#334155"/>
+            <rect x="30" y="46" width="14" height="2.4" rx="1.2" fill="#334155"/>
+          </g>
+          <g opacity="0.55">
+            <rect x="152" y="34" width="18" height="2.4" rx="1.2" fill="#334155"/>
+            <rect x="146" y="40" width="24" height="2.4" rx="1.2" fill="#334155"/>
+            <rect x="156" y="46" width="14" height="2.4" rx="1.2" fill="#334155"/>
+          </g>
+
+          <rect x="70" y="86" width="60" height="10" rx="3" fill="#1e293b"/>
+          <rect x="74" y="89" width="30" height="4" rx="2" fill="#6FB7FF" opacity="0.8"/>
+          <rect x="24" y="14" width="152" height="92" rx="5" fill="url(#screenGlare)"/>
+
+          <circle cx="100" cy="18" r="1.8" fill="#1f2937"/>
+          <circle cx="100.6" cy="17.4" r="0.5" fill="#3a4a5c"/>
+
+          <rect x="4" y="116" width="192" height="22" rx="7" fill="url(#deckGrad)" stroke="#3a4450" stroke-width="2"/>
+
+          <rect x="0" y="121" width="9" height="13" rx="1.5" fill="#0b0f14" stroke="#3a4450" stroke-width="1"/>
+          <rect x="1.5" y="123.5" width="4" height="8" rx="1" fill="#333f4d"/>
+
+          <g opacity="0.5">
+            <rect x="14" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
+            <rect x="26" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
+            <rect x="38" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
+            <rect x="153" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
+            <rect x="165" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
+            <rect x="177" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
+          </g>
+          <rect x="84" y="125" width="32" height="8" rx="3" fill="url(#trackpadGrad)" stroke="#3a4450" stroke-width="0.6"/>
+          <circle cx="22" cy="127" r="1.6" fill="#22c55e"/>
+          <circle cx="22" cy="127" r="3" fill="#22c55e" opacity="0.25"/>
+        </svg>
+
+      </div>
+    </section>
+
+    <!-- SAĞ PANEL: ADIM İÇERİĞİ -->
+    <section class="panel right-panel">
+      <div class="step-content">
+        <h2 id="stepTitle">Adım 1: Hedef Tanımı &amp; Motivasyon</h2>
+        <p id="stepDescription"></p>
+
+        <div class="steps-cards-container" id="codeContainer">
+          <div class="step-card" data-step-card>
+            <button class="step-card-toggle" type="button" aria-expanded="false" aria-controls="sc-1-body">
+              <span class="step-card-header">
+                <span class="step-badge">01</span>
+                <span class="step-title-text">Pin Tanımlama</span>
+              </span>
+              <svg class="step-card-chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="step-card-body" id="sc-1-body" hidden>
+              <p class="step-card-desc">Harici LED'imiz artık kartın dahili pini yerine kendi seçtiğimiz bir dijital pine (D5) bağlı.</p>
+              <div class="callout"><svg class="icon callout-icon"><use href="#icon-bulb"/></svg><span><strong>Teknik Bilgi:</strong> <code>pinMode(D5, OUTPUT);</code> — <code>D5</code> kodun kullandığı addır. Kartın üzerinde <strong>D5</strong> yazmaz, o pinin yanında <strong>MI</strong> yazar — ikisi aynı pindir. düz <code>5</code> yazsaydık kart bunu farklı bir pin sanırdı.</span></div>
+            </div>
+          </div>
+          <div class="step-card" data-step-card>
+            <button class="step-card-toggle" type="button" aria-expanded="false" aria-controls="sc-2-body">
+              <span class="step-card-header">
+                <span class="step-badge">02</span>
+                <span class="step-title-text">Çıkış Modu &amp; Yakma</span>
+              </span>
+              <svg class="step-card-chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="step-card-body" id="sc-2-body" hidden>
+              <p class="step-card-desc"><code>pinMode(D5, OUTPUT)</code> ile pini çıkış yapıp <code>digitalWrite(D5, HIGH)</code> ile harici LED'i yakıyoruz — Ders 1.1'deki <code>neopixelWrite</code>'tan daha basit: pini sadece açık/kapalı tutar, renk göndermez.</p>
+              <div class="callout yellow"><svg class="icon callout-icon"><use href="#icon-bolt"/></svg><span><strong>Fark:</strong> Bu sefer akım kart üzerinden değil, breadboard'daki direnç üzerinden LED'e gidiyor.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="interactiveArea"></div>
+
+        <div id="aiSection" style="display:none;">
+          <button class="ai-prompt-btn" onclick="toggleAiPrompts()"><svg class="icon"><use href="#icon-robot"/></svg>AI Yoldaşına Sor</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <footer class="bottom-nav">
+    <button id="prevBtn" onclick="changeStep(-1)"><svg class="icon nav-chevron" viewBox="0 0 14 14"><path d="M9 3 5 7l4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Geri</button>
+    <div class="step-dots" id="stepDots" role="group" aria-label="Adım göstergesi">
+      <button type="button" class="step-dot active" data-dot="1" aria-label="Adım 1"></button>
+      <button type="button" class="step-dot" data-dot="2" aria-label="Adım 2"></button>
+      <button type="button" class="step-dot" data-dot="3" aria-label="Adım 3"></button>
+      <button type="button" class="step-dot" data-dot="4" aria-label="Adım 4"></button>
+      <button type="button" class="step-dot" data-dot="5" aria-label="Adım 5"></button>
+      <button type="button" class="step-dot" data-dot="6" aria-label="Adım 6"></button>
+      <button type="button" class="step-dot" data-dot="7" aria-label="Adım 7"></button>
+      <button type="button" class="step-dot" data-dot="8" aria-label="Adım 8"></button>
+      <button type="button" class="step-dot" data-dot="9" aria-label="Adım 9"></button>
+    </div>
+    <span id="stepIndicator">1 / 9</span>
+    <button id="nextBtn" onclick="changeStep(1)" class="primary">İleri<svg class="icon nav-chevron" viewBox="0 0 14 14"><path d="M5 3 9 7l-4 4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this) closeModal()">
+    <div class="modal-window" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <span id="modalTitle"></span>
+        <button class="modal-close" type="button" onclick="closeModal()" aria-label="Kapat">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
+
+  <script src="assets/js/storage.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+  <script src="assets/js/cloud-config.js" onerror="/* hesapsız mod */"></script>
+  <script src="assets/js/cloud.js"></script>
+  <script src="assets/js/sync.js"></script>
+  <script src="assets/js/learner.js"></script>
+  <script src="assets/js/yonetici.js"></script>
+  <script src="assets/js/fx.js"></script>
+  <script src="assets/vendor/motion.min.js"></script>
+  <script src="assets/vendor/anime.umd.min.js"></script>
+  <script src="assets/js/hareket.js"></script>
+  <script src="assets/js/ikonlar.js"></script>
+  <script src="assets/js/seviye-yolu.js"></script>
+  <script src="assets/js/profile.js"></script>
+  <script src="assets/js/learner-ui.js"></script>
+  <script src="assets/js/lesson-engine.js"></script>
+  <script src="assets/js/odak.js"></script>
+  <script src="assets/js/board-svg.js"></script>
+  <script src="assets/js/usb-link.js"></script>
+  <script src="assets/js/lesson-page.js"></script>
+  <script src="assets/js/parts-gallery.js"></script>
+  <script src="assets/js/wiring-diagram.js"></script>
+  <script src="assets/js/sahne3b.js"></script>
+  <script src="assets/data/lesson-1-2.js"></script>
+  <script src="assets/js/lesson-1-2.js"></script>
+  <script src="assets/js/kart-sahne3b.js"></script>
+  <script src="assets/js/ai-helper.js"></script>
+  <script src="assets/js/ders-ekler.js"></script>
+  <!-- Sesli okuma: zamanlamalar URETILMIS bir JS dosyasindan gelir.
+       file:// altinda fetch() yok, ders verisiyle ayni desen. -->
+  <script src="assets/ses/zamanlar.js"></script>
+  <script src="assets/js/oku.js"></script>
+  <script>
+    /* Hesabı olmayan dersi açamaz (Arda: "siteyi açınca hesabı olmayan
+       erişim sağlayamaz"). Portalda değil de doğrudan bu adrese gelen
+       çocuk da aynı kilitle karşılaşır — kilit tek bir sayfada olsaydı
+       adres çubuğu onu delerdi. Bulut kapalıyken kilit kurulmaz, bkz.
+       LearnerUI.requireAccount. */
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.LearnerUI) LearnerUI.requireAccount();
+    });
+  </script>
+</body>
+</html>

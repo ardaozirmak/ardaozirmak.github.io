@@ -1,0 +1,104 @@
+/* ============================================================
+   DENEYAP MINI v2 KART — TEK KAYNAK stilleri
+   ============================================================
+   assets/js/board-svg.js'in ürettiği <g> içeriğinin stilleri.
+   Ders 1.1 (index.html) ve Ders 1.2 (lesson-1-2.html) ikisi de bu
+   dosyayı yükler — kart iki yerde de birebir aynı görünsün diye
+   sınıflar buraya toplandı (eskiden wiring-diagram.css'te, sadece
+   ders 1.2 tarafından yükleniyordu).
+   ============================================================ */
+
+/* Marka yazisi kartin ORTA seridinde kalmali; buyuk punto pin
+   sutunlarinin uzerine tasiyordu. */
+.wd-brand     { font: 700 9px/1 Arial, sans-serif;  fill: #fff;     text-anchor: middle; letter-spacing: 1px; }
+.wd-brand-sub { font: 600 5.5px/1 Arial, sans-serif; fill: #f7e9e6; text-anchor: middle; letter-spacing: 1.6px; }
+.wd-chiptext  { font: 700 7.5px/1 Arial, sans-serif; fill: #c7ced6; text-anchor: middle; }
+/* Pin adlari gercek karttaki gibi pedin USTUNDE, pin sirasinin cizgisinde,
+   iki ped arasindaki bosluga ortali (Arda, 2026-10-07; konum board-svg.js
+   pinAdlari). Bosluk 8.4 birim: 6.5 punto oraya sigar. Cocuk elindeki karta
+   bakip ekrandaki diziyi birebir takip edebilmeli. */
+text.wd-pin   { font: 700 6.5px/1 Arial, sans-serif; fill: #f7e9e6; text-anchor: middle; dominant-baseline: central; opacity: 0.9; letter-spacing: 0.2px; }
+/* Ders 1.2'nin vurgusu (GND/MI): boy aynı, saf beyaz + mavi halka. */
+.wd-pin-key   { opacity: 1; fill: #fff; }
+.wd-boardlbl  { font: 700 5.5px/1 Arial, sans-serif; fill: #f7e9e6; text-anchor: middle; opacity: 0.7; }
+
+/* Pin baskisinin Arduino karsiligi: kartta MI yaziyor, kodda D5 geciyor.
+   Ikisini yan yana gostermek cocugun "D5 nerede" sorusunu ekranda cozuyor.
+   Yalnizca ders 1.2 (rings:true) kullanir. */
+/* "= D5" çağrısı 2026-09-22'de kartın ÜSTÜNE taşındı (eskiden breadboard'un
+   krem zeminindeydi; kart 180 derece dönünce kablo o sıraya takıldı ve yazı
+   kablonun altında kalıyordu). Kırmızı kartın üstünde kırmızı yazı görünmez
+   olduğu için yazı kartın ALTINDAKİ krem banda alındı; renk de krem zemine
+   göre koyulaştırıldı (#D6273A -> #A3132A, kontrast 4.19 -> ~7.4). Bu yazı
+   kartın baskısı DEĞİL, bizim notumuz. */
+.wd-pin-alias {
+  font-family: var(--font-mono, monospace);
+  font-size: 9px;
+  font-weight: 700;
+  fill: #A3132A;
+  text-anchor: start;
+}
+
+/* ---------- pin halkası: "buraya bağlıyoruz" (yalnızca ders 1.2) ---------- */
+.wd-ring {
+  fill: none;
+  stroke: var(--wd-accent, var(--color-accent, #1D4ED8));
+  stroke-width: 2.4;
+  opacity: 0;
+  transition: opacity 220ms var(--wd-ease, var(--easing-default, ease));
+}
+.wd-ring.is-on {
+  opacity: 1;
+  animation: wd-pulse 1.5s ease-in-out infinite;
+}
+@keyframes wd-pulse {
+  0%, 100% { stroke-opacity: 1;    r: 10; }
+  50%      { stroke-opacity: 0.35; r: 13.5; }
+}
+
+/* Dahili LED'in statik etiketi ("DAHİLİ LED" yazısı, board-svg.js'in
+   ids:true modunda eklediği ekstra sınıf) — Adım 3'te aynı adı taşıyan
+   #hotspot-led-label açılınca ekranda AYNI yazı iki kere görünmesin diye
+   statik olan gizlenir, hotspot etiketi kalır. */
+.step3-hotspots .wd-boardlbl-led { visibility: hidden; }
+
+/* ---- YATAY KART (BoardSVG.groupMarkup({horizontal:true})) ----
+   Kart -90° dönüyor ve yazılar da onunla dönüyor — gerçek kartın
+   baskısı da böyle (Arda: "yazıları dik yap, gerçek Deneyap'ta
+   nasılsa"). Bir süre karşı döndürülüp yatay tutuldular; yanlıştı:
+   çocuk elindeki kartı ekrandakiyle eşleştirmeli.
+
+   Döndükten sonra yazının TABAN çizgisi ekranda dikey oluyor, yani
+   yazının "y" kaydı artık yatay bir kayma demek. dominant-baseline
+   yazıyı kendi ekseninde ortalıyor — böylece her ad kendi pininin
+   tam üzerine oturuyor (board-svg.js yatay modda y'yi 2.6 geri alıyor,
+   o pay yazı tabanı içindi). */
+.bsvg-h .wd-boardlbl,
+.bsvg-h .wd-chiptext,
+.bsvg-h .wd-brand,
+.bsvg-h .wd-brand-sub {
+  dominant-baseline: central;
+}
+/* (Eski "translate(-3px, -2.6px)" pin adı kaydırması 2026-10-07'de kalktı: ad artık
+   pedin yanında değil, pin sırasının çizgisinde, iki ped arasında ortalı.) */
+
+/* KARTIN BASKISI PORT TARAFINDAN OKUNUR (Arda, 2026-10-07: "Type-C portunun olduğu
+   kısımdan bakıyorsun, yazılar ona göre"). Resmî diyagramda port altta, yazılar düz;
+   bizim çizimde port yerelde ÜSTTE, yani yazılar 180° ters duruyordu (yatay kartta
+   tepeleri porta, sola bakıyordu). Her yazı kendi kutusunun ortasında 180° döner:
+   yeri ve kartın şekli değişmez, tepesi porttan uzağa bakar. Bütün kartlarda (dik
+   sol panel, galeri, yatay şema); 3B katmanları aynısını STIL_3B'den alır. Seçici
+   text ile sınırlı: wiring-diagram.js'in kablo ucu grupları da .wd-pin sınıfında. */
+text.wd-pin,
+text.wd-boardlbl,
+text.wd-chiptext,
+text.wd-brand,
+text.wd-brand-sub {
+  transform-box: fill-box;
+  transform-origin: center;
+  transform: rotate(180deg);
+}
+
+/* "= D5" kartın baskısı değil, bizim çağrımız: dik değil yatay kalıyor
+   ve Mİ sütununun üstünde ortalanıyor. */
+.bsvg-h .wd-pin-alias { text-anchor: middle; font-size: 6.6px; }

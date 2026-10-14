@@ -1,0 +1,79 @@
+/* ============================================================
+   SESLİ OKUMA — "Bana oku" düğmesi ve vurgulama
+   ============================================================
+   Vurgu rengi (--color-warning sarısı) bilerek metin renginden değil
+   ZEMİNDEN geçiyor: 5. sınıf çocuk "hangi kelime okunuyor"u renk tonundan
+   değil, kalemle çizilmiş gibi duran bir bantdan anlıyor. Yazı rengi
+   değişmiyor, yani kontrast düşmüyor.
+   ============================================================ */
+
+.oku-dugme {
+  margin-left: var(--space-5, 14px);
+  vertical-align: middle;
+  font-family: var(--font-body, sans-serif);
+  font-weight: 700;
+  /* Bilerek kucuk: dugme adim basliginin ICINDE duruyor ve baslgi
+     yukseltirse Ders 1.2'de devre sahnesi asagi kayip gezinme cubugunun
+     altina tasiyor (olculdu 2026-09-22, test-wiring kirmizi verdi).
+     Bu olculer basligin satir kutusuna sigiyor. */
+  font-size: 14px;
+  line-height: 1;
+  /* Dolgu ve ikon boyu birlikte AYARLI: inline-flex kutusunun yuksekligi
+     ikon + dolgu + kenarlik. Ikon 17px + dolgu 10px iken dugme 3px uzadi
+     ve Ders 1.2'de devre sahnesi 300px tabanin 1 PIKSEL altina dustu
+     (test-wiring kirmizi verdi). Degistirirken o testi tekrar kostur. */
+  padding: 4px 10px;
+  position: relative;
+  top: -0.18em;
+  border-radius: var(--radius-md, 10px);
+  border: 2px solid var(--color-primary, #D6273A);
+  background: var(--color-surface, #fff);
+  color: var(--color-primary, #D6273A);
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 140ms var(--easing-default, ease),
+              color 140ms var(--easing-default, ease);
+}
+
+.oku-ikon { width: 15px; height: 15px; flex: none; }
+.oku-yazi { line-height: 1; }
+
+.oku-dugme:hover { background: var(--color-primary-soft, rgba(214, 39, 58, 0.1)); }
+
+.oku-dugme:focus-visible {
+  outline: 3px solid var(--color-accent, #1D4ED8);
+  outline-offset: 2px;
+}
+
+/* Okurken düğme "Durdur"a dönüyor ve rengi doluyor: çocuk bir şeyin
+   ÇALIŞTIĞINI düğmeye bakarak da anlasın, sesi duymasa bile. */
+.oku-dugme.oku-calisiyor {
+  background: var(--color-primary, #D6273A);
+  color: #fff;
+}
+
+/* Şu an okunan blok: hafif bir zemin, gözü doğru paragrafa çeker. */
+.oku-okunuyor {
+  background: var(--color-warning-soft, rgba(255, 182, 39, 0.14));
+  border-radius: var(--radius-sm, 6px);
+  box-shadow: 0 0 0 6px var(--color-warning-soft, rgba(255, 182, 39, 0.14));
+}
+
+/* Şu an okunan KELİME. Asıl iş bu: ses nerede, göz orada. */
+.oku-kelime { border-radius: 4px; padding: 0 1px; }
+
+.oku-aktif {
+  background: var(--color-warning, #FFB627);
+  box-shadow: 0 0 0 2px var(--color-warning, #FFB627);
+}
+
+/* İçinde başka etiket olan bloklar kelimelere bölünemiyor (inline <code>
+   gibi şeyleri parçalardı); onlarda bloğun tamamı vurgulanıyor. */
+.oku-blok { background: var(--color-warning-soft, rgba(255, 182, 39, 0.14)); }
+
+@media (prefers-reduced-motion: reduce) {
+  .oku-dugme { transition: none; }
+}

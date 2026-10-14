@@ -1,0 +1,1170 @@
+/* ============================================================
+   DEVRE KURMA ŞEMASI — stiller ve hareket katmanı
+   ============================================================
+   Renk/easing token'ları styles.css'ten gelir; burada YENİ renk
+   sistemi kurulmaz, var olanı kullanırız. Token bulunamazsa
+   (tek başına önizleme) fallback değerler devreye girer.
+
+   HAREKET KARARLARI (bu ekran ders başına bir kez görülür =
+   "nadir" katman, yani açıklayıcı animasyon burada meşru):
+     - parça yerleşmesi : 460ms, --easing-spring (oyuncu his, çocuk kitlesi)
+     - kablo çizilmesi  : 620ms, --easing-default (güçlü ease-out)
+     - akım kıvılcımı   : linear + sonsuz (sabit hız = akım hissi)
+     - LED yanıp sönme  : 2s steps(1) — koddaki delay(1000) ile birebir
+     - buton basma      : 140ms (geri bildirim eşiği)
+   Hiçbir yerde ease-in yok, hiçbir yerde scale(0) yok,
+   sadece transform + opacity animasyonu var.
+   ============================================================ */
+
+.wd-root {
+  --wd-ease:   var(--easing-default, cubic-bezier(0.23, 1, 0.32, 1));
+  --wd-spring: var(--easing-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+  --wd-accent: var(--color-accent, #1D4ED8);
+  --wd-board-surface: #F7EEDF;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  outline: none;
+}
+
+/* ---------- sahne ---------- */
+.wd-stage-wrap {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wd-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border-soft, #F7EBDD);
+  border-radius: var(--radius-lg, 20px);
+  padding: 8px;
+}
+
+/* ---------- Adım 4/5: ANA ALANDAKİ BÜYÜK ŞEMA (spec §1) ---------- */
+/* Şema artık sol panelde değil — sadece Adım 4'te (büyük, kurulum) ve
+   Adım 5'te (küçük, karşılaştırma) ana içerik alanında görünür. */
+/* Ders 1.1'de Adım 4'ün ana alanı bastan basa video sahnesidir
+   (.vp-stage: max-height min(74vh, 620px)). Arda "1.1'deki video yeri
+   gibi olsun alanı" dedi — üstteki metin listesi kalkınca boşalan yeri
+   sahne aldı, yükseklik o ölçüye çekildi. Sahnenin altında kendi
+   şeridi/çubuğu da var, bu yüzden kutu videodan biraz daha uzun. */
+/* 2026-09-19: yukseklik artik 80vh DEGIL. Kutu sayfanin tepesinde
+   durmuyor - ustunde 153px'lik ust bar ve ~30px'lik adim basligi var,
+   yani "80vh + 238px" hicbir ekranda goruntuye sigmiyordu ve Geri/Ileri
+   cubugu hep ekranin altinda kaliyordu (Arda: "ileri dediginde
+   animasyonda ne degistigini anlamiyorum cunku scrollbar biraz asagida").
+   --wd-ust SABIT YAZILMAZ: lesson-1-2.js kutunun offsetTop'unu olcup
+   yaziyor (bkz. heroYuksekligiAyarla). Hero'nun kendi yuksekligi kendi
+   offsetTop'unu etkilemedigi icin geri besleme dongusu olusmaz, ve ust
+   bar/baslik yarin degisirse olcu kendini duzeltir. */
+.wiring-hero {
+  margin-top: 4px;
+  width: 100%;
+  min-height: 0;
+  /* Alt sinir 470px (= sahne ~253px + sabit satirlar 217px): cok basik
+     pencerelerde her seyi ekrana sigdirmak sahneyi kullanilmaz hale
+     getiriyordu (olculdu: 600px'lik pencerede sahne 158px'e iniyordu).
+     ~675px'in altinda karar animasyondan yana - cocuk biraz kaydirir.
+     Uzerinde sinir hic devreye girmez, kutunun tamami ekrana sigar. */
+  height: clamp(470px, calc(100vh - var(--wd-ust, 250px)), 720px);
+}
+/* .wiring-hero--compare kaldırıldı: Adım 5'teki "kendi devrenle
+   karşılaştır" kutusu Arda'nın isteğiyle silindi ("saçma sapan, hiçbir
+   şey anlaşılmıyor"). Yerini kod önizlemesi + Arduino yükleme adımları
+   aldı, bkz. lesson-1-2.js Adım 5. */
+@media (max-width: 480px) {
+  .wiring-hero { height: clamp(300px, 62vh, 440px); }
+}
+/* Masaüstünde .step-content normalde overflow:hidden (styles.css) — büyük
+   şema + hata galerisi bazı ekranlarda panel yüksekliğini aşabilir.
+   İçerik kırpılmak yerine kaydırılsın (yalnızca bu derste, :has() ile
+   dar kapsamlı). */
+.step-content:has(.wiring-hero) { overflow-y: auto; }
+
+/* ---------- sahne araç düğmeleri (İçini gör / Yakından bak) ---------- */
+/* Sahne araç düğmeleri sahnenin İÇİNDE, sol üstte duruyor. Eskiden
+   sahnenin ALTINDA bir satırdı ve ilk parça takılınca (gizliyken 0px,
+   görününce 31px) sahneyi o kadar kısaltıyordu — ölçüldü. Sahnenin
+   yanlarında zaten geniş boş şerit var (çizim ~800px, kutu ~1378px),
+   düğmeler oraya oturuyor, hiçbir şeyi örtmüyor. */
+.wd-stage-tools {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.wd-x-ray-btn {
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-3, #3D3024);
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border, #EAD3AE);
+  border-radius: 999px;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: transform 140ms var(--wd-ease), background 160ms var(--wd-ease), border-color 160ms var(--wd-ease);
+}
+.wd-x-ray-btn:active { transform: scale(0.97); }
+.wd-x-ray-btn:focus-visible { outline: 3px solid var(--wd-accent); outline-offset: 2px; }
+.wd-x-ray-btn.is-on {
+  color: #fff;
+  background: var(--wd-accent);
+  border-color: var(--wd-accent);
+}
+@media (hover: hover) and (pointer: fine) {
+  .wd-x-ray-btn:not(.is-on):hover { background: var(--color-surface-2, #FCE6C8); }
+}
+
+/* ---------- büyüteç paneli ---------- */
+/* Büyüteç paneli de sahnenin içinde, sağ üstte: açılınca sahneyi
+   kısaltmasın (aynı sebep, bkz. .wd-stage-tools). */
+.wd-magnify-panel {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 3;
+  max-width: 260px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border-soft, #F7EBDD);
+  border-radius: var(--radius-md, 14px);
+  padding: 8px 12px;
+  animation: wd-chip-in 220ms var(--wd-ease) both;
+}
+.wd-magnify-svg { width: 84px; height: 64px; flex: 0 0 auto; }
+.wd-magnify-note {
+  margin: 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-2, #5C4B3A);
+}
+
+.wd-svg {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  display: block;
+}
+
+/* ---------- SVG tipografisi ---------- */
+/* Kart yazıları (wd-brand, wd-pin, wd-boardlbl, wd-chiptext, wd-pin-alias)
+   ve wd-ring artık assets/css/board-svg.css'te — kart çizimiyle birlikte
+   TEK yerde (bkz. assets/js/board-svg.js). Burada sadece şemanın geri
+   kalanına ait tipografi kalıyor. */
+.wd-label     { font: 700 8px/1 Arial, sans-serif;   fill: #7C6552; text-anchor: middle; }
+.wd-sign      { font: 700 13px/1 Arial, sans-serif;  fill: #5C4B3A; text-anchor: middle; }
+.wd-sign-plus { fill: #C0392B; }
+
+.wd-hole { fill: #EFE3CE; stroke: #DDCBAC; stroke-width: 0.6; }
+
+/* ---------- güç rayları (bu derste kullanılmıyor) ---------- */
+/* Soluk çiziliyor: ekrandaki tahta masadakine benzesin ama devredeki
+   parçalarla göz için yarışmasın. Ne olduğu rehberde tek cümleyle geçer,
+   derinliği sonraki derse bırakılır. */
+.wd-rails { opacity: .45; }
+.wd-rail-hole { fill: #D9C9AE; }
+.wd-rail-line { stroke-width: 1.6; }
+.wd-rail-line.is-plus { stroke: #D6273A; }
+.wd-rail-line.is-minus { stroke: #2C5FD6; }
+.wd-rail-mark {
+  font-family: var(--font-body, sans-serif);
+  font-size: 11px;
+  font-weight: 900;
+  text-anchor: middle;
+}
+.wd-rail-mark.is-plus { fill: #D6273A; }
+.wd-rail-mark.is-minus { fill: #2C5FD6; }
+/* x-ray açıkken raylar da görünür: şeritleri YATAY. */
+.wd-svg.is-xray .wd-rails { opacity: .7; }
+
+/* ---------- parça görünürlüğü ---------- */
+.wd-part {
+  opacity: 1;
+  transition: opacity 300ms var(--wd-ease);
+}
+/* Sırası gelmemiş parça EKRANDA DURMAZ. Eskiden %12 saydamlıkla
+   duruyordu ("nereye gelecek belli olsun" diye); Arda: "baştan izle
+   deyince LED ve direnç duruyordu, kalkacak, animasyon adımlarında
+   gelecek." Boş tezgah gerçekten boş olmalı — çocuk kuracağı şeyi
+   ekranda hazır görmemeli. */
+.wd-part.is-ghost {
+  opacity: 0;
+  pointer-events: none;
+  /* İkinci emniyet: yerleşme animasyonu üzerinde kalmış olsa bile
+     (fill-mode: both) gizlenmiş parça gizli kalsın. Asıl düzeltme
+     motorda: setStep parça kalkarken .is-placing'i siliyor. */
+  animation: none;
+}
+/* (Hayalet kablo önizlemesi kaldırıldı: parça hiç görünmüyor artık.) */
+.wd-part.is-active {
+  filter: drop-shadow(0 3px 6px rgba(29, 78, 216, 0.28));
+}
+
+/* ---------- 1) parça yerleşmesi: yukarıdan düşüp otursun ---------- */
+.wd-drop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.wd-drop.is-placing {
+  animation: wd-place 460ms var(--wd-spring) both;
+}
+@keyframes wd-place {
+  0%   { opacity: 0; transform: translateY(-16px) scale(0.93); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- 2) kablo: üç katman, gerçek iğne uç, çizilme ---------- */
+/* Casing tahta yüzeyi renginde ve en kalın katman: kablo LED bacağının
+   üstünden geçerken altındakinde bir boşluk açar. Böylece hangisinin
+   önde olduğu çizimden okunur — gerçek tezgahta da kablolar bacakların
+   ÖNÜNDEN geçer. */
+.wd-wire-casing {
+  stroke: var(--wd-board-surface, #F7EEDF);
+  stroke-width: 9;
+  stroke-linecap: round;
+  stroke-dasharray: 1;   /* pathLength=1 ile: çizim casing'e de işlesin */
+  stroke-dashoffset: 0;
+}
+.wd-wire {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.wd-wire-gloss {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: .55;
+  transform: translateY(-1.1px);
+}
+.is-placing .wd-wire,
+.is-placing .wd-wire-gloss,
+.is-placing .wd-wire-casing {
+  animation: wd-draw 620ms var(--wd-ease) both;
+}
+@keyframes wd-draw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+/* Kablo ucu, çizim bitmeden görünmesin. */
+.is-placing .wd-pin {
+  animation: wd-fade 220ms var(--wd-ease) 420ms both;
+}
+@keyframes wd-fade {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.wd-pin { transform-box: fill-box; transform-origin: 50% 50%; }
+
+/* Rehberde o kablo sıradayken İKİ ucu birden nabız atar: metin hangi ucun
+   nereye gittiğini söylerken göz o iki noktaya kilitlensin. */
+/* transform-box fill-box ŞART (2026-09-28): yoksa nabzın scale'i SVG'nin
+   (0,0) noktası etrafında büyüyor ve halka pinden kopup tahtanın boş bir
+   yerinde beliriyordu (ölçüldü: transform-box view-box). */
+.wd-pin-ring { fill: none; stroke: var(--wd-accent); stroke-width: 1.6; opacity: 0;
+  transform-box: fill-box; transform-origin: 50% 50%; }
+.wd-part.is-active .wd-pin-ring { animation: wd-pin-pulse 1500ms var(--wd-ease) infinite; }
+@keyframes wd-pin-pulse {
+  0%   { opacity: .75; transform: scale(0.55); }
+  100% { opacity: 0;   transform: scale(1.15); }
+}
+
+/* ---------- 3) pin halkası: "buraya bağlıyoruz" — bkz. board-svg.css (.wd-ring) ---------- */
+
+/* ---------- 3b) kılavuz çizgi: "yazı şurada, delik BURADA" ----------
+   Tester bulgusu (Arda, 2026-09-20): çocuk `MI` yazısını buluyor ama
+   kabloyu hangi deliğe sokacağını bulamıyor — pinin kendi deliği (satır i)
+   kartın altında ve dolu, tek boş delik bir üstteki j. Nabız tek başına
+   yetmiyor çünkü "neden orası" sorusunu cevaplamıyor; çizgi yazıdan
+   deliğe fiziksel bir bağ kuruyor.
+   Sönükken de duruyor (çocuk adımdan önce de bakabilsin), adım aktifken
+   yanıp akıyor. Sahneyi büyütmesin diye tamamen mutlak konumlu. */
+.wd-guide path,
+.wd-guide circle {
+  stroke: var(--wd-accent);
+  stroke-width: 1.6;
+  stroke-dasharray: 3 3;
+  stroke-linecap: round;
+  fill: none;
+}
+.wd-guide {
+  opacity: 0.22;
+  transition: opacity 300ms var(--wd-ease);
+}
+.wd-guide.is-on { opacity: 1; }
+.wd-guide.is-on path { animation: wd-guide-flow 900ms linear infinite; }
+@keyframes wd-guide-flow {
+  to { stroke-dashoffset: -12; }
+}
+
+/* ---------- 4) sütun vurgusu: "aynı sütun = bağlı" ---------- */
+.wd-col {
+  fill: var(--wd-accent);
+  opacity: 0;
+  transition: opacity 300ms var(--wd-ease);
+}
+.wd-col.is-on {
+  opacity: 0.13;
+  animation: wd-col-in 420ms var(--wd-spring) both;
+}
+@keyframes wd-col-in {
+  0%   { opacity: 0;    transform: scaleY(0.7); }
+  100% { opacity: 0.13; transform: scaleY(1); }
+}
+#wd-cols rect { transform-box: fill-box; transform-origin: 50% 50%; }
+
+/* ---------- Faz C1: breadboard'ın içi — "İçini gör" ----------
+   Sütunun neden bağlı olduğu normalde görünmez (plastiğin altında).
+   #wd-xray tıklanınca plastik yarı saydamlaşır, metal şeritler ortaya
+   çıkar; bağlı sütun bakır rengine döner (spec §C1). */
+#wd-breadboard {
+  transition: opacity 320ms var(--wd-ease);
+}
+.wd-svg.is-xray #wd-breadboard {
+  opacity: 0.4;
+}
+.wd-metal-strip {
+  fill: url(#wd-metal-grey);
+  stroke: #7C6552;
+  stroke-width: 0.6;
+  opacity: 0;
+  transition: opacity 320ms var(--wd-ease), fill 260ms var(--wd-ease);
+}
+.wd-svg.is-xray .wd-metal-strip {
+  opacity: 0.85;
+}
+.wd-metal-strip.is-on {
+  fill: url(#wd-metal-copper);
+  opacity: 1;
+  filter: drop-shadow(0 0 3px rgba(181, 101, 29, 0.6));
+}
+/* "Bu dördünden herhangi birine de taksan aynı şey olur": bağlı sütunun
+   diğer delikleri hafifçe nabız atar. */
+.wd-hole.is-pulse {
+  animation: wd-hole-pulse 1.4s ease-in-out infinite;
+}
+@keyframes wd-hole-pulse {
+  0%, 100% { fill: #EFE3CE; }
+  50%      { fill: #E8A05C; }
+}
+/* LED bacağının deliğe GİRDİĞİ an görünsün (spec §C2). */
+.wd-leg-land { fill: #2B2F36; opacity: 0.85; }
+
+/* ---------- 5) LED ---------- */
+/* Sönük hali: soluk somon yerine koyu, yarı saydam kırmızı — gerçek
+   kırmızı LED kapalıyken de kırmızıdır, yanınca parlar. */
+/* Renkler değişkenden (2026-09-30): mağazadan alınan LED rengi <html>
+   üzerine --led1-* / --led2-* yazabilir. Varsayılanlar
+   bugünkü kırmızı/yeşil; eşya yoksa hiçbir şey değişmez. */
+.wd-led-bulb { fill: var(--led1-kapali, #B9463E); transition: fill 200ms var(--wd-ease); }
+.wd-led-glow { fill: var(--led1-isik, #FF5A45); opacity: 0; transition: opacity 200ms var(--wd-ease); }
+
+/* Devre tamamlandı: koddaki delay(1000) ile aynı ritim (1sn yanık, 1sn sönük) */
+.wd-svg.is-live .wd-led-bulb { animation: wd-blink-bulb 2s steps(1, end) infinite; }
+.wd-svg.is-live .wd-led-glow { animation: wd-blink-glow 2s steps(1, end) infinite; }
+@keyframes wd-blink-bulb { 0% { fill: var(--led1-yanik, #FF3B26); } 50% { fill: var(--led1-kapali, #B9463E); } }
+@keyframes wd-blink-glow { 0% { opacity: 0.6; }  50% { opacity: 0; } }
+
+/* Ders 1.5/1.6 (mount({ ledSirasi }), svg.is-sira): LED'leri motor zamanla yakar (.is-yanik,
+   kodun loop()'u). Renk LED başına (--sira-*, 1.6 trafik lambası); yoksa mağazanın LED rengi. */
+.wd-svg.is-sira .wd-led-sira .wd-led-bulb { fill: var(--sira-kapali, var(--led1-kapali, #B9463E)); animation: none; transition: fill 60ms linear; }
+.wd-svg.is-sira .wd-led-sira .wd-led-glow { fill: var(--sira-isik, var(--led1-isik, #FF5A45)); opacity: 0; animation: none; transition: opacity 60ms linear; }
+.wd-svg.is-sira .wd-led-sira.is-yanik .wd-led-bulb { fill: var(--sira-yanik, var(--led1-yanik, #FF3B26)); }
+.wd-svg.is-sira .wd-led-sira.is-yanik .wd-led-glow { opacity: 1; }
+/* Ders 1.2'nin "= D5" notu (board-svg.js rings) LED sırası derslerinde kablo uçlarının altında
+   kalıyordu ("= D" kırıntısı, 2026-10-07 taraması); 3.1'de D5 hiç yok. MI = D5 bilgisi bu
+   derslerin pin kutusunda ve rehber metninde zaten var. */
+.wd-svg.is-sira .wd-pin-alias { display: none; }
+
+/* Ders 1.4 (mount({ ikinciLed: true }), svg.is-iki): iki LED ayrı ayrı canlanır.
+   is-live1 — kablo takılı: birinci zincir hep kurulu, kartta hangi kod varsa D5 çalışır.
+   is-live  — ikinci zincir kuruldu VE yeni kod yüklendi: D6 da çalışır.
+   İkinci LED YEŞİL: çocuk ekrandaki iki LED'i "hangisi hangisi" diye
+   karıştırmasın; koddaki birinciLed/ikinciLed adları da renge göre
+   değiştirilecek (dk0030 SEN YAP 3). Ritim ve zıt faz ders CSS'inde. */
+.wd-svg.is-iki.is-live1 #wd-part-led .wd-led-bulb { animation: wd-blink-bulb 1s steps(1, end) infinite; }
+.wd-svg.is-iki.is-live1 #wd-part-led .wd-led-glow { animation: wd-blink-glow 1s steps(1, end) infinite; }
+.wd-svg.is-iki #wd-part-led2 .wd-led-bulb { fill: var(--led2-kapali, #3E8A55); animation: none; }
+.wd-svg.is-iki #wd-part-led2 .wd-led-glow { fill: var(--led2-isik, #3BE36B); opacity: 0; animation: none; }
+.wd-svg.is-iki.is-live #wd-part-led2 .wd-led-bulb { animation: wd-blink-bulb2 1s steps(1, end) infinite; }
+.wd-svg.is-iki.is-live #wd-part-led2 .wd-led-glow { animation: wd-blink-glow 1s steps(1, end) infinite; }
+@keyframes wd-blink-bulb2 { 0% { fill: var(--led2-yanik, #3BE36B); } 50% { fill: var(--led2-kapali, #3E8A55); } }
+
+/* ---------- 6) akım akışı ---------- */
+.wd-spark {
+  fill: #FFC531;
+  opacity: 0;
+  transition: opacity 320ms var(--wd-ease);
+}
+.wd-svg.is-live .wd-spark,
+.wd-svg.is-iki.is-live1 .wd-spark:not(.wd-spark2) {
+  opacity: 1;
+  animation: wd-spark 1.1s ease-in-out infinite;
+}
+@keyframes wd-spark {
+  0%, 100% { r: 3.2; fill: #FFC531; }
+  50%      { r: 4.4; fill: #FFE58A; }
+}
+
+/* ---------- açıklama ---------- */
+/* SABIT SATIRLAR ESNEMEZ (2026-09-19). .wd-root bir flex sutunu ve
+   flex-shrink varsayilani 1'dir: yer daralinca daralma sahneden DEGIL,
+   yukseklikleri bilerek sabitlenmis metin satirlarindan cikiyordu.
+   Olculdu (1536x730): 112px'lik rehber karti 69px'e, 45px'lik adim
+   seridi 37px'e iniyor, cip etiketleri ("LED", "D5 kablosu") ortadan
+   kesiliyordu. Artik daralmayi yalnizca .wd-stage-wrap karsilar
+   (flex: 1 1 auto; min-height: 0) - "sahne boyu sabit" sozlesmesi de
+   bozulmaz, cunku sahnenin boyu zaten hero yuksekligiyle belirleniyor. */
+.wd-caption, .wd-notes, .wd-guide-card, .wd-footer { flex: 0 0 auto; }
+
+/* Adim seridi ve dugme cubugu ayni satirda: serit kalan yeri alir,
+   dugmeler sagda kendi genisliginde durur. */
+.wd-footer { display: flex; align-items: center; gap: 12px; }
+/* Şerit kaldırıldı (2026-09-22): yerine tıklanamaz ilerleme yazısı.
+   Düğmeler artık tek yol olduğu için BÜYÜTÜLDÜ — Arda: "butonlara basma
+   işi kolaylaşıyor, sadeleşiyor." */
+.wd-footer .wd-ilerleme {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-body, sans-serif);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--color-text-muted, #7C6552);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wd-footer .wd-bar { flex: 0 0 auto; }
+/* Dar ekranda yan yana sigmaz: eski alt alta duzene doner. */
+@media (max-width: 640px) {
+  .wd-footer { flex-direction: column; align-items: stretch; gap: 8px; }
+}
+
+.wd-caption {
+  margin: 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text-2, #5C4B3A);
+  min-height: 40px;
+}
+.wd-caption strong { color: var(--color-text, #23180F); }
+
+/* [hidden] ile aynı seçici özgüllüğündeki display:flex çakışmasını çöz
+   (hidden özniteliği kaybederdi) — hem burada hem checkpoint/büyüteç
+   panelinde/rehber kartında/notlar kutusunda aynı desen kullanıldığı
+   için hepsi tek kuralda kapatılıyor. */
+.wd-hint[hidden], .wd-checkpoint[hidden], .wd-magnify-panel[hidden],
+.wd-guide-card[hidden], .wd-notes[hidden] { display: none; }
+
+.wd-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  color: var(--color-text-muted, #7C6552);
+  background: var(--color-surface-deep, #F4F9FF);
+  border-radius: var(--radius-sm, 10px);
+  padding: 7px 12px;
+}
+.wd-hint::before {
+  content: "";
+  width: 8px; height: 8px;
+  border-radius: 999px;
+  background: var(--wd-accent);
+  flex: 0 0 auto;
+}
+
+/* ---------- Faz B: adım sonu kontrol noktası ----------
+   "Doğru mu yaptım?" — yanında kimse olmayan çocuğun en çok ihtiyacı
+   bu (spec §Faz B). En fazla iki satır: bir kontrol noktası, ders değil. */
+.wd-checkpoint {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--color-success-soft, #EAF7EF);
+  border: 1.5px solid var(--color-success, #2BB673);
+  border-radius: var(--radius-sm, 10px);
+  padding: 7px 12px;
+  animation: wd-chip-in 240ms var(--wd-ease) both;
+}
+.wd-checkpoint-title {
+  margin: 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-success-2, #157244);
+}
+.wd-checkpoint-tip {
+  margin: 0;
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--color-text-2, #5C4B3A);
+}
+
+/* ---------- adım şeridi ---------- */
+.wd-strip {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 3px;
+  overflow-x: auto;
+}
+
+/* 2026-09-19: rozet ustte / etiket altta duzeni SATIRA cevrildi. Sebep
+   olculdu: etiket kirpilmayi birakinca ("LED", "D5 kablosu") iki satira
+   dusuyor ve serit 63px tutuyordu; yan yana dizilince 43px. Kazanilan
+   20px dogrudan sahneye gidiyor - kisa ekranlarda animasyonun boyu bu
+   piksellerle belirleniyor. Okunurluk kaybi yok: rozet ve etiket zaten
+   birlikte okunuyor ("1 - LED"). */
+.wd-chip {
+  flex: 1 1 0;
+  min-width: 76px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted, #7C6552);
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border, #EAD3AE);
+  border-radius: var(--radius-sm, 10px);
+  cursor: pointer;
+  animation: wd-chip-in 320ms var(--wd-ease) both;
+  transition: transform 180ms var(--wd-ease),
+              border-color 180ms var(--wd-ease),
+              color 180ms var(--wd-ease),
+              box-shadow 180ms var(--wd-ease);
+}
+@keyframes wd-chip-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.wd-chip:active { transform: scale(0.97); }
+.wd-chip:focus-visible { outline: 3px solid var(--wd-accent); outline-offset: 2px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .wd-chip:hover { border-color: var(--color-primary-stroke, rgba(214,39,58,.32)); }
+}
+
+.wd-chip-num {
+  width: 21px; height: 21px;
+  display: grid; place-items: center;
+  border-radius: 999px;
+  background: var(--color-surface-2, #FCE6C8);
+  color: var(--color-text-3, #3D3024);
+  font-size: 11px;
+  transition: background 200ms var(--wd-ease), color 200ms var(--wd-ease);
+}
+
+/* Beyaz yazı açık yeşil üzerinde 2.6:1 çıkıyordu (gereken 4.5) — koyu
+   yeşile alındı, rozet aynı "bitti" anlamını 6:1 kontrastla veriyor. */
+.wd-chip.is-done .wd-chip-num {
+  background: var(--color-success-2, #157244);
+  color: #fff;
+}
+.wd-chip.is-done .wd-chip-num::after { content: ""; }
+
+.wd-chip.is-active {
+  transform: scale(1.06);
+  color: var(--color-text, #23180F);
+  border-color: var(--wd-accent);
+  /* Sıfır ofsetli renkli halka kaldırıldı; aktif adımı kenarlığın rengi
+     ve ölçek ayırıyor, gölge gerçek bir ofset taşıyor. */
+  border-width: 2px;
+  box-shadow: 0 3px 9px rgba(35, 24, 15, 0.16);
+}
+.wd-chip.is-active .wd-chip-num {
+  background: var(--wd-accent);
+  color: #fff;
+}
+
+/* ---------- alt bar ---------- */
+.wd-bar { display: flex; align-items: center; gap: 10px; }
+
+/* Tek yol kaldığı için düğmeler daha büyük ve daha görünür. */
+.wd-bar .wd-btn {
+  font-size: 15px;
+  padding: 9px 16px;
+  min-height: 40px;           /* dokunma hedefi; 44 iken sahne 4px kaybediyordu */
+}
+.wd-bar .wd-btn-done {
+  font-size: 16px;
+  padding: 10px 24px;
+}
+
+.wd-btn {
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-3, #3D3024);
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border, #EAD3AE);
+  border-radius: 999px;
+  padding: 7px 15px;
+  cursor: pointer;
+  transition: transform 140ms var(--wd-ease),
+              background 160ms var(--wd-ease),
+              color 160ms var(--wd-ease);
+}
+.wd-btn:active { transform: scale(0.97); }
+.wd-btn:focus-visible { outline: 3px solid var(--wd-accent); outline-offset: 2px; }
+.wd-btn[disabled] { opacity: 0.4; cursor: default; transform: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  .wd-btn:not([disabled]):hover { background: var(--color-surface-2, #FCE6C8); }
+}
+
+.wd-btn-guide {
+  color: #fff;
+  background: var(--color-accent, #1D4ED8);
+  border-color: var(--color-accent, #1D4ED8);
+}
+@media (hover: hover) and (pointer: fine) {
+  .wd-btn-guide:hover { background: var(--color-accent-hover, #163FB0); }
+}
+/* "Taktım" rehberin nabzıdır: çocuk her parçada buna basacak, göz onu
+   aramadan bulmalı. */
+.wd-btn-done {
+  color: #fff;
+  background: var(--wd-accent);
+  border-color: var(--wd-accent);
+  font-weight: 800;
+  padding-inline: 22px;
+}
+@media (hover: hover) and (pointer: fine) {
+  .wd-btn-done:hover { filter: brightness(1.06); }
+}
+
+.wd-status {
+  margin-left: auto;
+  font-family: var(--font-body, sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-success-2, #157244);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 240ms var(--wd-ease), transform 240ms var(--wd-spring);
+}
+.wd-status.is-on { opacity: 1; transform: scale(1); }
+
+/* ---------- azaltılmış hareket ----------
+   Kapatmak değil, yumuşatmak: konum/ölçek hareketi gider,
+   opaklık ve renk kalır — anlamı taşıyan katman korunur. */
+@media (prefers-reduced-motion: reduce) {
+  .wd-drop.is-placing,
+  .is-placing .wd-wire,
+  .is-placing .wd-wire-gloss,
+  .is-placing .wd-wire-casing,
+  .is-placing .wd-pin,
+  .wd-chip { animation: none; }
+
+  .wd-part.is-active .wd-pin-ring { animation: none; opacity: .5; }
+
+  .wd-ring.is-on { animation: none; }
+  .wd-guide.is-on path { animation: none; }
+  .wd-col.is-on  { animation: none; }
+
+  .wd-svg.is-live .wd-led-bulb { animation: none; fill: var(--led1-yanik, #FF3B26); }
+  .wd-svg.is-live .wd-led-glow { animation: none; opacity: 0.5; }
+  .wd-svg.is-live .wd-spark    { animation: none; opacity: 0; }
+  .wd-svg.is-iki.is-live1 #wd-part-led .wd-led-bulb { animation: none; fill: var(--led1-yanik, #FF3B26); }
+  .wd-svg.is-iki.is-live1 #wd-part-led .wd-led-glow { animation: none; opacity: 0.5; }
+  .wd-svg.is-iki.is-live #wd-part-led2 .wd-led-bulb { animation: none; fill: var(--led2-yanik, #3BE36B); }
+  .wd-svg.is-iki.is-live #wd-part-led2 .wd-led-glow { animation: none; opacity: 0.5; }
+  .wd-svg.is-iki.is-live1 .wd-spark { animation: none; opacity: 0; }
+
+  .wd-chip.is-active { transform: none; }
+  .wd-btn:active, .wd-chip:active { transform: none; }
+  .wd-x-ray-btn:active { transform: none; }
+
+  .wd-hole.is-pulse { animation: none; fill: #E8A05C; }
+  .wd-checkpoint, .wd-magnify-panel { animation: none; }
+}
+
+/* wd-pin-alias ("= D5") artık board-svg.css'te.
+   Sema ile kart arasindaki atlanan pinler (SC, SD, 3V3) gizlenmiyor,
+   uc nokta ile gorunur birakiliyor. */
+
+/* LED'in ici: kisa bacak (-) TOMBUL kaseye, uzun bacak (+) INCE cubuga gider. */
+/* 2026-09-28: gri yerine koyu kırmızı-gri ve yarı saydam — iç parçalar
+   CAMIN ARKASINDA görünsün (düz gri, LED'in önüne yapıştırılmış gibi
+   okunuyordu). Şekiller aynı: tombul kase / ince çubuk dersi duruyor. */
+.wd-led-post { stroke: #4A1C1A; stroke-width: 2.2; fill: none; stroke-linecap: round; opacity: 0.62; }
+.wd-led-cup  { fill: #4A1C1A; stroke: #2E1110; stroke-width: 0.8; stroke-linejoin: round; opacity: 0.58; }
+.wd-led-glass { pointer-events: none; }
+
+/* PIN HARİTASI / AÇ-KAPA PANELİ: kuralları styles.css'e taşındı.
+   Gerekçe: `.pin-map-*` devre şemasına ait değil, iki dersin de kullandığı
+   genel bir aç-kapa bileşeni; index.html bu dosyayı yüklemiyor. */
+
+/* ---------- Faz A: YAYGIN HATA GALERİSİ (Adım 4) ---------- */
+/* Zafer anına engel koyma kuralı: kapalı başlar, "Bende olmadı" ile
+   açılır. Çocuk daha denemeden sorun giderme listesi görmesin. */
+.error-gallery { padding-bottom: 4px; }
+
+/* "LED yanmadı mı?" — sıralı kontrol listesi.
+   Önceki hâl bir galeriydi (dört yanlış çizim yan yana, kırmızı çarpılar,
+   "Seninki hangisine benziyor?"). Arda iki kez "kafa karıştırıcı" dedi ve
+   haklıydı: LED'i yanmayan çocuk hangi hatayı yaptığını bilmiyor, dört
+   yanlış resimden kendi tezgahını teşhis etmesi isteniyordu.
+   Şimdi: dört madde, her birinde DOĞRU çizim ve tek soru. Ekranda aynı
+   anda tek çizim durur. */
+.err-list {
+  list-style: none;
+  counter-reset: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+@media (min-width: 900px) {
+  .err-list { grid-template-columns: 1fr 1fr; }
+}
+
+.err-item {
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border, #EAD3AE);
+  border-radius: var(--radius-md, 14px);
+  padding: 10px 12px 12px;
+}
+
+.err-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.err-no {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--color-accent, #1D4ED8);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 20px;
+  text-align: center;
+}
+
+.err-title {
+  font-size: 13.5px;
+  font-weight: 800;
+  line-height: 1.4;
+  color: var(--color-text, #23180F);
+}
+
+.err-pic { margin-top: 8px; }
+
+/* Yanlış hâle geçildiğinde çerçeve kırmızıya döner: hangi hâlin ekranda
+   olduğu resme bakmadan da belli olsun. */
+.err-pic.is-wrong .mh-svg {
+  outline: 2.5px solid var(--color-primary, #D6273A);
+  outline-offset: -2px;
+}
+
+.err-fix {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--color-text-2, #5C4B3A);
+}
+
+.err-toggle {
+  margin-top: 8px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--color-text-muted, #7C6552);
+  background: transparent;
+  border: 1.5px dashed var(--color-border, #EAD3AE);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+.err-toggle[aria-pressed="true"] {
+  color: var(--color-primary, #D6273A);
+  border-color: var(--color-primary-stroke, rgba(214,39,58,.32));
+  border-style: solid;
+}
+.err-toggle:focus-visible { outline: 3px solid var(--color-accent, #1D4ED8); outline-offset: 2px; }
+
+.mh-svg {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  height: auto;
+  display: block;
+  background: var(--color-bg, #FBF3E7);
+  border-radius: 10px;
+}
+.mh-bg { fill: var(--color-bg, #FBF3E7); }
+/* .mh-hole/.mh-leg/.mh-wire-* kaldirildi: hata cizimleri artik kendi
+   soyut parcalarini degil, asil sahnenin cizimini (wd-* siniflari,
+   holes()) kullaniyor. */
+
+
+/* ---------- KURULUM VİDEOSU (Adım 4) ---------- */
+.kurulum-video {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  border-radius: var(--radius-lg, 14px);
+  border: var(--border-w-thin, 2px) solid var(--color-border, #E6D6BE);
+  background: #000;
+}
+
+/* USB kablosundaki mavi veri ışıltısı — Adım 1'in sol panel sahnesindeki
+   #layer-dataflow topunun karşılığı. Orada CSS keyframe ile elle
+   örneklenmiş noktalardan geçiyordu; burada kablonun KENDİ path'i
+   üzerinde animateMotion ile, yani kabloyu asla terk etmiyor. */
+.wd-data {
+  fill: var(--color-accent, #1D4ED8);
+  filter: drop-shadow(0 0 5px var(--color-accent, #1D4ED8));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wd-data { display: none; }
+}
+
+/* Sahne ASLA boyut degistirmesin: ipucu ile kontrol noktasinin yeri
+   bastan ayrilir. Olculen sorun: bos tezgahta yalnizca ipucu (31px)
+   vardi, ilk parca takilinca kontrol noktasi (61px) da aciliyor ve
+   sahne 488px'ten 392px'e dusuyordu — animasyon tam ortasinda kuculup
+   tasiyordu (Arda: "ledi takinca ekran kuculuyor, tam gozukmuyor").
+   min-height ikisinin de sigdigi sabit yuksekliktir. */
+.wd-notes {
+  min-height: 74px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Review bulgusu #3 (revize): rehber kartı aktifken .wd-notes (hint+
+   checkpoint+noport) TAMAMEN gizlenir (paintGuide, "notes.hidden = true").
+   İlk denemede yalnızca uyarı çıkınca açılıyordu — kablo takılıp çıkarılırken
+   sahne zıplıyordu; sonra kutuyu SABİT yükseklikte hep açık tutmayı
+   denedim — bu sefer >=440px sahne-boyu testini aşağı çekecek kadar (kalıcı
+   ~56-70px + bir flex-gap) bütçe yiyordu. Üçüncü ve son çözüm: porta takılı
+   değil uyarısı artık AYRI bir kutuda değil, rehber kartının kendi (zaten
+   sabit boyutlu) kontrol alanında gösteriliyor (bkz. tazeleCanli) — ekstra
+   kutu da, ekstra gap de yok, ve uyarı açılıp kapanırken de sahne kıpırdamaz. */
+
+/* ---------- rehber kartı (Adım 4: "neden / nereye / kontrol") ---------- */
+/* Eski .wd-notes kutusunun yerini alır, aynı sebeple SABİT yükseklikte:
+   kart içeriği parçadan parçaya uzayıp kısalırsa sahne boyut değiştirir ve
+   çizim kurulumun ortasında zıplar (bkz. .wd-notes üstündeki not).
+   Review bulgusu #4: min-height bir TABAN, tavan değil — içerik taşarsa
+   kart büyür ve o büyüme doğrudan .wd-stage'den çalınır. Dört parçanın
+   metni ~1024px genişlikte ölçüldü (bkz. task-1-report.md "Fix raporu"):
+   LED 94px, Kırmızı kablo 94px, Direnç 94px, Siyah kablo 94px — hepsi bu
+   genişlikte tek satıra sığıyor. height:112px (~18px pay) SABİT bir tavan
+   koyar; daha dar bir ekranda satır sayısı artıp kart yine de sığmazsa
+   büyümek yerine overflow-y:auto ile İÇTEN kaydırır — sahne asla etkilenmez. */
+.wd-guide-card {
+  position: relative;   /* Adim 3 dugmesi ve katmani buna gore konumlanir */
+  /* 2026-09-20 — Arda: "bu 4 bilgi notunu vurgulat, devreyi kurarken
+     kesinlikle adim adim okumasi lazim."
+     Yukseklik artik SABIT DEGIL: 19 Eylul'de 112px'e elle sigdirilmisti,
+     o yuzden govde yazisi 17px'e cikarken bu kart 14px'te kalmisti —
+     cocugun kurulum boyunca okudugu TEK metin en kucuk metindi.
+     min-height korunuyor ki not degisirken kart ziplamasin; buyume
+     payini sahne karsiliyor (.wd-root sozlesmesi: sabit satirlar
+     flex:0 0 auto, daralan tek sey sahne). */
+  /* SABIT yukseklik, bilerek: icerige gore buyurse sahne boyu adimdan
+     adima oynuyor ve test hakli olarak kiziyor ("sahne boyu sabit +-2px").
+     Olculdu: dogal yukseklik 1536'da ve 1280'de 100px, 1024'te "direnc"
+     notu sarip 125px'e cikiyor. 128 dordunu de karsiliyor; daha dar
+     ekranda overflow-y emniyet supabi. Puntoyu buyutunce 112 yetmiyordu. */
+  height: 128px;
+  overflow-y: auto;
+  /* Sol kenardaki kalin serit: kart artik "burada yazi var" demiyor,
+     "BURAYI OKU" diyor. */
+  border-left: 5px solid var(--wd-accent);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border-soft, #F7EBDD);
+  border-radius: var(--radius-lg, 20px);
+  background: var(--color-surface, #fff);
+}
+/* 2026-09-19 — Arda: "her animasyon adiminda yazan kismi kalin koyu yazi
+   yapalim belli olsun." Kart cocugun kurulum boyunca okudugu TEK metin,
+   ama uc satir da silik griydi (#5A4632 / #3D3024 / #8A7B6B) ve ikisi
+   400 agirliktaydi. Hiyerarsi kalinlikla kuruluyor, renk cumbusuyle
+   degil: uc satir da koyu, aralarindaki fark agirlik ve puntoda.
+   Seciciler kart adiyla nitelendi: styles.css'teki `.step-content p`
+   (0,1,1) tek sinif secicisini yeniyor ve hem rengi hem puntoyu geri
+   aliyordu (olculdu: istenen 15px yerine 14px, #23180F yerine #5C4B3A). */
+.wd-guide-card .wd-guide-neden {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--color-text, #23180F);
+  margin: 0;
+}
+.wd-guide-card .wd-guide-nereye {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-text, #23180F);
+  margin: 0;
+}
+/* Cumle icindeki <b> zaten 700 gelir; cevresi 600 olunca fark kayboluyor. */
+/* 2026-09-21 - Arda: "o yazilarda mavi seyle vurgulansin."
+   Kalinlik tek basina yetmiyordu: uc satir da koyu oldugu icin cumlenin
+   ICINDEKI kritik kelime (UZUN / KISA / D5 / GND) ayni koyulukta akip
+   gidiyordu. Vurgu artik kartin zaten kullandigi maviyle yapiliyor
+   (--wd-accent = --color-accent, kartin sol seridi ve pin halkalari da o
+   renk) - yeni bir renk dili degil, var olanin metne inmesi.
+   box-decoration-break: satir sarinca ikinci parca dolgusuz kalmasin. */
+.wd-guide-card .wd-guide-neden b,   .wd-guide-card .wd-guide-neden strong,
+.wd-guide-card .wd-guide-nereye b,  .wd-guide-card .wd-guide-nereye strong,
+.wd-guide-card .wd-guide-kontrol b, .wd-guide-card .wd-guide-kontrol strong {
+  font-weight: 800;
+  color: var(--wd-accent);
+  background: var(--color-accent-soft, rgba(29, 78, 216, 0.12));
+  border-radius: 6px;
+  padding: 0 4px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+/* ---------- Adim 3 bagi (kartin sag ust kosesi) ---------- */
+/* Dugme de katman da MUTLAK konumlu: kapaliyken de aciksa da yerlesimden
+   tek piksel almazlar, yani sahne kipirdamaz. Dugme kartin sag ust
+   kosesinde; KATMAN ise kartin degil SAHNENIN icinde (bkz.
+   wiring-diagram.js markup notu) - kartin overflow-y:auto'su mutlak
+   konumlu cocugu kirpiyor, katman kartin icinde kalsa hic gorunmuyordu. */
+.wd-adim3-btn {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  z-index: 4;
+  font-family: var(--font-body, sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-3, #3D3024);
+  background: var(--color-surface-2, #FCE6C8);
+  border: 1.5px solid var(--color-border, #EAD3AE);
+  border-radius: 999px;
+  padding: 4px 11px;
+  cursor: pointer;
+  transition: transform 140ms var(--wd-ease), background 160ms var(--wd-ease);
+}
+.wd-adim3-btn::after { content: " ▾"; }
+.wd-adim3-btn:active { transform: scale(0.97); }
+.wd-adim3-btn:focus-visible { outline: 3px solid var(--wd-accent); outline-offset: 2px; }
+.wd-adim3-btn.is-on { background: var(--wd-accent); color: #fff; border-color: var(--wd-accent); }
+.wd-adim3-btn.is-on::after { content: " ▴"; }
+.wd-adim3-btn[hidden] { display: none; }
+
+.wd-adim3-panel {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  z-index: 5;
+  width: min(420px, 92%);
+  max-height: calc(100% - 20px);
+  overflow-y: auto;
+  background: var(--color-surface, #fff);
+  border: 1.5px solid var(--color-border, #EAD3AE);
+  border-radius: var(--radius-md, 14px);
+  box-shadow: 0 10px 28px rgba(61, 48, 36, 0.18);
+  padding: 10px 14px;
+  animation: wd-chip-in 200ms var(--wd-ease) both;
+}
+.wd-adim3-panel[hidden] { display: none; }
+.wd-adim3-panel .wd-adim3-ad {
+  margin: 6px 0 4px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-text-muted, #7C6552);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.wd-adim3-panel .wd-adim3-ad:first-child { margin-top: 0; }
+.wd-adim3-panel .wd-adim3-liste {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-text-3, #3D3024);
+}
+.wd-adim3-panel .wd-adim3-liste li { margin-bottom: 2px; }
+
+/* Dugmenin altinda kalmasin diye ilk satira sag bosluk. Yalnizca ilk
+   satirda: alttaki iki satir dugmenin hizasindan zaten asagida. */
+.wd-guide-card .wd-guide-neden { padding-right: 150px; }
+
+/* "Icini gor" cagrisi: sorunun cevabi tahtanin icinde olan adimlarda
+   nabiz atar. Ayni dil USB kutusundaki usbDetectCall ile ayni (styles.css). */
+.wd-x-ray-btn.is-calling {
+  background: var(--color-accent, #1D4ED8);
+  color: #fff;
+  border-color: var(--color-accent, #1D4ED8);
+  animation: usbDetectCall 1.7s ease-out infinite;
+}
+
+.wd-guide-card .wd-guide-kontrol {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--color-text-3, #3D3024);
+  margin: 0;
+}
+.wd-guide-kontrol-ok { color: var(--wd-accent); font-weight: 900; }
+
+/* Kontrol noktasi aciksa ipucu gizlenir: ikisi ust uste binmesin,
+   kutunun yuksekligi sabit kalsin. */
+.wd-notes:has(#wd-checkpoint:not([hidden])) #wd-hint { display: none; }
+
+/* Kablo takılı / takılı değil — Adım 4 sahnesindeki iki hâl.
+   Kablo eğrisi fişin ucunda bittiği için yalnızca fişi kaydırmak kabloyu
+   koparırdı; bu yüzden iki ayrı eğri çizilip burada biri gösteriliyor.
+   Ders 1.1'in sol panel sahnesindeki davranışın aynısı. */
+.wd-usb-off { display: none; }
+.wd-svg.is-unplugged .wd-usb-on { display: none; }
+.wd-svg.is-unplugged .wd-usb-off { display: block; }
+.wd-svg.is-unplugged .wd-data { display: none; }
+
+#wd-usb-plug { transition: transform .55s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.wd-svg.is-unplugged #wd-usb-plug { transform: translateY(-14px); }
+
+@media (prefers-reduced-motion: reduce) {
+  #wd-usb-plug { transition: none; }
+}
+
+/* Yükleme çubuğu adım açılırken dolsun: "kod karta gidiyor" hissi.
+   .is-placing zaten yeni açılan parçaya konuyor (bkz. setStep). */
+.wd-upload-fill { transform-origin: 33px 96px; }
+.wd-part.is-placing .wd-upload-fill { animation: wd-upload 900ms ease-out both; }
+@keyframes wd-upload {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wd-part.is-placing .wd-upload-fill { animation: none; }
+}
+
+/* "LED yanmadı çünkü kart porta takılı değil" uyarısı. Kurulum bitmiş
+   ama güç yoksa çocuk kurulumu yanlış yaptığını sanıyor; sebebi
+   söylemek kurulumun kendisi kadar önemli. */
+.wd-noport {
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm, 10px);
+  background: var(--color-danger-soft, rgba(244, 81, 30, 0.14));
+  border: 1px solid var(--color-danger, #F4511E);
+  color: var(--color-text-3, #3D3024);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.wd-noport[hidden] { display: none; }
+
+/* ---------- YENI NOT UYARISI (2026-09-20) ---------- */
+/* Parca degisince kartin metni degisiyor ama ekranda hicbir sey
+   KIPIRDAMIYORDU: cocuk "Taktim"a basip sahneye bakiyor, kartin
+   yeni bir sey soyledigini fark etmiyordu. Uc kez vurup susuyor —
+   surekli yanip sonen kutu okumayi zorlastirir, kural bu (Kurallar.md:
+   ses ve dikkat odul/degisim anina saklanir). */
+@keyframes wdYeniNot {
+  0%   { box-shadow: 0 0 0 0 rgba(214, 39, 58, 0.34); }
+  70%  { box-shadow: 0 0 0 10px rgba(214, 39, 58, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(214, 39, 58, 0); }
+}
+.wd-guide-card.is-yeni-not { animation: wdYeniNot 1.15s ease-out 3; }
+@media (prefers-reduced-motion: reduce) {
+  .wd-guide-card.is-yeni-not { animation: none; }
+}
+
+/* ---------- DIKEY BUTCE (2026-09-20) ---------- */
+/* Rehber karti buyuyunce (112 -> 128px, punto 14/15/13 -> 16/17/15)
+   sahne 288px'e dustu ve "sahne >= 300px" tabani kizardi.
+   Yer SAHNEDEN degil, kutunun USTUNDEKI dolgulardan alindi: olculdu,
+   hero'nun offsetTop'u 191px ama basligin kendisi yalnizca 28px —
+   gerisi ust uste binmis dolgu ve margin. Hicbir yazi kuculmedi.
+   Bu dosya yalnizca lesson-1-2.html'de yuklendigi icin degisiklik
+   Ders 1.1'e ve portala dokunmaz. */
+.panel:has(.wiring-hero) { padding-top: 8px; }
+.step-content:has(.wiring-hero) > h2 { margin-bottom: 4px; }
+.wiring-hero { margin-top: 0; }
+
+/* Ders 1.4: kartın "= D5" çağrısı D6 kablosunun deliğine düşüyor; yerine
+   sahnede iki satırlık "MC = D6 / MI = D5" (bkz. wiring-diagram.js). */
+.wd-svg.is-iki .wd-pin-alias:not(.wd-alias2) { display: none; }
+.wd-alias2 { font-size: 6.6px; text-anchor: end; }
+
+/* ---------- GENİŞ EKRAN: rehber kartı şemanın YANINDA (2026-09-30) ----------
+   Arda: "Adım 4'teki devre şeması küçük, kartın üstündeki yazılar zor
+   okunuyor." Ölçüldü (1536x730): sahne 1456x286px, ama çizim yükseklikten
+   sınırlı olduğu için yalnızca ~645px'ini kullanıyordu — kutunun yarısından
+   fazlası boş şeritti. Yüksekliği yiyen, sahnenin ALTINDAKİ rehber kartı
+   (128px) ve düğme satırıydı (44px). Geniş ekranda ikisi sağ sütuna geçiyor;
+   sahne kutunun tüm yüksekliğini alıyor ve çizim ~1.8 kat büyüyor.
+   Sahne boyu sabit sözleşmesi korunuyor: sahne bütün satırları kaplıyor,
+   sağ sütunda metin uzayıp kısalsa da sahnenin boyu kutunun boyudur.
+   Son satır (1fr) boşluk: kart ve Taktım yukarıda, okunan metnin hemen
+   altında dururlar. */
+@media (min-width: 1100px) {
+  .wd-root {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(280px, 24vw, 360px);
+    grid-template-rows: auto auto auto auto minmax(0, 1fr);
+    column-gap: 14px;
+    row-gap: 10px;
+  }
+  .wd-stage-wrap { grid-column: 1; grid-row: 1 / -1; }
+  .wd-caption    { grid-column: 2; grid-row: 1; }
+  .wd-notes      { grid-column: 2; grid-row: 2; }
+  .wd-guide-card { grid-column: 2; grid-row: 3; }
+  .wd-footer     { grid-column: 2; grid-row: 4; }
+  /* Dar sütunda sabit 128px yetmez; kart artık sahneden yer çalmıyor,
+     içeriği kadar uzayabilir. */
+  .wd-guide-card { height: auto; min-height: 128px; overflow: visible; justify-content: flex-start; }
+  /* "Adım 3'te görmüştün" düğmesi dar sütunda ilk satırın 150px'ini
+     yiyordu; kartın başında kendi satırına iniyor. */
+  .wd-adim3-btn { position: static; align-self: flex-start; margin-bottom: 4px; }
+  .wd-guide-card .wd-guide-neden { padding-right: 0; }
+}
+
+/* 3B sahne (assets/js/sahne3b.js): SVG yerinde ve dersin kaynağı, ama görünmez;
+   üstünde three.js tuvali. WebGL yoksa ya da hareket kapalıysa bu sınıflar hiç gelmez. */
+.wd-svg.s3b-gizli { opacity: 0; }
+.s3b-tuval { position: absolute; pointer-events: none; z-index: 1; }
+/* "Hareket ettir" açıkken tuval fareyi/parmağı alır (sahne3b.js); kapalıyken tıklamalar alttaki SVG'ye. */
+.s3b-hareketli .s3b-tuval { pointer-events: auto; z-index: 5; cursor: grab; touch-action: none; }
+.s3b-hareketli .s3b-tuval:active { cursor: grabbing; }
+/* 3B kurulumda "İçini gör / Plastiği kapat" yok (Arda, 2026-10-05: "kaldır").
+   SVG yedeğinde (hareket kapalı) düğme duruyor. */
+.wd-stage-wrap:has(> .wd-stage.s3b-acik) #wd-xray { display: none; }
+
+/* Ders 3.1 buton (wiring-diagram.js butonMarkup): basılınca kapak koyulaşır, sarı halka. */
+.wd-buton-kapak { fill: transparent; stroke: transparent; stroke-width: 2.2; transition: fill 80ms linear, stroke 80ms linear; }
+.wd-buton.is-basili .wd-buton-kapak { fill: rgba(0, 0, 0, .38); stroke: #FFD23F; }

@@ -1,0 +1,557 @@
+/* ============================================================
+   KURULUM SAHNESİ — Ders 1.1 Adım 4 motion design (kurulum-sahne.js)
+   Tuval sabit 1280x720 çizilir, JS ölçekler. Bu dosyadaki px'ler
+   o tuvalin pikselleri. Sahne bir yazılım ekranının TAKLİDİ olduğu
+   için temadan bağımsız (Arduino IDE kendi koyu temasıyla görünür).
+   ============================================================ */
+.vp-video.ks {
+  position: relative;
+  overflow: hidden;
+  background: #0d1214;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ks-tuval {
+  position: absolute;
+  left: 0; top: 0;
+  width: 1280px; height: 720px;
+  transform-origin: 0 0;
+  overflow: hidden;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  color: #dae3e3;
+}
+.ks-dunya {
+  position: absolute;
+  left: 0; top: 0;
+  width: 1280px; height: 720px;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.ks-icerik { position: absolute; inset: 0; }
+.ks-tuval * { box-sizing: border-box; }
+.ks-tuval p, .ks-tuval h3, .ks-tuval h4 { font-family: inherit; }
+.ks-tuval .ks-dlg-acik { color: #b6c4c6; }
+.ks-tuval svg { display: block; width: 100%; height: 100%; }
+
+/* ---------- görünürlük (JS .on sınıfını t'ye göre koyar) ---------- */
+.ks-indirmeler, .ks-kurulum, .ks-acilis, .ks-acilir, .ks-perde, .ks-dlg,
+.ks-liste, .ks-yenile, .ks-ipucu-balon, .ks-bildirim, .ks-ara-ipucu, .ks-yuklu,
+.ks-cikti {
+  transition: opacity .22s ease, transform .28s cubic-bezier(.2,.9,.3,1.2), visibility 0s linear .28s;
+}
+.ks-indirmeler:not(.on), .ks-kurulum:not(.on), .ks-acilis:not(.on), .ks-acilir:not(.on),
+.ks-perde:not(.on), .ks-dlg:not(.on), .ks-liste:not(.on), .ks-yenile:not(.on),
+.ks-ipucu-balon:not(.on), .ks-bildirim:not(.on), .ks-ara-ipucu:not(.on), .ks-yuklu:not(.on),
+.ks-cikti:not(.on) {
+  opacity: 0; visibility: hidden; pointer-events: none;
+}
+.ks-indirmeler.on, .ks-kurulum.on, .ks-acilis.on, .ks-acilir.on, .ks-perde.on, .ks-dlg.on,
+.ks-liste.on, .ks-yenile.on, .ks-ipucu-balon.on, .ks-bildirim.on, .ks-ara-ipucu.on,
+.ks-yuklu.on, .ks-cikti.on {
+  transition-delay: 0s;
+}
+.ks-acilir:not(.on), .ks-liste:not(.on) { transform: translateY(-6px) scale(.98); }
+.ks-dlg:not(.on), .ks-kurulum:not(.on) { transform: scale(.94); }
+.ks-indirmeler:not(.on) { transform: translateY(-10px); }
+.ks-bildirim:not(.on) { transform: translateY(14px); }
+.ks-k-sayfa:not(.on), .ks-paket:not(.on), .ks-sonuc-o:not(.on), .ks-kodblok:not(.on) { display: none; }
+
+/* basılan düğme */
+.ks-bas { filter: brightness(1.25); transform: scale(.95); transition: transform .08s; }
+
+/* ---------- imleç, tıklama halkası, vurgu ---------- */
+.ks-imlec {
+  position: absolute; left: 0; top: 0;
+  width: 26px; height: 26px;
+  margin: -3px 0 0 -4px;
+  transform-origin: 4px 3px;
+  z-index: 50;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,.45));
+  pointer-events: none;
+}
+.ks-imlec-not {
+  position: absolute; left: 24px; top: 20px;
+  background: #f5b301; color: #1a1300;
+  font-size: 12px; font-weight: 700; white-space: nowrap;
+  padding: 2px 7px; border-radius: 6px;
+  opacity: 0; transition: opacity .15s;
+}
+.ks-imlec.ks-sag-not .ks-imlec-not { opacity: 1; }
+.ks-halka {
+  position: absolute; left: 0; top: 0;
+  width: 44px; height: 44px; margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  border: 3px solid #ffd23f;
+  background: rgba(255, 210, 63, .25);
+  opacity: 0; z-index: 49; pointer-events: none;
+}
+.ks-halka.ks-halka-sag { border-color: #f5b301; background: rgba(245,179,1,.15); }
+.ks-vurgu {
+  position: absolute; z-index: 45; pointer-events: none;
+  border: 3px solid #ffd23f; border-radius: 10px;
+  box-shadow: 0 0 0 4px rgba(255,210,63,.25), 0 0 24px rgba(255,210,63,.55);
+  opacity: 0; transition: opacity .2s;
+}
+.ks-vurgu.on { opacity: 1; animation: ks-nabiz 1s ease-in-out infinite; }
+@keyframes ks-nabiz { 50% { box-shadow: 0 0 0 9px rgba(255,210,63,.12), 0 0 30px rgba(255,210,63,.7); } }
+
+/* ---------- üst katman: altyazı + kısayol (yakınlaşmadan bağımsız) ---------- */
+.ks-ust { position: absolute; inset: 0; pointer-events: none; z-index: 60; }
+.ks-alt {
+  position: absolute; left: 50%; bottom: 34px;
+  transform: translate(-50%, 12px);
+  max-width: 1080px;
+  opacity: 0; transition: opacity .25s, transform .3s cubic-bezier(.2,.9,.3,1.2);
+}
+.ks-alt.on { opacity: 1; transform: translate(-50%, 0); }
+.ks-alt.ks-alt-ust { bottom: auto; top: 30px; }
+.ks-alt.ks-alt-ust.ks-tus-var { top: 130px; }
+.ks-alt span {
+  display: block;
+  background: rgba(8, 12, 14, .88);
+  color: #fff;
+  font-size: 34px; font-weight: 700; line-height: 1.25;
+  letter-spacing: .2px;
+  padding: 12px 26px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 210, 63, .7);
+  box-shadow: 0 8px 30px rgba(0,0,0,.45);
+  text-align: center;
+}
+.ks-tus {
+  position: absolute; left: 50%; top: 40px;
+  transform: translate(-50%, -10px) scale(.9);
+  display: flex; align-items: center; gap: 12px;
+  opacity: 0; transition: opacity .2s, transform .25s cubic-bezier(.2,.9,.3,1.4);
+}
+.ks-tus.on { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.ks-tus kbd {
+  font: 700 40px/1 "Segoe UI", system-ui, sans-serif;
+  color: #1b1b1b; background: linear-gradient(#fff, #e3e3e3);
+  border: 2px solid #bbb; border-bottom-width: 6px; border-radius: 12px;
+  padding: 12px 22px;
+}
+.ks-tus span { font-size: 36px; font-weight: 800; color: #fff; text-shadow: 0 2px 6px rgba(0,0,0,.6); }
+
+/* ============================================================
+   SAHNE 1 — tarayıcı + kurulum sihirbazı
+   ============================================================ */
+.ks-masaustu {
+  position: absolute; inset: 0;
+  /* Duvar kâğıdı laptop ekranının renginde (--lt-* tanımlı değilse varsayılanlar). */
+  background: radial-gradient(1200px 700px at 30% 20%, color-mix(in srgb, var(--lt-vurgu, #4D8FCF) 50%, #0b2236), var(--lt-ekran, #0b2236) 72%);
+}
+.ks-tarayici {
+  position: absolute; left: 28px; top: 22px; right: 28px; bottom: 22px;
+  background: #fff; color: #222;
+  border-radius: 12px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.ks-tb-sekmeler { height: 40px; background: #dfe3e8; display: flex; align-items: flex-end; padding: 0 14px; gap: 8px; }
+.ks-tb-nokta { width: 12px; height: 12px; border-radius: 50%; background: #b7bec7; margin-bottom: 14px; }
+.ks-tb-sekme { background: #fff; padding: 9px 22px; border-radius: 10px 10px 0 0; font-size: 14px; margin-left: 14px; }
+.ks-tb-adres { height: 48px; display: flex; align-items: center; gap: 14px; padding: 0 16px; border-bottom: 1px solid #e3e6ea; }
+.ks-tb-git { color: #777; font-size: 18px; }
+.ks-tb-url { flex: 1; background: #f1f3f4; border-radius: 20px; padding: 8px 18px; color: #555; font-size: 14px; }
+.ks-tb-indir { width: 30px; height: 30px; padding: 4px; color: #1a73e8; border-radius: 50%; }
+.ks-sayfa { position: absolute; top: 88px; left: 0; right: 0; bottom: 0; background: #fbf7f4; }
+.ks-sayfa-ust { height: 52px; display: flex; align-items: center; gap: 22px; padding: 0 26px; border-bottom: 1px solid #eee; background: #fff; }
+.ks-sayfa-ust b { color: #c62828; font-size: 17px; }
+.ks-sayfa-ust span { color: #888; font-size: 14px; }
+.ks-sayfa-govde { display: flex; gap: 26px; padding: 26px; height: calc(100% - 52px); }
+.ks-sayfa-sol { width: 280px; }
+.ks-sayfa-kart { height: 100%; border-radius: 16px; background: linear-gradient(160deg, #fff, #f1e9e3); border: 1px solid #eadfd6; }
+.ks-sayfa-sag { flex: 1; }
+.ks-sayfa-sag h3 { margin: 0 0 14px; color: #c62828; font-size: 24px; }
+.ks-sayfa-sag p { margin: 0 0 18px; font-size: 18px; line-height: 2; color: #444; }
+.ks-indir-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: #1aa37a; color: #fff; font-weight: 700;
+  padding: 6px 16px; border-radius: 22px; vertical-align: middle;
+  box-shadow: 0 3px 0 #10805e;
+}
+.ks-indir-btn svg { width: 18px; height: 18px; }
+.ks-sayfa-video { height: 300px; border-radius: 14px; background: #1b2226; }
+
+.ks-indirmeler {
+  position: absolute; right: 18px; top: 82px; width: 420px;
+  background: #fff; border-radius: 12px; padding: 14px 16px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.28); z-index: 5;
+}
+.ks-indirmeler-bas { font-weight: 700; font-size: 15px; margin-bottom: 10px; }
+.ks-dosya { display: flex; gap: 12px; align-items: center; padding: 10px; border-radius: 10px; background: #f3f6fb; }
+.ks-dosya-ikon { width: 38px; height: 38px; flex: none; }
+.ks-dosya-yazi { display: flex; flex-direction: column; gap: 6px; flex: 1; font-size: 13px; min-width: 0; }
+.ks-dosya-yazi small { color: #666; }
+.ks-cubuk { display: block; height: 6px; background: #dde3ea; border-radius: 4px; overflow: hidden; }
+.ks-cubuk-dolu { display: block; height: 100%; width: 0; background: #1a73e8; border-radius: 4px; }
+.ks-cubuk-buyuk { height: 18px; border-radius: 4px; margin: 26px 0 10px; }
+.ks-cubuk-buyuk .ks-cubuk-dolu { background: linear-gradient(90deg, #00a0a8, #00878f); border-radius: 0; }
+
+.ks-win {
+  position: absolute; background: #fff; color: #222;
+  border-radius: 10px; overflow: hidden;
+  box-shadow: 0 24px 70px rgba(0,0,0,.5);
+}
+.ks-kurulum { left: 340px; top: 150px; width: 600px; height: 420px; z-index: 10; }
+.ks-win-bas { height: 44px; display: flex; align-items: center; gap: 10px; padding: 0 14px; background: #00878f; color: #fff; font-weight: 600; }
+.ks-win-bas svg { width: 24px; height: 24px; }
+.ks-win-bas .ks-pen-dugme { margin-left: auto; }
+.ks-sayfalar { position: relative; height: calc(100% - 44px); }
+.ks-k-sayfa { position: absolute; inset: 0; padding: 22px 26px; }
+.ks-k-sayfa h4 { margin: 0 0 4px; font-size: 20px; }
+.ks-k-alt { margin: 0 0 12px; color: #555; font-size: 14px; }
+.ks-lisans { height: 170px; overflow: hidden; border: 1px solid #ccc; padding: 10px; font-size: 12.5px; line-height: 1.55; color: #444; background: #fafafa; }
+.ks-k-dugmeler { position: absolute; right: 22px; bottom: 20px; display: flex; gap: 10px; }
+.ks-k-btn { padding: 8px 18px; border: 1px solid #aaa; border-radius: 6px; background: #f2f2f2; font-size: 14px; }
+.ks-k-ana { background: #00878f; border-color: #00878f; color: #fff; font-weight: 700; }
+.ks-radyo { display: flex; align-items: center; gap: 10px; margin: 14px 0; font-size: 16px; }
+.ks-radyo-d { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #777; }
+.ks-radyo-sec .ks-radyo-d { border-color: #00878f; box-shadow: inset 0 0 0 4px #fff; background: #00878f; }
+.ks-yol { border: 1px solid #aaa; padding: 9px 12px; font-size: 14px; background: #fafafa; margin-bottom: 10px; }
+.ks-k-dosyalar { margin-top: 8px; }
+.ks-bitti-ikon { width: 70px; height: 70px; border-radius: 50%; background: #1aa37a; color: #fff; padding: 14px; margin: 18px auto 12px; }
+.ks-k-sayfa#s1-p5 h4 { text-align: center; }
+.ks-onay { display: flex; align-items: center; gap: 10px; justify-content: center; margin-top: 22px; font-size: 16px; }
+.ks-onay-kutu { width: 20px; height: 20px; background: #00878f; color: #fff; border-radius: 4px; padding: 2px; }
+.ks-acilis {
+  position: absolute; left: 50%; top: 50%; width: 360px; height: 260px; margin: -130px 0 0 -180px;
+  background: #fff; color: #333; border-radius: 14px; z-index: 12;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.5); font-size: 17px;
+}
+.ks-acilis svg { width: 92px; height: 92px; animation: ks-don 2.4s linear infinite; }
+@keyframes ks-don { to { transform: rotate(360deg); } }
+
+/* ============================================================
+   ARDUINO IDE (koyu tema taklidi) — sahne 2, 3, 4
+   ============================================================ */
+.ks-ide { position: absolute; inset: 0; background: #171e21; display: flex; flex-direction: column; }
+.ks-ide-baslik { height: 30px; flex: none; display: flex; align-items: center; gap: 8px; padding-left: 10px; background: #fff; color: #333; font-size: 13px; }
+.ks-ide-logo { width: 18px; height: 18px; }
+.ks-pen-dugme { width: 40px; text-align: center; color: #555; }
+.ks-ide-baslik .ks-pen-dugme:first-of-type { margin-left: auto; }
+.ks-ide-menu { height: 28px; flex: none; display: flex; align-items: center; gap: 4px; padding-left: 6px; background: #fff; color: #222; font-size: 14px; border-bottom: 1px solid #ddd; }
+.ks-ide-menu-o { padding: 3px 10px; border-radius: 4px; }
+.ks-ide-menu-o.ks-secili { background: #dfe9ea; }
+.ks-ide-arac { height: 54px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: #171e21; border-bottom: 1px solid #0b0f10; }
+.ks-yuvarlak { width: 34px; height: 34px; border-radius: 50%; background: #008184; color: #fff; padding: 6px; }
+.ks-yuvarlak.ks-soluk { background: #2b3639; color: #6c7a7d; }
+.ks-kartsec { margin-left: 8px; display: inline-flex; align-items: center; justify-content: space-between; gap: 18px; min-width: 250px; height: 34px; padding: 0 12px; background: #fff; color: #222; border-radius: 4px; font-size: 14px; }
+.ks-kartsec .ks-ok { color: #444; }
+.ks-ide-sag { margin-left: auto; width: 26px; height: 26px; color: #8fa1a4; }
+.ks-ide-govde { flex: 1; display: flex; min-height: 0; position: relative; }
+.ks-ide-yan { width: 50px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 14px; background: #171e21; border-right: 1px solid #0b0f10; }
+.ks-ide-yan span { width: 32px; height: 32px; padding: 5px; color: #8fa1a4; border-radius: 6px; }
+.ks-ide-yan span.ks-secili { color: #fff; background: #26363a; box-shadow: inset 3px 0 0 #00a0a8; }
+.ks-ide-edit { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #1f272a; position: relative; }
+.ks-ide-sekme { height: 34px; flex: none; display: flex; align-items: flex-end; background: #171e21; }
+.ks-ide-sekme span { background: #1f272a; padding: 8px 18px; font-size: 13px; border-top: 2px solid #00a0a8; }
+.ks-kod { flex: 1; padding: 10px 0; font: 17px/1.65 Consolas, "Cascadia Mono", monospace; overflow: hidden; position: relative; }
+.ks-satir { display: flex; white-space: pre; }
+.ks-no { width: 52px; flex: none; text-align: right; padding-right: 18px; color: #4f6064; }
+.ks-kodmetin { color: #dae3e3; }
+.ks-k-yorum { color: #6f8a8d; }
+.ks-k-tur { color: #00b3b9; }
+.ks-k-fn { color: #e9a33d; }
+.ks-k-sabit { color: #8fd0ff; }
+.ks-k-sayi { color: #b4d77a; }
+.ks-kodblok.ks-secim-on .ks-kodmetin { background: #26517a; }
+.ks-yeni { animation: ks-parla 1.4s ease-out; }
+@keyframes ks-parla { 0% { background-color: rgba(255,210,63,.35); } 100% { background-color: transparent; } }
+.ks-ide-durum { height: 24px; flex: none; display: flex; align-items: center; padding: 0 14px; background: #10171a; color: #8fa1a4; font-size: 12.5px; }
+.ks-durum-sag { margin-left: auto; }
+
+.ks-acilir {
+  position: absolute; z-index: 20;
+  min-width: 260px; padding: 6px 0;
+  background: #fff; color: #222; border-radius: 6px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45); font-size: 14px;
+}
+.ks-acilir > div { display: flex; justify-content: space-between; gap: 30px; padding: 6px 16px; }
+.ks-acilir i { font-style: normal; color: #888; font-size: 12.5px; }
+.ks-acilir hr { border: 0; border-top: 1px solid #e6e6e6; margin: 4px 0; }
+.ks-acilir .ks-uzerinde { background: #dfeff0; color: #00666b; font-weight: 600; }
+.ks-acilir .ks-gri { color: #888; }
+#s2-dosyaMenu { left: 8px; top: 58px; }
+
+.ks-perde { position: absolute; inset: 0; background: rgba(0,0,0,.5); z-index: 15; }
+.ks-dlg {
+  position: absolute; left: 300px; top: 92px; width: 680px;
+  background: #1f272a; color: #dae3e3; border: 1px solid #36474b;
+  border-radius: 8px; padding: 18px 24px 70px; z-index: 16;
+  box-shadow: 0 24px 70px rgba(0,0,0,.6);
+}
+.ks-dlg-bas { display: flex; justify-content: space-between; font-weight: 700; font-size: 17px; margin-bottom: 10px; }
+.ks-dlg-sekmeler { display: flex; justify-content: center; gap: 4px; margin-bottom: 12px; border-bottom: 1px solid #36474b; }
+.ks-dlg-sekmeler span { padding: 6px 14px; font-size: 13px; }
+.ks-dlg-sekmeler .ks-sekme-on { border: 1px solid #36474b; border-bottom-color: #1f272a; margin-bottom: -1px; border-radius: 4px 4px 0 0; }
+.ks-ayar { display: flex; align-items: center; gap: 12px; margin: 7px 0; font-size: 14px; position: relative; }
+.ks-ayar label { width: 150px; flex: none; }
+.ks-ayar small { color: #8fa1a4; }
+.ks-kutu { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; background: #0f1416; border: 1px solid #36474b; border-radius: 3px; font-size: 13.5px; color: #dae3e3; white-space: nowrap; overflow: hidden; }
+.ks-genis { flex: 1; }
+.ks-dar { width: 60px; }
+.ks-secim { display: inline-flex; justify-content: space-between; align-items: center; gap: 14px; min-width: 130px; height: 28px; padding: 0 8px; background: #0f1416; border: 1px solid #36474b; border-radius: 3px; font-size: 13.5px; }
+.ks-secim b { font-weight: 400; color: #8fa1a4; }
+.ks-ayar-kutucuk { padding-left: 2px; gap: 10px; }
+.ks-cb { width: 15px; height: 15px; border: 1px solid #8fa1a4; border-radius: 2px; }
+.ks-cb-on { background: #00a0a8; border-color: #00a0a8; }
+.ks-ayar-url { margin-top: 14px; }
+.ks-ayar-url label { width: auto; }
+.ks-url { flex: 1; font-size: 12.5px; }
+.ks-url.ks-yeni { box-shadow: 0 0 0 2px #ffd23f; }
+.ks-teal-btn { display: inline-flex; align-items: center; justify-content: center; padding: 0 18px; height: 30px; background: #008184; color: #fff; border-radius: 15px; font-size: 13px; font-weight: 700; letter-spacing: .4px; }
+.ks-teal-btn.ks-kucuk { height: 26px; padding: 0 16px; font-size: 12px; }
+.ks-hayalet-btn { display: inline-flex; align-items: center; padding: 0 18px; height: 30px; border: 1px solid #8fa1a4; border-radius: 15px; font-size: 13px; font-weight: 700; }
+.ks-dlg-alt { position: absolute; right: 24px; bottom: 20px; display: flex; gap: 12px; }
+.ks-liste { position: absolute; left: 162px; top: 30px; width: 160px; background: #fff; color: #222; border-radius: 4px; padding: 4px 0; z-index: 3; box-shadow: 0 8px 24px rgba(0,0,0,.5); }
+.ks-liste > div { padding: 5px 12px; font-size: 14px; }
+.ks-liste > div.ks-uzerinde { background: #00878f; color: #fff; font-weight: 600; }
+.ks-bag { right: 30px; top: 34px; min-width: 220px; }
+#s2-dil { position: relative; }
+.ks-yenile {
+  position: absolute; inset: 0; z-index: 30; background: #fff; color: #333;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; font-size: 20px;
+}
+.ks-yenile svg { width: 110px; height: 110px; animation: ks-don 2.4s linear infinite; }
+
+/* ---------- sahne 3: kart yöneticisi ---------- */
+.ks-yanpanel {
+  width: 0; flex: none; overflow: hidden; background: #171e21;
+  border-right: 1px solid #0b0f10;
+  transition: width .35s cubic-bezier(.2,.9,.3,1);
+}
+.ks-yanpanel.on { width: 330px; }
+.ks-yanpanel > * { margin-left: 16px; margin-right: 16px; width: 298px; }
+.ks-yanpanel-bas { font-size: 12.5px; font-weight: 700; letter-spacing: .6px; color: #8fa1a4; padding: 14px 0 10px; }
+.ks-ara { position: relative; width: 100%; }
+.ks-yanpanel .ks-ara { width: 298px; }
+.ks-ara-ipucu { position: absolute; left: 10px; color: #5b6b6e; }
+.ks-yaziyor::after { content: ""; display: inline-block; width: 2px; height: 16px; margin-left: 1px; background: #dae3e3; vertical-align: -3px; animation: ks-imlec 0.8s steps(1) infinite; }
+@keyframes ks-imlec { 50% { opacity: 0; } }
+.ks-tur { font-size: 13px; color: #8fa1a4; margin-top: 10px; display: flex; align-items: center; gap: 8px; }
+.ks-paketler { margin-top: 12px; }
+.ks-paket { padding: 12px 0 16px; border-bottom: 1px solid #26363a; position: relative; }
+.ks-paket b { display: block; font-size: 15px; color: #fff; }
+.ks-paket small { color: #8fa1a4; font-size: 12px; }
+.ks-paket p { margin: 6px 0 10px; font-size: 13px; color: #b6c4c6; }
+.ks-deneyap { animation: ks-gir .35s ease-out; }
+@keyframes ks-gir { from { opacity: 0; transform: translateY(8px); } }
+.ks-surum { display: inline-flex; gap: 10px; align-items: center; height: 26px; padding: 0 8px; margin-right: 10px; background: #0f1416; border: 1px solid #36474b; border-radius: 3px; font-size: 12.5px; }
+.ks-surum b { font-weight: 400; color: #8fa1a4; }
+.ks-yuklu { display: inline-block; margin-left: 10px; font-size: 12.5px; color: #1ad18f; font-weight: 700; padding: 2px 6px; }
+.ks-cikti { height: 210px; flex: none; background: #0f1416; border-top: 1px solid #36474b; display: flex; flex-direction: column; }
+.ks-cikti-bas { height: 30px; flex: none; display: flex; align-items: center; padding: 0 14px; font-size: 13px; color: #b6c4c6; border-bottom: 1px solid #26363a; }
+.ks-cikti-govde { flex: 1; padding: 8px 14px; font: 14px/1.6 Consolas, monospace; color: #dae3e3; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; }
+.ks-cikti-govde .ks-satir-yeni { color: #fff; animation: ks-gir .25s ease-out; }
+.ks-kartmenu { left: 158px; top: 104px; min-width: 280px; }
+.ks-dlg-kart { left: 250px; top: 110px; width: 780px; padding-bottom: 76px; }
+.ks-dlg-acik { margin: 0 0 14px; font-size: 13.5px; color: #b6c4c6; }
+.ks-iki { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.ks-baslikcik { font-size: 12px; font-weight: 700; letter-spacing: .6px; color: #8fa1a4; margin-bottom: 8px; }
+.ks-sonuc { height: 190px; margin-top: 8px; background: #171e21; border: 1px solid #26363a; border-radius: 3px; padding: 4px 0; }
+.ks-sonuc-o { display: flex; justify-content: space-between; align-items: center; padding: 7px 12px; font-size: 14px; }
+.ks-sonuc-o.ks-gri { color: #6c7a7d; }
+.ks-sonuc-o.ks-secili { background: #00878f; color: #fff; font-weight: 600; }
+.ks-port-tik { width: 18px; height: 18px; color: #fff; opacity: 0; }
+.ks-sonuc-o.ks-secili .ks-port-tik { opacity: 1; }
+
+/* ---------- sahne 4: yapıştır ve yükle ---------- */
+#s4-bag { left: 430px; top: 300px; right: auto; min-width: 280px; }
+.ks-ipucu-balon { position: absolute; left: 40px; top: 118px; z-index: 20; background: #fff; color: #222; font-size: 14px; font-weight: 600; padding: 5px 12px; border-radius: 5px; box-shadow: 0 6px 18px rgba(0,0,0,.4); }
+.ks-bildirim {
+  position: absolute; right: 24px; bottom: 250px; z-index: 20;
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; color: #222; font-size: 17px; font-weight: 600;
+  padding: 14px 22px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+.ks-bildirim-tik { width: 30px; height: 30px; border-radius: 50%; background: #1aa37a; color: #fff; padding: 5px; }
+.ks-gizli-veri { display: none; }
+/* final: Blender render'ı kart (blender/kurulum-kart.py), LED iki kare arasında */
+.ks-kartpanel {
+  position: absolute; right: 36px; top: 112px; width: 430px; z-index: 22;
+  background: #f6f3ef; color: #2a2a2a; border-radius: 16px; padding: 14px 18px 16px;
+  box-shadow: 0 24px 70px rgba(0,0,0,.6);
+  transition: opacity .3s ease, transform .45s cubic-bezier(.2,.9,.3,1.15), visibility 0s linear .45s;
+}
+.ks-kartpanel:not(.on) { opacity: 0; visibility: hidden; transform: translateX(60px) scale(.94); }
+.ks-kartpanel.on { transition-delay: 0s; }
+.ks-kartpanel-bas { font-weight: 800; font-size: 18px; }
+.ks-kartpanel-resim { position: relative; width: 394px; height: 394px; overflow: hidden; border-radius: 12px; }
+/* Kartın zemini sade (mağaza masaları 2026-10-06'da kalktı). */
+.ks-kartpanel-resim:not([class*="masa-"]) { background: radial-gradient(circle at 50% 60%, #fff, #EDE6DC 75%); }
+.ks-kartpanel-resim img { position: absolute; inset: 0; width: 100%; height: 100%; transform: scale(1.3); }
+.ks-led-acik { opacity: 0; transition: opacity .06s; }
+.ks-led-acik.on { opacity: 1; }
+.ks-kartpanel-alt { text-align: center; color: #666; font-size: 14px; font-weight: 600; }
+
+/* ============================================================
+   2026-10-05 genişletme (Arda: "daha detaylı, daha sinematik, takılınca yardım")
+   ============================================================ */
+/* görünürlük: yeni katmanlar da .on ile gelir */
+.ks-uac, .ks-winguv, .ks-blender, .ks-yardim, .ks-parmak, .ks-guc-halka {
+  transition: opacity .25s ease, transform .35s cubic-bezier(.2,.9,.3,1.15), visibility 0s linear .35s;
+}
+.ks-uac:not(.on), .ks-winguv:not(.on), .ks-blender:not(.on), .ks-yardim:not(.on),
+.ks-parmak:not(.on), .ks-guc-halka:not(.on) { opacity: 0; visibility: hidden; }
+.ks-uac:not(.on), .ks-winguv:not(.on) { transform: scale(.94); }
+.ks-blender:not(.on) { transform: scale(.96); }
+.ks-yardim:not(.on) { transform: translateY(16px); }
+.ks-uac.on, .ks-winguv.on, .ks-blender.on, .ks-yardim.on, .ks-parmak.on, .ks-guc-halka.on { transition-delay: 0s; }
+.ks-dugme-k:not(.on) { display: none; }
+
+/* sinematik: yakınlaşınca kenar karartma (JS opaklığı z'ye bağlar) */
+.ks-vinyet {
+  position: absolute; inset: 0; pointer-events: none; z-index: 55; opacity: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.42) 100%);
+}
+
+/* bölüm kartı (anime.js zaman çizelgesi; kurulum-sahne.js bolumZaman) */
+.ks-bolum {
+  position: absolute; inset: 0; z-index: 5; overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: radial-gradient(ellipse at 50% 45%, #12343a 0%, #0a1416 70%);
+  color: #fff; text-align: center;
+}
+.ks-bolum:not(.on) { display: none; }
+.ks-bolum-isik {
+  position: absolute; top: -20%; left: 0; width: 45%; height: 140%;
+  background: linear-gradient(100deg, transparent, rgba(0,200,210,.18), transparent);
+  transform: translateX(-120%) skewX(-12deg);
+}
+.ks-bolum-no {
+  font: 800 22px/1 "Segoe UI", system-ui, sans-serif; letter-spacing: 3px; color: #18c6cf;
+  padding: 8px 18px; border: 2px solid rgba(24,198,207,.5); border-radius: 30px;
+}
+.ks-bolum-ad { font: 800 56px/1.15 "Segoe UI", system-ui, sans-serif; letter-spacing: .5px; max-width: 1050px; }
+.ks-bolum-cizgi {
+  width: 360px; height: 4px; border-radius: 2px; transform-origin: 0 50%;
+  background: linear-gradient(90deg, #00878f, #18c6cf, #ffd23f);
+}
+
+/* Windows izin pencereleri */
+.ks-perde-koyu { background: rgba(0,0,0,.62); z-index: 38; }
+.ks-uac {
+  left: 380px; top: 150px; width: 520px; z-index: 40; border-radius: 8px;
+  background: #fff; color: #1b1b1b; border-top: 6px solid #0f6cbd;
+}
+.ks-uac-bas { padding: 14px 22px 0; font-size: 14px; color: #555; }
+.ks-uac-soru { padding: 10px 22px 16px; font-size: 21px; line-height: 1.35; font-weight: 600; }
+.ks-uac-uyg { display: flex; align-items: center; gap: 14px; padding: 14px 22px; background: #f3f3f3; }
+.ks-uac-uyg svg { width: 46px; height: 46px; flex: none; }
+.ks-uac-uyg b { display: block; font-size: 17px; }
+.ks-uac-uyg small { color: #555; font-size: 13.5px; }
+.ks-uac-dugmeler, .ks-winguv-dugmeler { display: flex; gap: 10px; padding: 16px 22px 18px; justify-content: flex-end; }
+.ks-uac-dugmeler { justify-content: stretch; }
+.ks-uac-dugmeler .ks-uac-btn { flex: 1; text-align: center; }
+.ks-uac-btn { padding: 9px 22px; border: 1px solid #c4c4c4; border-radius: 5px; background: #fbfbfb; font-size: 15px; }
+.ks-uac-ana { background: #0f6cbd; border-color: #0f6cbd; color: #fff; font-weight: 600; }
+.ks-winguv { left: 360px; top: 190px; width: 560px; z-index: 40; border-radius: 8px; background: #fff; color: #1b1b1b; }
+.ks-duvar { top: 170px; }
+.ks-winguv-bas { display: flex; align-items: center; padding: 12px 18px; font-size: 14px; border-bottom: 1px solid #e5e5e5; }
+.ks-winguv-bas .ks-pen-dugme { margin-left: auto; color: #555; }
+.ks-winguv-govde { padding: 6px 0 0; }
+.ks-winguv-soru { margin: 10px 22px 14px; font-size: 19px; font-weight: 600; line-height: 1.35; color: #1b1b1b; }
+.ks-winguv-ad { display: flex; align-items: center; gap: 14px; margin: 0 22px; font-size: 14.5px; line-height: 1.5; color: #333; }
+.ks-winguv-ikon { width: 44px; height: 44px; flex: none; color: #0f6cbd; }
+.ks-winguv-cb { display: flex; align-items: center; gap: 10px; margin: 14px 22px 0; font-size: 14px; color: #333; }
+.ks-winguv-cb .ks-cb-on { background: #0f6cbd; border-color: #0f6cbd; }
+/* Güvenlik pencereleri "IDE açılıyor" kutusunun ÜSTÜNDE (o arkada dönmeye devam eder) */
+
+/* Blender anı: kart USB'ye takılıyor (16 kare dikey şerit) */
+.ks-blender {
+  position: absolute; left: 190px; top: 70px; width: 900px; height: 506px; z-index: 30;
+  border-radius: 18px; overflow: hidden; background: #EFE6D8;
+  box-shadow: 0 30px 90px rgba(0,0,0,.65), 0 0 0 1px rgba(255,255,255,.08);
+}
+.ks-blender-kare {
+  position: absolute; inset: 0;
+  background: url("../img/kurulum/tak.webp") 0 0 / 100% 1600% no-repeat;
+}
+.ks-guc-halka {
+  position: absolute; left: 22.5%; top: 31.5%; width: 64px; height: 64px; margin: -32px 0 0 -32px;
+  border: 3px solid #ffd23f; border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(255,210,63,.18), 0 0 30px rgba(255,90,60,.6);
+  animation: ks-nabiz 1s ease-in-out infinite;
+}
+
+/* takılınca yardım kartları — sarı kenar: "bu bir ipucu, ana yol değil" */
+.ks-yardim {
+  position: absolute; left: 310px; top: 210px; width: 660px; z-index: 35;
+  background: #fffaf0; color: #2a2a2a; border-radius: 16px; padding: 20px 26px 22px;
+  border-left: 8px solid #f5b301; box-shadow: 0 24px 70px rgba(0,0,0,.55);
+}
+.ks-yardim-bas { display: flex; align-items: center; gap: 12px; font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+.ks-yardim-ikon {
+  width: 36px; height: 36px; flex: none; border-radius: 50%; background: #f5b301; color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.ks-yardim ol { margin: 0; padding-left: 26px; font-size: 18px; line-height: 1.55; }
+.ks-yardim li + li { margin-top: 8px; }
+.ks-yardim-kart { left: 290px; top: 24px; width: 700px; padding-bottom: 16px; }
+.ks-dugme-resim { position: relative; width: 560px; height: 420px; margin: 0 auto; border-radius: 12px; overflow: hidden; }
+.ks-dugme-k { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* parmak işareti: BUTON (sol) ve RESET (sağ) — dugme-*.webp'de ölçüldü (720x540: 308,252 / 405,265) */
+.ks-parmak { position: absolute; width: 0; height: 0; }
+.ks-parmak-b { left: 42.8%; top: 46.7%; }
+.ks-parmak-r { left: 56.3%; top: 49%; }
+.ks-parmak i {
+  position: absolute; left: -34px; top: -34px; width: 68px; height: 68px; border-radius: 50%;
+  border: 4px solid #ffd23f; background: rgba(255,210,63,.22);
+  animation: ks-nabiz 1s ease-in-out infinite;
+}
+.ks-parmak b {
+  position: absolute; top: -78px; left: 0; transform: translateX(-50%);
+  background: #2a2a2a; color: #ffd23f; font-size: 17px; padding: 4px 12px; border-radius: 8px; white-space: nowrap;
+}
+.ks-parmak-r b { top: 44px; }
+
+/* reduced-motion: iç geçişler kısa; kamera JS'te kesmeyle geçer */
+@media (prefers-reduced-motion: reduce) {
+  .ks-tuval *, .ks-tuval *::after { transition-duration: .01s !important; animation: none !important; }
+}
+
+/* ---------- Ders 2.1: Seri Port Ekranı (SAHNELER.seri) ---------- */
+.ks-seri-bas { gap: 18px; padding-right: 10px; }
+.ks-seri-sekme { color: #7f9396; }
+.ks-seri-sekme.on { color: #fff; font-weight: 600; box-shadow: inset 0 -2px 0 #00a0a8; padding: 6px 0; }
+.ks-seri-hiz { margin-left: auto; display: inline-flex; align-items: center; gap: 10px; height: 24px; padding: 0 10px;
+  background: #fff; color: #222; border-radius: 4px; font-size: 13px; }
+.ks-seri .ks-cikti-govde { font-size: 16px; }
+.ks-seri-ipucu { left: auto; right: 16px; top: 112px; }
+.ks-hiz-liste { right: 16px; bottom: 236px; min-width: 170px; }
+.ks-seri-led { width: 270px; top: 96px; padding: 12px 14px 14px; }
+.ks-seri-led .ks-kartpanel-resim { width: 242px; height: 220px; background: radial-gradient(circle at 50% 55%, #3a4448, #1c2326 75%); }
+.ks-seri-led .ks-kartpanel-resim img { transform: none; object-fit: contain; }
+
+/* Ders 2.2 Adım 5 (SAHNELER.seriTrafik): dik trafik lambası modülü + üç ışık. Işıkların yeri
+   Blender kadrajından (trafik-modul-dik.webp x 378..516, y -16..92; LED x 447.3, y 7.7/28.4/49.0).
+   Modül siyah: zemin açık. */
+.ks-seri-trafik .ks-kartpanel-resim { background: radial-gradient(circle at 50% 50%, #fff, #E9E2D7 78%); }
+.ks-tl { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); aspect-ratio: 138 / 108; }
+.ks-seri-trafik .ks-tl img { position: absolute; inset: 0; width: 100%; height: 100%; transform: none; object-fit: contain; }
+.ks-tl-led { position: absolute; left: 50.2%; width: 19%; aspect-ratio: 1.6; border-radius: 50%; transform: translate(-50%, -50%);
+  background: var(--tl); opacity: .28; transition: opacity .06s, box-shadow .06s; }
+.ks-tl-led.on { opacity: 1; box-shadow: 0 0 14px 6px var(--tl); }
+.ks-tl-k { top: 21.9%; --tl: #FF3B26; }
+.ks-tl-s { top: 41.1%; --tl: #FFD23F; }
+.ks-tl-y { top: 60%; --tl: #3BE36B; }
+
+/* Ders 2.1 Adım 5: sahne kutusu (ders-sira.js seriSahneHtml), 16:9. Boyut 1.1 Adım 4'ün videosuyla
+   aynı formül (video-player.css .ide-sim-wrapper --vp-h = 100vh − 208px): 1536x900'de 1224x688.
+   Arda 2026-10-06: "çok küçük yapmışsın, 1.1'deki çözünürlükte yap" + "büyültme butonu da olsun". */
+.seri-sahne-kutu { --seri-h: clamp(300px, calc(100vh - 208px), 1080px); }
+.seri-sahne-cerceve { position: relative; width: min(99%, calc(var(--seri-h) * 16 / 9)); margin: 10px auto 0; }
+.seri-sahne { width: 100%; height: auto; aspect-ratio: 16 / 9; border-radius: 10px; }
+.seri-sahne-kontrol { display: flex; align-items: center; gap: 12px; margin: 10px auto 0;
+  width: min(99%, calc(var(--seri-h) * 16 / 9)); }
+.seri-sahne-kontrol .vp-btn { flex: none; margin: 0; }
+/* Tam ekran: kutu siyah zemin, sahne ekranı doldurur, düğme satırı altta. */
+.seri-sahne-kutu:fullscreen, .seri-sahne-kutu:-webkit-full-screen {
+  --seri-h: calc(100vh - 90px); display: flex; flex-direction: column; justify-content: center;
+  background: #05070d; padding: 16px; border-radius: 0; }
+.seri-sahne-kutu:fullscreen > strong { display: none !important; }
+.seri-sahne-kontrol input[type="range"] { flex: 1; accent-color: var(--color-primary); }
