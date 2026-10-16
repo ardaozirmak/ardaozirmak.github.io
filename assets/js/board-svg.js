@@ -48,6 +48,23 @@
      Pedler (blender/deneyap.py, sahne3b.js başlık blokları): sol 12 ped x16..25, merkez
      y 104.2 + i·15.4; sağ 15 ped x147..156, merkez y 58 + i·15.4. Ad ped merkezinden 2 birim içeride (x 23 / 149): "GND" gibi uzun adlar kart
      kenarından taşmasın. Yazı yönü board-svg.css'te. */
+  /* PARÇALARIN YERİ — TEK KAYNAK (2026-10-14, kart gerçek Mini v2 yerleşimine geçti).
+     blender/deneyap.py'deki KONUM'un AYNISI; tests/test-kart-render.mjs render pikselini bu
+     noktalarda örnekler. 3B betikler (sahne3b, kart-sahne3b, kart3b) sabit sayı yazmaz, buradan
+     okur. Kart yereli, port ÜSTTE: USB → GÜÇ/I2C → BUTON+RESET → RGB LED → çip → logo.
+     Port aşağıdayken (resmî diyagram) BUTON solda, RESET sağda — yerelde tersi. */
+  var KONUM = {
+    usb: { x: 63, y: 17, w: 46, h: 36, agiz: [86, 17] },   // USB-C; ağız kart kenarından (26) 9 taşar
+    cip: { x: 73.4, y: 199.2, w: 42.4, h: 42.4 },          // ESP32-S2 QFN56
+    led: [86, 153.6],                                      // dahili RGB LED merceğinin merkezi
+    ledGovde: { x: 70.8, y: 139.1, w: 30.4, h: 29 },
+    guc: [70.7, 73.4],                                     // GÜÇ LED'i
+    buton: [108.6, 115],                                   // basma uçlarının merkezi
+    reset: [63.3, 115],
+    jst: { x: 19.7, y: 58.2, w: 25.9, h: 36.4 },           // I2C soketi
+    logo: [86, 274.5]
+  };
+
   var PIN_SOL = ['GND', '3V3', 'SD', 'SC', 'MC', 'MI', 'MO', 'D3', 'D2', 'TX', 'RX', 'EN'];
   var PIN_SAG = ['5V', '3V3', 'GND', 'D9', 'D10', 'DA1', 'DA0', 'A7', 'A6', 'A5', 'A4', 'A3', 'A2', 'A1', 'A0'];
   var PIN_ADIM = 15.4, PIN_YARIM = 7.7;
@@ -69,34 +86,38 @@
     var ids = !!opts.ids;
     var hotspots = !!opts.hotspots;
 
+    var K = KONUM;
+    /* isiksiz: 3B yazı katmanları (sahne3b, kart-sahne3b, kart3b) yalnız BASKIYI ister — LED ve
+       GÜÇ ışığını 3B kendisi yakar. Katmana basılan kırmızı GÜÇ halesi beyaz LED gövdesinin
+       çevresinde hep yanık bir leke gibi kalıyordu. */
+    var isiksiz = !!opts.isiksiz;
     var ledIdAttr = ids ? ' id="layer-led"' : '';
-    var glowEl = ids ? '<circle id="layer-glow" cx="84" cy="227.5" r="11" fill="var(--color-accent)"/>' : '';
+    var glowEl = ids ? '<circle id="layer-glow" cx="' + K.led[0] + '" cy="' + K.led[1] + '" r="16" fill="var(--color-accent)"/>' : '';
     var pwrHaloIdAttr = ids ? ' id="layer-pwr-halo"' : '';
     var pwrLedIdAttr = ids ? ' id="layer-pwr-led"' : '';
     var ledLabelClass = ids ? ' wd-boardlbl-led' : '';
 
+    /* Yazıların y'si TABAN çizgisi; her yazı kendi kutusunda 180° döner (board-svg.css),
+       kutu tabanın ~4 birim üstünde. BUTON/RESET tuşların port tarafında (resmî diyagram),
+       GÜÇ LED'inin port tarafında, DAHİLİ LED etiketi LED gövdesiyle çip arasında. */
     var out = '' +
 '<ellipse class="bsvg-golge" cx="86" cy="300" rx="62" ry="6" fill="#2b0f0c" opacity="0.18"/>' +
-/* Fiziksel gövde Blender render'ı (blender/deneyap.py): PCB, montaj delikleri,
-   USB-C, ESP32-S2 kalkanı, tuşlar, altın pedler, SMD parçalar. Kapsam kart
-   yerelinde x10..162, y12..300 — ölçüler bu dosyadaki eski çizimle birebir.
-   Yazılar, LED'ler, halkalar SVG'de kalır: ders mantığı onlara bağlı.
-   Arda (2026-09-30): "devreleri, Deneyap'ı daha iyi olacaksa Blender ile yap". */
+/* Fiziksel gövde Blender render'ı (blender/deneyap.py): gerçek Mini v2 yerleşimi —
+   çentikli PCB, TTT logosu, ESP32-S2 çipi, kristal, RGB LED, tuşlar, I2C soketi,
+   USB-C, ~40 SMD, bakır yollar, lehimli pinler. Kapsam kart yerelinde x10..162,
+   y12..300. Yazılar, LED ışıkları, halkalar SVG'de kalır: ders mantığı onlara bağlı.
+   Arda (2026-10-14): "deneyap kart üzerindeki detayları arttır, görseldeki gibi". */
 '<image class="bsvg-render" href="assets/img/kart/deneyap-kart.webp" x="10" y="12" width="152" height="288" preserveAspectRatio="none"/>' +
-'<circle cx="86" cy="44" r="7" fill="#7a1712" opacity="0.55"/>' +
-'<path d="M82 41 h8 M86 41 v7" stroke="#f7e9e6" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
-'<text x="84" y="102" class="wd-chiptext">ESP32-S2</text>' +
-'<text x="84" y="146" class="wd-brand">DENEYAP</text>' +
-'<text x="84" y="157" class="wd-brand-sub">MINI v2</text>' +
-'<text x="65" y="206" class="wd-boardlbl">BUTON</text>' +
-'<text x="105" y="206" class="wd-boardlbl">RESET</text>' +
-glowEl +
-'<rect x="77.5" y="221" width="13" height="13" rx="2" fill="#14181d" stroke="#2c3540"/>' +
-'<rect' + ledIdAttr + ' x="80" y="223.5" width="8" height="8" rx="1.6" fill="#e2e8f0"/>' +
-'<text x="84" y="244" class="wd-boardlbl' + ledLabelClass + '">DAHİLİ LED</text>' +
-'<circle' + pwrHaloIdAttr + ' cx="84" cy="262" r="4.6" fill="#ff4438" opacity="0.28"/>' +
-'<circle' + pwrLedIdAttr + ' cx="84" cy="262" r="2.4" fill="#ff5a4d"/>' +
-'<text x="84" y="275" class="wd-boardlbl">GÜÇ</text>' +
+'<text x="' + (K.cip.x + K.cip.w / 2) + '" y="' + (K.cip.y + K.cip.h / 2 + 2) + '" class="wd-chiptext">ESP32-S2</text>' +
+'<text x="' + K.buton[0] + '" y="97" class="wd-boardlbl">BUTON</text>' +
+'<text x="' + K.reset[0] + '" y="97" class="wd-boardlbl">RESET</text>' +
+(isiksiz ? '' : glowEl +
+'<circle' + ledIdAttr + ' cx="' + K.led[0] + '" cy="' + K.led[1] + '" r="10" fill="#f4f1ea"/>') +
+'<text x="' + K.led[0] + '" y="' + (K.ledGovde.y + K.ledGovde.h + 9.4) + '" class="wd-boardlbl' + ledLabelClass + '">DAHİLİ LED</text>' +
+(isiksiz ? '' :
+'<circle' + pwrHaloIdAttr + ' cx="' + K.guc[0] + '" cy="' + K.guc[1] + '" r="5" fill="#ff4438" opacity="0.28"/>' +
+'<circle' + pwrLedIdAttr + ' cx="' + K.guc[0] + '" cy="' + K.guc[1] + '" r="2.2" fill="#ff5a4d"/>') +
+'<text x="' + K.guc[0] + '" y="' + (K.guc[1] - 5.4) + '" class="wd-boardlbl">GÜÇ</text>' +
 pinAdlari(rings);
 
     if (rings) {
@@ -176,37 +197,26 @@ pinAdlari(rings);
     return out;
   }
 
-  /* Adım 3 keşif bölgeleri — yalnızca ders 1.1 (index.html).
-     Type-C: kartın üstündeki USB çıkıntısının (x68 y18 w36 h14) ve
-     altındaki vida bezeğinin (86,44) üzerini kapsayan geniş bölge.
-     Dahili LED: LED gövdesinin (80,223.5,8,8) üzerini kapsayan bölge. */
+  /* Adım 3 keşif bölgeleri — yalnızca ders 1.1 (index.html). 2026-09-28'den beri
+     hiçbir sayfa açmıyor (script.js: sarı bölgeler kalktı); koordinatlar yine de
+     KONUM'a bağlı, yeniden açılırsa doğru parçayı kaplasın.
+     Type-C: USB-C soketinin üstü. Dahili LED: RGB LED gövdesinin üstü. */
   function hotspotsMarkup() {
+    var K = KONUM;
     return '' +
-'<rect id="hotspot-typec" class="hotspot-zone" x="58" y="10" width="56" height="46" rx="8" style="display:none;" onclick="showPartInfo(&#39;typec&#39;)"/>' +
-'<text id="hotspot-typec-label" class="hotspot-label" x="86" y="54" text-anchor="middle" style="display:none;">TYPE-C</text>' +
-'<text id="hotspot-typec-arrow" class="hotspot-arrow" x="128" y="30" text-anchor="middle" style="display:none;">◀ Tıkla</text>' +
-'<rect id="hotspot-led" class="hotspot-zone" x="70" y="212" width="28" height="32" rx="6" style="display:none;" onclick="showPartInfo(&#39;led&#39;)"/>' +
-/* Statik "DAHİLİ LED" etiketiyle AYNI konum (84,244) — o etiket bu hotspot
-   açıkken CSS ile gizleniyor (bkz. .step3-hotspots .wd-boardlbl-led),
-   ikisi ekranda üst üste binmiyor. */
-'<text id="hotspot-led-label" class="hotspot-label" x="84" y="244" text-anchor="middle" style="display:none;">DAHİLİ LED</text>' +
-/* Ok, LED kutusunun SAGINA, LED ile ayni hizaya kondu — ama tek parca
-   degil: "◀" isareti LED hizasinda (y=232), "Tıkla" kelimesi bir satir
-   altinda (y=248). Sebep OLCUM: LED hizasinda sagda yalnizca 25.7 birim
-   bos yer var (parlama halkasi x 95'te bitiyor, GND pin adi x 120.7'de
-   basliyor) ve 13px'lik "◀ Tıkla" 52.4 birim genis — tek satir oraya
-   SIGMIYOR. Sag sutunun son pini GND y 231.1'de bitiyor, altinda kalan
-   x 100..156 / y 232+ bolgesi tamamen bos; kelime oraya iniyor.
-   Eskiden ikisi tek satirda (124,262) idi: hotspot kutusunun (y 212..244)
-   18 birim ALTINDA kaliyordu, yani okun ucu kutuyu degil GUC ledinin
-   yanindaki bosluğu gosteriyordu — Arda "tıkla tuşunu yukarı alcaz" dedi.
-   Cakisma paylari (getBBox ile olculdu, .show animasyonunun +6 birimlik
-   saga kaymasi da hesaba katildi): "◀" x 99.3..112.7 / y 217.5..236.5,
-   GND pin adina 8 birim (kaymayla 2) kaliyor; "Tıkla" x 108.3..147.7 /
-   y 233.4..252.5, GND'nin altinda kaliyor ve sag kenara (156) 8 birim
-   (kaymayla 2) var. */
+'<rect id="hotspot-typec" class="hotspot-zone" x="' + (K.usb.x - 5) + '" y="' + (K.usb.y - 7) + '" width="' + (K.usb.w + 10) + '" height="' + (K.usb.h + 12) + '" rx="8" style="display:none;" onclick="showPartInfo(&#39;typec&#39;)"/>' +
+'<text id="hotspot-typec-label" class="hotspot-label" x="86" y="' + (K.usb.y + K.usb.h + 14) + '" text-anchor="middle" style="display:none;">TYPE-C</text>' +
+'<text id="hotspot-typec-arrow" class="hotspot-arrow" x="132" y="34" text-anchor="middle" style="display:none;">◀ Tıkla</text>' +
+'<rect id="hotspot-led" class="hotspot-zone" x="' + (K.ledGovde.x - 4) + '" y="' + (K.ledGovde.y - 4) + '" width="' + (K.ledGovde.w + 8) + '" height="' + (K.ledGovde.h + 8) + '" rx="6" style="display:none;" onclick="showPartInfo(&#39;led&#39;)"/>' +
+/* Statik "DAHİLİ LED" etiketiyle AYNI konum — o etiket bu hotspot açıkken CSS
+   ile gizleniyor (bkz. .step3-hotspots .wd-boardlbl-led), üst üste binmiyor. */
+'<text id="hotspot-led-label" class="hotspot-label" x="' + K.led[0] + '" y="' + (K.ledGovde.y + K.ledGovde.h + 9.4) + '" text-anchor="middle" style="display:none;">DAHİLİ LED</text>' +
+/* Ok LED gövdesinin SAĞINDA, "Tıkla" bir satır altında (tek satır 13px'te pin
+   adlarına taşıyordu — eski yerleşimde ölçülmüştü). Bölge kullanılmadığı için
+   yeni yerleşimde ölçülmedi; açılırsa getBBox ile yeniden ölç. */
 '<text id="hotspot-led-arrow" class="hotspot-arrow" text-anchor="middle" style="display:none;">' +
-'<tspan x="106" y="232">◀</tspan><tspan x="128" y="248">Tıkla</tspan></text>';
+'<tspan x="' + (K.ledGovde.x + K.ledGovde.w + 8) + '" y="' + (K.led[1] + 4) + '">◀</tspan>' +
+'<tspan x="' + (K.ledGovde.x + K.ledGovde.w + 20) + '" y="' + (K.led[1] + 20) + '">Tıkla</tspan></text>';
   }
 
   /* 3B kartlar için pin adı stili (Arda, 2026-10-05: "gerçekte pinin üstünde yazmakta"). Konum
@@ -220,7 +230,7 @@ pinAdlari(rings);
   var STIL_3B =
     '.wd-brand{font:700 9px Arial,sans-serif;fill:#fff;text-anchor:middle;letter-spacing:1px}' +
     '.wd-brand-sub{font:600 5.5px Arial,sans-serif;fill:#f7e9e6;text-anchor:middle;letter-spacing:1.6px}' +
-    '.wd-chiptext{font:700 7.5px Arial,sans-serif;fill:#c7ced6;text-anchor:middle}' +
+    '.wd-chiptext{font:700 5px Arial,sans-serif;fill:#9aa0a8;text-anchor:middle;letter-spacing:.3px}' +
     '.wd-boardlbl{font:700 5.5px Arial,sans-serif;fill:#f7e9e6;text-anchor:middle;opacity:.8}' +
     PIN_USTTE_STIL +
     /* Baskı port tarafından okunur (Arda, 2026-10-07): her yazı kendi ortasında 180° (bkz. board-svg.css). */
@@ -231,5 +241,5 @@ pinAdlari(rings);
     return markup.replace(/ wd-pin-key/g, '');
   }
 
-  global.BoardSVG = { groupMarkup: groupMarkup, pinlerUstte: pinlerUstte, STIL_3B: STIL_3B };
+  global.BoardSVG = { groupMarkup: groupMarkup, pinlerUstte: pinlerUstte, STIL_3B: STIL_3B, KONUM: KONUM };
 })(window);

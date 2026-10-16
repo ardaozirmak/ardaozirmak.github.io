@@ -110,8 +110,23 @@
      denk geliyor. */
   var C_D5 = 11, C_GND = 6, C_ANOT = 20, C_KATOT = 22, C_DIRENC = 26;
 
+  /* Kartı breadboard'a takma (Arda, 2026-10-14: "devre kurulumunda Deneyap'ı da breadboard'a takma
+     kısmı gelsin; 1. adım eğitim kitinden çıkan kart breadboard'a takılsın"). Sıfırdan kurulan her
+     dersin İLK adımı (1.2, 1.3, 1.5, 1.6, 2.1, 2.2, 3.1). 1.4'te yok: o ders 1.2'nin kurulu devresine
+     ekleme yapıyor (STEPS2). Kart bu derslerde bir parça gibi davranır (#wd-part-kart): boş tezgahta
+     yok, adımında yukarıdan inip oturur; USB kablosu ve fiş kartla birlikte gelir. */
+  var KART_ADIMI = {
+    part: 'kart',
+    chip: 'Kart',
+    ring: null,
+    col: null,
+    hint: 'Kartın pinleri orta kanalın iki yanına otursun.',
+    checkpoint: 'Bütün pinler delikte, USB-C girişi solda; kartın üstünde ve altında birer sıra boş delik kaldı.'
+  };
+
   /* Adım tanımları: hangi parça açılır, hangi pin/sütun vurgulanır. */
   var STEPS = [
+    KART_ADIMI,
     {
       part: 'led',
       chip: 'LED',
@@ -159,6 +174,9 @@
      hareketi "tık" halkasını buralarda çiziyor. Kablolarda sıra önemli:
      [başlangıç, bitiş] — yolun çizildiği yönle aynı. */
   var TAK_DELIK = {
+    /* Kart: iki pin sırasının uç pinleri — üstte 5V..A0 (sütun 3..17, y 73.6 ölçüldü, bkz.
+       SIRA_UST_PIN), altta GND..EN (sütun 6..17, satır b). 3B kamera da buraya yaklaşır. */
+    'kart':         [[COL[3], 73.6], [COL[17], 73.6], [COL[6], ROW_DOWN[3]], [COL[17], ROW_DOWN[3]]],
     'led':          [[COL[C_ANOT], SIRA_DIS], [COL[C_KATOT], SIRA_DIS]],
     'resistor':     [[COL[C_KATOT], SIRA_IC], [COL[C_DIRENC], SIRA_IC]],
     'jumper-red':   [[COL[C_D5], SIRA_KART], [COL[C_ANOT], SIRA_IC]],
@@ -528,7 +546,7 @@
     });
   }
   function modulAdimlari(ledler) {
-    var A = [{ part: ['modul'].concat(ledler.map(function (l, k) { return 'led-' + (k + 1); })), chip: 'Modül', ring: null, col: [],
+    var A = [KART_ADIMI, { part: ['modul'].concat(ledler.map(function (l, k) { return 'led-' + (k + 1); })), chip: 'Modül', ring: null, col: [],
       hint: 'Modülü breadboard’a dik tak: LED’ler sana baksın, kırmızı en üstte.',
       checkpoint: 'Dört pin de üst blokta, kartın sağında; soldan sağa GND, G, Y, R.' },
       { part: ['kablo-gnd'], chip: 'GND kablosu', ring: 'gndu', col: [],
@@ -552,11 +570,11 @@
       TAK_DELIK['kablo-' + l.pin.toLowerCase()] = [siraKartUcu(l.pin), [COL[A], siraUc(l.pin)]];
     });
   }
-  /* Kurulum adımları: GND kablosu, LED'ler, dirençler, sonra her pinin kablosu.
+  /* Kurulum adımları: kart, GND kablosu, LED'ler, dirençler, sonra her pinin kablosu.
      Aynı işi tekrar eden parçalar (dört LED) TEK adım: her adımda tek iş. */
   function siraAdimlari(ledler) {
     var n = ledler.length, ids = function (on) { return ledler.map(function (l, k) { return on + (k + 1); }); };
-    var A = [{ part: ['kablo-gnd'], chip: 'GND kablosu', ring: 'gndu', col: [],
+    var A = [KART_ADIMI, { part: ['kablo-gnd'], chip: 'GND kablosu', ring: 'gndu', col: [],
       hint: 'Önce eksi rayını kartın GND’sine bağla.', checkpoint: 'Siyah kablo kartın üstteki GND pininden üst − rayına gidiyor.' },
       { part: ids('led-'), chip: n + ' LED', ring: null, col: [],
         hint: 'İki bacak da g satırında: kısa bacak (−) solda, uzun bacak (+) sağda.', checkpoint: n + ' LED yan yana, aralarında birer boş sütun; kısa bacaklar solda.' },
@@ -744,6 +762,58 @@
     return k('wd-path-d6', '1.6s', '0s') + k('wd-path-d6', '1.6s', '0.8s') + k('wd-path-gnd2', '1.2s', '0.2s');
   }
 
+  /* --- LAPTOP (2026-10-14): 3B sahnelerdeki modelin Blender render'ı ---
+     blender/laptop.py → assets/img/kart/laptop.webp (1000 × 1019 px, önden 14°, yukarıdan 32°).
+     Arda: "kartın yanında bilgisayar küçük kaldı" → "Büyük, köşesi kadraj dışı": genişlik 236 birim
+     (eski çizim 124), sol çeyreği viewBox'ın (x -172) dışında; ekranın neredeyse tamamı görünür.
+     Ekran içeriği SVG kalır (keskin yazı, lt-* sınıfları): 160 × 100'lük yerel çerçevede, 3B
+     ekranın (sahne3b.js ekranCiz) aynı düzeniyle çizilir ve matrisle render'daki eğik ekrana oturur —
+     ortografik render'da dikdörtgen paralelkenara düşer, afin matris birebir taşır. Ekran köşeleri
+     ve kablo çıkışı (takılı fişin ucu) betiğin yazdırdığı ISARET satırından, piksel. */
+  var LAPTOP_2B = {
+    boy: [1000, 1019],
+    ekran: [[209.9, 54.6], [949.6, 152.3], [914.0, 612.9], [174.3, 515.2]],   // sol üst, sağ üst, sağ alt, sol alt
+    kablo: [914.0, 831.5], kabloIleri: [964.3, 838.1]
+  };
+  var LT_X = -236, LT_Y = -20, LT_W = 236;
+  function laptopNokta(q) { var s = LT_W / LAPTOP_2B.boy[0]; return [LT_X + q[0] * s, LT_Y + q[1] * s]; }
+  function sayi(v) { return +v.toFixed(2); }
+  function laptopMarkup() {
+    var E = LAPTOP_2B.ekran.map(laptopNokta), tl = E[0], tr = E[1], bl = E[3];
+    var m = [(tr[0] - tl[0]) / 160, (tr[1] - tl[1]) / 160, (bl[0] - tl[0]) / 100, (bl[1] - tl[1]) / 100, tl[0], tl[1]].map(sayi);
+    // Kod satırları: sahne3b.js ekranCiz ile aynı (renk, genişlik oranı, girinti).
+    var satir = [['#7FB4FF', 0.32, 0], ['#E5C07B', 0.46, 1], ['#7FB4FF', 0.12, 0], ['#98C379', 0.36, 0], ['#E5C07B', 0.5, 1], ['#98C379', 0.28, 0]];
+    /* Resim fişsiz; takılı fiş ayrı küçük kırpıntı (render'ın 840,800–990,876 kutusu): kart tezgahta
+       değilken kablosu da yok, fiş de gizlenir (.is-kartsiz). */
+    var s = LT_W / LAPTOP_2B.boy[0];
+    return '  <g id="wd-laptop">' +
+      '<image class="wd-laptop-render" href="assets/img/kart/laptop.webp" x="' + LT_X + '" y="' + LT_Y + '" width="' + LT_W +
+        '" height="' + sayi(LT_W * LAPTOP_2B.boy[1] / LAPTOP_2B.boy[0]) + '" preserveAspectRatio="none"/>' +
+      '<image class="wd-laptop-fis" href="assets/img/kart/laptop-fis.webp" x="' + sayi(LT_X + 840 * s) + '" y="' + sayi(LT_Y + 800 * s) +
+        '" width="' + sayi(150 * s) + '" height="' + sayi(76 * s) + '" preserveAspectRatio="none"/>' +
+      '<g class="wd-laptop-ekran" transform="matrix(' + m.join(' ') + ')">' +
+        '<rect class="lt-ekran" width="160" height="100" fill="#0b1220"/>' +
+        '<rect width="160" height="10.6" fill="#ffffff" opacity="0.06"/>' +
+        '<circle cx="5.6" cy="5.3" r="1.9" fill="#ef4444"/><circle cx="11.3" cy="5.3" r="1.9" fill="#f59e0b"/><circle cx="16.9" cy="5.3" r="1.9" fill="#22c55e"/>' +
+        '<text class="lt-vurgu" x="80" y="7.5" font-family="Arial, sans-serif" font-size="6.2" font-weight="bold" fill="#6FB7FF" text-anchor="middle">Arduino IDE</text>' +
+        satir.map(function (s, i) {
+          return '<rect class="lt-kod" x="' + sayi(12.5 + s[2] * 8.75) + '" y="' + sayi(18.75 + i * 10.6) + '" width="' + sayi(160 * s[1]) +
+            '" height="3.75" fill="' + s[0] + '" opacity="0.9"/>';
+        }).join('') +
+        '<rect width="160" height="100" fill="url(#wd-screenGlare)"/>' +
+      '</g>' +
+    '</g>';
+  }
+  /* Kablo laptoptaki fişin ucundan çıkış yönünde başlar, kartın fişine yatay girer (bx: fişteki ucu,
+     takılı 26 / çekik 2). dx, dy: gölge ve parlama çizgisinin kayması. */
+  function usbYol(bx, dx, dy) {
+    var k = laptopNokta(LAPTOP_2B.kablo), ki = laptopNokta(LAPTOP_2B.kabloIleri);
+    var ux = ki[0] - k[0], uy = ki[1] - k[1], L = Math.hypot(ux, uy);
+    var p = [k, [k[0] + ux / L * 24, k[1] + uy / L * 24], [bx - 18, 139.1], [bx, 139.1]];
+    var f = function (q) { return sayi(q[0] + dx) + ' ' + sayi(q[1] + dy); };
+    return 'M' + f(p[0]) + ' C ' + f(p[1]) + ' ' + f(p[2]) + ' ' + f(p[3]);
+  }
+
   function svgMarkup(iki, sira, modul, buton) {
     return '' +
 /* viewBox sola 140 birim genişletildi: laptop + Type-C kablosu oraya
@@ -811,20 +881,14 @@
 /* --- LAPTOP + TYPE-C KABLOSU + VERİ IŞILTISI ---
    Kart artık breadboard'a takılı ve yatay; Type-C soketi kartın SOL
    kenarında (x~76..90, y~140..176). Kablo laptoptan oraya giriyor.
-   Laptop çizimi Adım 1'in sol panel sahnesinden birebir alındı; gradyan
-   id'leri "wd-" önekli, çünkü aynı id'ler çakışırsa gizli olan kazanıyor
-   ve çizim soluyor (kart kırmızısında tam olarak bu olmuştu). */
+   Gradyan id'leri "wd-" önekli, çünkü aynı id'ler çakışırsa gizli olan
+   kazanıyor ve çizim soluyor (kart kırmızısında tam olarak bu olmuştu).
+   2026-10-14: laptop Blender render'ı (laptopMarkup, aşağıda). */
 '  <defs>' +
 '    <linearGradient id="wd-screenGlare" x1="0" y1="0" x2="1" y2="1">' +
 '      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>' +
 '      <stop offset="0.35" stop-color="#ffffff" stop-opacity="0"/>' +
 '      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>' +
-'    </linearGradient>' +
-'    <linearGradient id="wd-deckGrad" x1="0" y1="0" x2="0" y2="1">' +
-'      <stop offset="0" stop-color="#333f4d"/><stop offset="1" stop-color="#242e39"/>' +
-'    </linearGradient>' +
-'    <linearGradient id="wd-trackpadGrad" x1="0" y1="0" x2="0" y2="1">' +
-'      <stop offset="0" stop-color="#2d3844"/><stop offset="1" stop-color="#1c242d"/>' +
 '    </linearGradient>' +
 '    <linearGradient id="wd-cableGrad" x1="0" y1="0" x2="0.4" y2="1">' +
 '      <stop offset="0" stop-color="#fbfbfc"/><stop offset="0.5" stop-color="#dcdee2"/>' +
@@ -836,26 +900,7 @@
 '    </linearGradient>' +
 '  </defs>' +
 
-'  <g id="wd-laptop" transform="translate(-166,92) scale(0.62)">' +
-'    <ellipse cx="100" cy="140" rx="96" ry="5" fill="#000000" opacity="0.18"/>' +
-'    <rect x="12" y="4" width="176" height="112" rx="10" fill="#171c24" stroke="#2c3540" stroke-width="2"/>' +
-'    <rect class="lt-ekran" x="24" y="14" width="152" height="92" rx="5" fill="#0b1220"/>' +
-'    <circle cx="31" cy="20" r="2" fill="#ef4444"/>' +
-'    <circle cx="38" cy="20" r="2" fill="#f59e0b"/>' +
-'    <circle cx="45" cy="20" r="2" fill="#22c55e"/>' +
-'    <rect x="28" y="30" width="144" height="12" rx="3" fill="#1b2430"/>' +
-'    <text class="lt-vurgu" x="100" y="39" font-family="Arial, sans-serif" font-size="8" font-weight="bold" fill="#6FB7FF" text-anchor="middle">Arduino IDE</text>' +
-'    <rect x="30" y="47" width="140" height="40" rx="3" fill="#0d1726"/>' +
-'    <rect class="lt-kod" x="34" y="51" width="44" height="3" rx="1.5" fill="#7FB4FF"/>' +
-'    <rect class="lt-kod" x="40" y="58" width="58" height="3" rx="1.5" fill="#E5C07B"/>' +
-'    <rect class="lt-kod" x="34" y="65" width="12" height="3" rx="1.5" fill="#7FB4FF"/>' +
-'    <rect class="lt-kod" x="34" y="74" width="40" height="3" rx="1.5" fill="#98C379"/>' +
-'    <rect x="24" y="14" width="152" height="92" rx="5" fill="url(#wd-screenGlare)"/>' +
-'    <rect x="4" y="116" width="192" height="22" rx="7" fill="url(#wd-deckGrad)" stroke="#3a4450" stroke-width="2"/>' +
-'    <rect x="84" y="125" width="32" height="8" rx="3" fill="url(#wd-trackpadGrad)" stroke="#3a4450" stroke-width="0.6"/>' +
-'    <circle cx="22" cy="127" r="1.6" fill="#22c55e"/>' +
-'    <rect x="191" y="121" width="9" height="13" rx="1.5" fill="#0b0f14" stroke="#3a4450" stroke-width="1"/>' +
-'  </g>' +
+laptopMarkup() +
 
 /* --- BREADBOARD --- */
 '  <g id="wd-breadboard">' +
@@ -880,33 +925,38 @@
    koparirdı — iki eğri ayrı çiziliyor, CSS birini gösteriyor. */
 '  <g id="wd-usb">' +
 '    <g class="wd-usb-on">' +
-'      <path d="M-42 179 C 6 179 22 158 64 158" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>' +
-'      <path id="wd-usb-path" d="M-43 178 C 5 178 21 157 63 157" stroke="url(#wd-cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>' +
-'      <path d="M-43.6 176.4 C 4 176 20 155 63 155.4" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>' +
+'      <path d="' + usbYol(26, 1, 1) + '" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>' +
+'      <path id="wd-usb-path" d="' + usbYol(26, 0, 0) + '" stroke="url(#wd-cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>' +
+'      <path d="' + usbYol(26, -0.6, -1.6) + '" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>' +
 '    </g>' +
 '    <g class="wd-usb-off">' +
-'      <path d="M-42 179 C 6 179 16 152 48 150" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>' +
-'      <path d="M-43 178 C 5 178 15 151 47 149" stroke="url(#wd-cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>' +
-'      <path d="M-43.6 176.4 C 4 176 14 149 47 147.4" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>' +
+'      <path d="' + usbYol(2, 1, 1) + '" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>' +
+'      <path d="' + usbYol(2, 0, 0) + '" stroke="url(#wd-cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>' +
+'      <path d="' + usbYol(2, -0.6, -1.6) + '" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>' +
 '    </g>' +
 '    <g id="wd-usb-plug">' +
-/* Fişin dili soketin İÇİNE giriyor (kartın Type-C soketi yatayda
-   x 76.2..90.2); gövde de soketin ağzında bitiyor. Kart sahnede fişten
-   SONRA çiziliyor, yani soket dilin üstünü kapatıyor ve kablo gerçekten
-   takılmış gibi duruyor. Arda: "kablo tam olarak porta oturmuyor" —
-   eskiden dil 80'de bitiyordu, sokete yalnızca 4 birim giriyordu. */
-'      <rect x="70" y="150" width="18" height="14" rx="3" fill="#B9C0C9" stroke="#7D8791" stroke-width="1"/>' +
-'      <rect x="44" y="144" width="32" height="26" rx="5" fill="url(#wd-plugGrad)" stroke="#727d89" stroke-width="1.5"/>' +
-'      <rect x="47" y="147" width="22" height="7" rx="2" fill="#ffffff" opacity="0.35"/>' +
+/* 2026-10-14: kartın USB-C soketi gerçek oranında (BoardSVG.KONUM.usb, 46 birim genişlik):
+   yatayda x 75.2..111.2, y 116.1..162.1 (merkez 139.1), ağız x 75.2. Fiş ona göre: metal dil
+   ağza sığar (38 birim; ağız 41), gövde soketten geniş (58; gerçekte 12.4 mm / 8.9 mm). Eski
+   fiş y 157'de, soketin alt yarısındaydı (kart 180° dönünce kaydırılmamıştı). Kart fişten SONRA
+   çizildiği için dilin soketin içinde kalan kısmını soket örter: kablo gerçekten takılı durur. */
+'      <rect x="62" y="120.1" width="18" height="38" rx="3" fill="#B9C0C9" stroke="#7D8791" stroke-width="1"/>' +
+'      <rect x="26" y="110.1" width="38" height="58" rx="8" fill="url(#wd-plugGrad)" stroke="#727d89" stroke-width="1.5"/>' +
+'      <rect x="30" y="114" width="28" height="8" rx="3" fill="#ffffff" opacity="0.35"/>' +
 '    </g>' +
 '    <circle class="wd-data" r="4">' +
 '      <animateMotion dur="1.9s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear"><mpath href="#wd-usb-path"/></animateMotion>' +
 '    </circle>' +
 '  </g>' +
 
-/* --- KART: breadboard'un üzerinde, kanalı boydan boya kaplıyor --- */
+/* --- KART: breadboard'un üzerinde, kanalı boydan boya kaplıyor ---
+   Sıfırdan kurulan derslerde kart da bir parça (KART_ADIMI): #wd-part-kart sarar, #wd-board'a
+   dokunulmaz (kendi transform'u, 1.1 kartıyla birebirliği ve 3B'nin okuduğu resmi onda). 1.4'te
+   kart baştan takılı: sarılmaz. */
+(iki ? '' : '  <g class="wd-part wd-drop wd-kart" id="wd-part-kart" data-part="kart">') +
 '  <g id="wd-board" transform="translate(' + KART_DX + ',' + KART_DY + ')">' +
 global.BoardSVG.groupMarkup({ rings: true, horizontal: true }) + '</g>' +
+(iki ? '' : '  </g>') +
 
 /* --- KILAVUZ ÇİZGİLER: pin yazısından üstündeki TEK boş deliğe --- */
 (sira ? '' : guideMarkup('d5', C_D5) + guideMarkup('gnd', C_GND)) +
@@ -1553,6 +1603,11 @@ ledIc() +
 
       });
 
+      /* Kart henüz tezgahta değilken (boş tezgah) ona takılı USB kablosu, fişi ve kartın
+         dışındaki kılavuz çizgiler de görünmez: havada asılı fiş "kart nerede?" dedirtiyordu.
+         Kart adımında kartla birlikte gelirler (wiring-diagram.css .is-kartsiz). */
+      svg.classList.toggle('is-kartsiz', ADIMLAR[0] === KART_ADIMI && current < 0);
+
       /* Tıklanamaz ilerleme yazısı: "3/4 · Direnç". Şerit kaldırıldığı
          için çocuğun "kaçıncı parçadayım" bilgisi burada duruyor. */
       if (ilerleme) {
@@ -1621,8 +1676,9 @@ ledIc() +
 
       /* Büyüteç yalnızca LED adımında anlamlı — her adımda TEK bir iş
          (spec §0): D5/direnç/GND adımlarında yön sorusu yok. */
-      // LED sırasında LED'ler 2. adım; modülde LED'in bacağı yok, düz kenar büyüteci de yok.
-      var magAdim = modul ? -99 : sira ? 1 : 0;
+      // Kart adımından sonra: 1.2'de LED 2. adım, LED sırasında LED'ler 3. adım (1.4'te kart adımı
+      // yok, LED2 ilk adım); modülde LED'in bacağı yok, düz kenar büyüteci de yok.
+      var magAdim = modul ? -99 : sira ? 2 : iki ? 0 : 1;
       btnMagnify.hidden = current !== magAdim;
       if (current !== magAdim && !magnifyPanel.hidden) {
         magnifyPanel.hidden = true;

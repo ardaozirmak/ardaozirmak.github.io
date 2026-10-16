@@ -103,7 +103,11 @@
       const kart = document.getElementById(m.kart);
       if (!grid) return;
       const dersler = LESSONS.filter((l) => l.open && modulu(l) === m.no);
-      if (kart) kart.hidden = !dersler.length;
+      if (kart) {
+        kart.hidden = !dersler.length;
+        // Modül rengi (styles.css [data-modul]): 1 kırmızı, 2 mavi, 3 turuncu.
+        kart.dataset.modul = String(m.no);
+      }
       grid.innerHTML = kartlar(dersler, activeId);
     });
   }

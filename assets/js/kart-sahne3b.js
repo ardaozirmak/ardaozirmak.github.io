@@ -26,8 +26,13 @@ window.KartSahne3B = (function () {
   'use strict';
   var S = 0.01;
   var KART_Y = 0.07;                         // kart pin başlıklarının üstünde, masa y=0
-  var LED = [84, 227.5], PWR = [84, 262];    // board-svg.js koordinatları
-  var USB = [86, 18];                        // Type-C soketinin ağzı
+  /* Parça yerleri TEK kaynaktan: BoardSVG.KONUM (board-svg.js, kart render'ıyla aynı; bu dosyadan
+     önce yüklenir). 2026-10-14: kart gerçek Mini v2 yerleşimine geçti — dahili LED ortadaki beyaz
+     RGB LED, GÜÇ LED'i port ucunda. Yedek değerler yalnız board-svg.js yüklenmemişse. */
+  var KONUM = (window.BoardSVG && BoardSVG.KONUM) ||
+    { led: [86, 153.6], guc: [70.7, 73.4], usb: { agiz: [86, 17] }, cip: { x: 73.4, y: 199.2, w: 42.4, h: 42.4 } };
+  var LED = KONUM.led, PWR = KONUM.guc;
+  var USB = KONUM.usb.agiz;                  // Type-C soketinin ağzı
   var kurulu = null;
   var kartFoto = null;                       // galerideki kart için 3B ürün fotoğrafı (data:)
   function galeriDegistir() {
@@ -138,7 +143,7 @@ window.KartSahne3B = (function () {
     var olcek = 6;
     var stil = BoardSVG.STIL_3B;
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="16 26 140 268" width="' + 140 * olcek + '" height="' + 268 * olcek +
-      '"><style>' + stil + '</style>' + BoardSVG.pinlerUstte(BoardSVG.groupMarkup({})) + '</svg>';
+      '"><style>' + stil + '</style>' + BoardSVG.pinlerUstte(BoardSVG.groupMarkup({ isiksiz: true })) + '</svg>';
     var img = new Image();
     img.onload = function () {
       var c = document.createElement('canvas'); c.width = 140 * olcek; c.height = 268 * olcek;
@@ -253,6 +258,15 @@ window.KartSahne3B = (function () {
     kart.add(golgeli(M.kart));
     /* Bakır yollar (blender/deneyap.py) çift taraflı ince şerit: kendi üstüne gölge düşürmesin. */
     M.kart.traverse(function (n) { if (n.isMesh && /^yollar/.test(n.name)) { n.castShadow = false; n.material.side = THREE.FrontSide; } });
+    /* Lehim maskesi doygun kırmızı kalsın: ACES + ortam yansıması turuncuya/pembeye çekiyordu
+       (sahne3b.js ile aynı ayar, gerekçesi orada). */
+    var koyulasan = [];
+    M.kart.traverse(function (n) {
+      if (n.isMesh && /^(pcb|yol)/.test(n.material.name) && koyulasan.indexOf(n.material) < 0) {
+        koyulasan.push(n.material); n.material.color.multiplyScalar(0.55); n.material.envMapIntensity = 0.35;
+        n.material.roughness = 0.5; if ('clearcoat' in n.material) n.material.clearcoat = 0;
+      }
+    });
     var baslik = new THREE.MeshStandardMaterial({ color: 0x1B1F24, roughness: 0.6 });
     [[20.5, 97, 188], [151.5, 51, 234]].forEach(function (b) {
       var h = new THREE.Mesh(new THREE.BoxGeometry(0.08, KART_Y, b[2] * S), baslik);
@@ -263,12 +277,14 @@ window.KartSahne3B = (function () {
       var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
       var d = new THREE.Mesh(new THREE.PlaneGeometry(1.40, 2.68), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
       d.rotation.x = -Math.PI / 2; d.position.set(0.86, 0.0032, 1.60); kart.add(d);
-      var g = new THREE.PlaneGeometry(0.66, 0.09), uv = g.attributes.uv;
+      /* ESP32-S2 baskısı çipin üst yüzünde (çip 2.3 birim yüksek, yazı katmanını örter): aynı dokunun
+         çip bölgesi çipin üstüne ikinci bir düzlem olarak basılır. */
+      var C = KONUM.cip, g = new THREE.PlaneGeometry(C.w * S, C.h * S), uv = g.attributes.uv;
       for (var i = 0; i < uv.count; i++) {
-        uv.setXY(i, (51 - 16 + uv.getX(i) * 66) / 140, 1 - (94.5 - 26 + (1 - uv.getY(i)) * 9) / 268);
+        uv.setXY(i, (C.x - 16 + uv.getX(i) * C.w) / 140, 1 - (C.y - 26 + (1 - uv.getY(i)) * C.h) / 268);
       }
       var e = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
-      e.rotation.x = -Math.PI / 2; e.position.set(0.84, 0.0595, 0.99); kart.add(e);
+      e.rotation.x = -Math.PI / 2; e.position.set((C.x + C.w / 2) * S, 0.0232, (C.y + C.h / 2) * S); kart.add(e);
       galeriResmi();
     });
 
@@ -295,14 +311,17 @@ window.KartSahne3B = (function () {
       galeriDegistir();
       if (window.MutationObserver) new MutationObserver(galeriDegistir).observe(document.body, { childList: true, subtree: true });
     }
-    // Dahili LED ve GÜÇ ışığı: küçük yüzey parçası + ışıma lekesi + nokta ışık.
-    function yuzeyLed(xy, boyut) {
+    /* Dahili LED ve GÜÇ ışığı: ışık yüzeyi + ışıma lekesi + nokta ışık. Yüzeyler YALNIZ yanıkken
+       görünür; sönükken modelin kendi parçası (RGB LED'in krem merceği, GÜÇ LED'in beyaz gövdesi)
+       görünsün. Yükseklikler deneyap.py'den: RGB LED merceğinin üstü 3.84, GÜÇ LED'i 1.5 birim. */
+    function yuzeyLed(xy, en, boy, y, yuvarlak) {
       var m = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, emissive: 0x000000 });
-      var l = new THREE.Mesh(new THREE.BoxGeometry(boyut, 0.02, boyut), m);
-      l.position.set(xy[0] * S, 0.03, xy[1] * S); kart.add(l);   // modeldeki LED yuvasının üstünde (0.012'de örtülüyordu)
+      var geo = yuvarlak ? new THREE.CylinderGeometry(en / 2, en / 2, 0.004, 28) : new THREE.BoxGeometry(en, 0.004, boy);
+      var l = new THREE.Mesh(geo, m);
+      l.position.set(xy[0] * S, y, xy[1] * S); l.visible = false; kart.add(l);
       return { m: m, l: l };
     }
-    var ledP = yuzeyLed(LED, 0.08), ledMat = ledP.m, pwrMat = yuzeyLed(PWR, 0.05).m;
+    var ledP = yuzeyLed(LED, 0.2, 0.2, 0.0386, true), pwrP = yuzeyLed(PWR, 0.058, 0.037, 0.0152, false), pwrMat = pwrP.m;
     // Yanıkken tonlamasız saf renk: ACES yüksek ışımayı beyaza çekiyordu.
     var ledYanikMat = new THREE.MeshBasicMaterial({ color: 0x1e7bff, toneMapped: false });
     var ledLeke = isima(0.9, true), pwrLeke = isima(0.4);
@@ -313,16 +332,25 @@ window.KartSahne3B = (function () {
     sahne.add(kart);
 
     /* ---- laptop: kartın SAĞINDA, ekranı çocuğa (kameraya) dönük, sağ yan portu karta bakar ----
-       2026-10-07 (Arda): sabit kamera kartın Type-C tarafından bakar ("yazılar ters gelmesin").
-       Laptop eskiden portun arkasındaydı (z -2.2); kamera o tarafa geçince önde kalıp sırtını
-       gösterecekti. Grup y'de 180° döner: modelin merkezi (-1.04, z 1.46) → kartın sağı, port
-       (-0.405, 0.03, 1.50) laptopun karta bakan yanına gelir. */
-    var LAP = V(1.6, 0, 0.7);   // laptop kartın sağ önünde, çapraz: dar panelde (≈340 px) de sığar
-    var laptop = new THREE.Group(); laptop.add(golgeli(M.laptop)); laptop.position.copy(LAP); laptop.rotation.y = Math.PI; sahne.add(laptop);
-    var port = V(0.405, 0.03, -1.50).add(LAP);
+       2026-10-07 (Arda): sabit kamera kartın Type-C tarafından bakar ("yazılar ters gelmesin"),
+       bu yüzden grup y'de 180° döner: modelin +z'si (ekran) kameraya, +x'i (port yanı) karta bakar.
+       2026-10-14 (Arda: "kartın yanında bilgisayar küçük kaldı" → "Büyük, köşesi kadraj dışı"):
+       model blender/laptop.py — gerçek 14" oranında, kendi yerelinde (orijin taban izinin ortası).
+       Tam kadrajda ekranı görünür, sol köşesi panelin dışına taşar; kart aynı boyda kalır ve kapak
+       kartın köşesini örtmez (x 2.9'da örtüyordu, ölçüldü). */
+    var LAP = V(3.2, 0, -1.35), LAP_OLCEK = 0.8;
+    var laptop = new THREE.Group(); laptop.add(golgeli(M.laptop)); M.laptop.scale.setScalar(LAP_OLCEK);
+    laptop.position.copy(LAP); laptop.rotation.y = Math.PI; sahne.add(laptop);
+    var kabloCikis = M.laptop.getObjectByName('kablo_cikis');   // takılı fişin arka ucu
+    var kabloYon = V(1, 0, 0).applyQuaternion(laptop.quaternion);   // fişten dışarı: karta doğru
+    function portBul() {                     // laptop iniş animasyonunda yer değiştirir
+      laptop.updateMatrixWorld(true);
+      return kabloCikis ? kabloCikis.getWorldPosition(V(0, 0, 0)) : LAP.clone().add(V(-1.5, 0.06, -0.1));
+    }
     var ekranTuval = document.createElement('canvas'); ekranTuval.width = 512; ekranTuval.height = 320;
     var ekranDoku = new THREE.CanvasTexture(ekranTuval); ekranDoku.encoding = THREE.sRGBEncoding; ekranDoku.flipY = false;
     var ekranMerkez = null;
+    laptop.updateMatrixWorld(true);          // düğüm konumları + ölçek: ekran merkezi laptop yerelinde doğru çıksın
     M.laptop.traverse(function (n) {
       if (n.isMesh && /ekran/.test(n.name)) {
         n.material = new THREE.MeshBasicMaterial({ map: ekranDoku, toneMapped: false });   // ekran gerçekten ışık saçar
@@ -330,8 +358,8 @@ window.KartSahne3B = (function () {
         n.localToWorld(ekranMerkez); laptop.worldToLocal(ekranMerkez);
       }
     });
-    ekranMerkez = ekranMerkez || V(-1.04, 0.5, 1.1);
-    var ekranLeke = isima(2.0); ekranLeke.position.copy(ekranMerkez).add(V(0, 0, 0.12)); laptop.add(ekranLeke);
+    ekranMerkez = ekranMerkez || V(0, 1.0, -0.9);
+    var ekranLeke = isima(2.8); ekranLeke.position.copy(ekranMerkez).add(V(0, 0, 0.12)); laptop.add(ekranLeke);
     laptop.updateMatrixWorld(true);
     ekranIsik.position.copy(laptop.localToWorld(ekranMerkez.clone().add(V(0, -0.05, 0.45))));
 
@@ -352,13 +380,15 @@ window.KartSahne3B = (function () {
       return m;
     }
     function kabloKur(arka) {
-      var anahtar = arka.x.toFixed(3) + arka.y.toFixed(3) + arka.z.toFixed(3);
+      var port = portBul();
+      var anahtar = [port.y, arka.x, arka.y, arka.z].map(function (v) { return v.toFixed(3); }).join();
       if (anahtar === kabloSon) return;
       kabloSon = anahtar;
       if (kablo) { sahne.remove(kablo); kablo.geometry.dispose(); }
-      // Laptopun sol yanından (karta bakan) çıkar, masada kavisle fişin arkasına (−z) dolanır.
-      kablo = tup([port, port.clone().add(V(-0.2, -0.01, -0.05)), V(port.x - 0.45, 0.025, arka.z - 0.55),
-                   V(arka.x + 0.3, 0.03, arka.z - 0.4), V(arka.x, Math.max(0.04, arka.y * 0.6), arka.z - 0.12), arka], 0.022, kabloMat);
+      // Laptopun karta bakan yanındaki fişten çıkar, masaya iner, kavisle fişin arkasına (−z) dolanır.
+      var cik = port.clone().addScaledVector(kabloYon, 0.16).setY(Math.max(0.025, port.y - 0.02));
+      kablo = tup([port, cik, V((cik.x + arka.x) / 2 + 0.1, 0.025, Math.min(cik.z, arka.z - 0.4) - 0.15),
+                   V(arka.x + 0.25, 0.03, arka.z - 0.4), V(arka.x, Math.max(0.04, arka.y * 0.6), arka.z - 0.12), arka], 0.022, kabloMat);
       kabloEgri = kablo.userData.egri;
       sahne.add(kablo);
     }
@@ -465,7 +495,7 @@ window.KartSahne3B = (function () {
       // Asılıyken soketin hemen üstünde ve önünde: yüksek tutunca perspektifte laptopun önüne düşüyordu.
       fis.position.set(agiz.x, agiz.y + (1 - ft) * 0.13 + inis, agiz.z - 0.02 + (1 - ft) * 0.05);
       if (lapGorun) {
-        var arka = fis.position.clone().add(V(0, 0.06, -0.47));   // fişin kablo çıkışı (yerel -x → -z)
+        var arka = fis.position.clone().add(V(0, 0.06, -0.62));   // fişin kablo çıkışı (yerel -x → -z; boyun ucu 64 birim)
         kabloKur(arka);
         kablo.visible = true; kablo.position.y = 0;
       } else if (kablo) kablo.visible = false;
@@ -482,8 +512,7 @@ window.KartSahne3B = (function () {
       /* Arda: "3B'de LED'in rengi mavi olsun." SVG'nin açık mavisi (#6fa8ff) yüksek ışımada
          tonlamayla beyaza kaçıyordu: renk doygunlaştırılır, şiddet ölçülü tutulur. */
       lr.offsetHSL(0, 0.3, -0.16);
-      ledMat.color.set(0xd6dde6);
-      ledP.l.material = g > 0.3 ? ledYanikMat : ledMat;
+      ledP.l.material = ledYanikMat; ledP.l.visible = g > 0.3;
       ledYanikMat.color.copy(lr);
       ledLeke.material.color.copy(lr); ledLeke.material.opacity = g * 0.85;
       ledLeke.scale.setScalar(0.6 + g * 0.6);
@@ -491,7 +520,8 @@ window.KartSahne3B = (function () {
       durum.led = g; durum.ledRenk = lr.getHexString();
       // GÜÇ ışığı: kart bağlıyken kırmızı, hafif nabızlı.
       var p = bagli ? 0.85 + 0.15 * Math.sin(z / 380) : 0;
-      pwrMat.color.set(p ? 0xff5a4d : 0x2a1a16); pwrMat.emissive.set(0xff3b30); pwrMat.emissiveIntensity = p * 2.2;
+      pwrP.l.visible = p > 0;
+      pwrMat.color.set(0xff5a4d); pwrMat.emissive.set(0xff3b30); pwrMat.emissiveIntensity = p * 2.2;
       pwrLeke.material.color.set(0xff4438); pwrLeke.material.opacity = p * 0.8;
       pwrIsik.intensity = p * 0.9;
       // Ekran parıltısı: tema vurgusuyla klavyeye ve masaya ışık düşer.

@@ -31,7 +31,7 @@ window.LESSON_DATA_2_1 = {
     "pinAciklama": "Kartın alt kenarında <code>D5</code>'in yanında <strong>MI</strong> yazar. Üst kenarda <strong>GND</strong>, <strong>D9</strong>'un hemen solunda.",
     "kurKapisi": "Tek LED'li devreyi kur: <strong>Hadi kuralım</strong>'a bas ve parçaları tak.",
     "bosBaslik": "Tek LED, D5'te. Yeni parça yok.",
-    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: GND kablosu, LED, direnç ve D5 kablosu.",
+    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: kart, GND kablosu, LED, direnç ve D5 kablosu.",
     "bosNot": " Ders 1.6’daki trafik lambası modülü bağlıysa onunla da olur: kırmızı ışığı (R) D5’te, bu ders yalnız onu yakıp söndürür.",
     "bitisKontrol": "Kartında eski kod duruyorsa LED başka türlü yanar. Yeni kodu bir sonraki adımda yükleyeceksin."
   },
@@ -118,13 +118,22 @@ window.LESSON_DATA_2_1 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "Kartın üstteki <strong>GND</strong> pininden − rayına siyah kablo.",
     "LED'i tak: iki bacak da g satırında, kısa bacak solda.",
     "LED'in kısa bacağının sütunundan − rayına bir direnç.",
     "<strong>D5</strong> (kartta MI) → LED'in uzun bacağı."
   ],
-  "//wiringGuide": "Adım sırası wiring-diagram.js siraAdimlari ile aynı: GND, LED, direnç, D5 kablosu.",
+  "//wiringGuide": "Adım sırası wiring-diagram.js siraAdimlari ile aynı: kart, GND, LED, direnç, D5 kablosu.",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["breadboard"],
+      "xray": false,
+      "neden": "Her şey karta bağlanacak, önce o yerinde olmalı.",
+      "nereye": "Kart breadboard'da değilse kitten çıkar ve tak: USB-C girişi <b>solda</b>, pin sıraları orta kanalın <b>iki yanında</b>. Takılıysa yerinde bırak.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik var mı?"
+    },
     {
       "ad": "GND kablosu",
       "adim3": ["jumper", "breadboard"],
@@ -180,7 +189,8 @@ window.LESSON_DATA_2_1 = {
       "gorev": "<code>Serial.println(\"YANDI\");</code> satırını kesip <code>delay(1000);</code> satırının altına taşı. Karta yükle: ışık ile yazı hâlâ aynı anda mı değişiyor? Sonra satırı eski yerine getir.",
       "ipucu": "Kod satırları yukarıdan aşağıya sırayla çalışır. Yazı satırı beklemenin arkasına geçerse ne zaman çalışır?",
       "tip": "gozlem",
-      "secenekler": ["Yazı ışıktan 1 saniye sonra geldi", "Bir fark göremedim"]
+      "secenekler": ["Yazı ışıktan 1 saniye sonra geldi", "Bir fark göremedim"],
+      "beklenen": 0
     }
   ],
   "yetiskinKarti": [

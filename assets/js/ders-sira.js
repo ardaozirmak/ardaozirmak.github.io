@@ -284,7 +284,7 @@ function dahaSuz(odak) {
 function acilirKutu(id, icon, baslik, govde) {
   const acik = bilgiAcik();
   return `
-    <div class="quiz-box pin-map" style="margin-top:14px;">
+    <div class="quiz-box pin-map" data-kutu="${id}" style="margin-top:14px;">
       <button type="button" class="pin-map-toggle${acik ? ' is-open' : ''}" aria-expanded="${acik}" aria-controls="${id}"
               onclick="LessonEngine.togglePinMap(this)">
         <span style="display:flex; align-items:center; gap:8px;">
@@ -302,14 +302,24 @@ function merakKosesiHtml() {
 }
 
 /* ---- Adım 7: SEN YAP (görev biçimleri lesson-1-4.js ile aynı; CSS lesson-1-4.css) ---- */
+/* Kapı için: görev CEVAPLANDI mı? Gözlemde her cevap kapıyı açar — çocuk
+   takıldığında da devam edebilsin ("çocuğu boğma"). */
 function gorevTamam(g) {
   const d = senYapDurum[g.id];
   return g.tip === 'sayi' ? d === true : !!d;
 }
+/* XP ve ✓ için: görev BAŞARILDI mı? Gözlem görevinde veri `beklenen`
+   veriyorsa yalnız o seçenek başarıdır (2026-10-16 denetimi: "Hâlâ sürekli
+   yanıyor" demek de görevi bitiriyor, 10 XP veriyordu). `beklenen` olmayan
+   keşif görevlerinde (1.4 eşik, 1.6 süre) her cevap doğrudur. */
+function gorevBasarili(g) {
+  if (g.tip !== 'gozlem' || g.beklenen === undefined) return gorevTamam(g);
+  return senYapDurum[g.id] === g.secenekler[g.beklenen];
+}
 function senYapTamam() { return lessonData.senYap.every(gorevTamam); }
 
 function gorevHtml(g, i) {
-  const bitti = gorevTamam(g);
+  const bitti = gorevBasarili(g);
   const ipucu = `<details class="quiz-ipucu l14-ipucu"><summary><svg class="icon"><use href="#icon-bulb"/></svg><span class="quiz-ipucu-baslik">Takıldın mı? İpucuna bak</span><span class="quiz-ipucu-ac" aria-hidden="true"></span></summary><div class="quiz-ipucu-body">${g.ipucu}</div></details>`;
   let eylem = '';
   if (g.tip === 'yaptim') {
@@ -319,7 +329,7 @@ function gorevHtml(g, i) {
     const secim = senYapDurum[g.id];
     eylem = `<div class="l14-sec" role="group" aria-label="Ne gördün?">` +
       g.secenekler.map((s, k) => `<button type="button" class="led-check-btn ${k === 0 ? 'ok' : 'no'}${secim === s ? ' selected' : ''}" onclick="gorevGozlem('${g.id}', ${k})">${s}</button>`).join('') +
-      `</div>`;
+      `</div><div class="l14-geri" id="geri-${g.id}" aria-live="polite"></div>`;
   } else if (g.tip === 'sayi') {
     // Soru görevden ayrı satırda, ipucu sorunun altında (lesson-1-4.js'teki gerekçe).
     eylem = `<div class="l14-sayi">
@@ -374,11 +384,23 @@ function gorevYaptim(id, btn) {
 
 function gorevGozlem(id, k) {
   const g = lessonData.senYap.find(x => x.id === id);
-  const ilk = !senYapDurum[id];
   senYapDurum[id] = g.secenekler[k];
   const li = document.getElementById('gorev-' + id);
   if (li) li.querySelectorAll('.led-check-btn').forEach((b, j) => b.classList.toggle('selected', j === k));
-  if (ilk) gorevBitti(id, li);
+  const geri = document.getElementById('geri-' + id);
+  if (gorevBasarili(g)) {
+    if (geri) geri.innerHTML = '';
+    gorevBitti(id, li);
+    return;
+  }
+  /* Beklenmeyen gözlem: sayı görevinin yanlış dalıyla aynı desen — suçlama
+     yok, yol gösterilir, ipucu kendiliğinden açılır. Kapı yine açılır. */
+  if (li) li.classList.remove('is-done');
+  if (geri) geri.innerHTML = `<div class="callout yellow"><svg class="icon callout-icon"><use href="#icon-search"/></svg><span>Henüz olmamış. Kodu ve kabloyu bir daha kontrol edip yeniden yükle; aşağıdaki ipucu nereye bakacağını söylüyor.</span></div>`;
+  const ip = li && li.querySelector('.l14-ipucu');
+  if (ip) ip.open = true;
+  LessonEngine.refreshGates();
+  updateReadyGlow();
 }
 
 function gorevSayi(id) {

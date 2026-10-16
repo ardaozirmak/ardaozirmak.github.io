@@ -6,30 +6,39 @@
   <!-- Tarayıcı çubuğu sayfanın zeminiyle aynı renk olsun (--color-bg). -->
   <meta name="theme-color" content="#FFF8F0">
   <title>Deneyap Atölyem - Ders 1.6 Trafik Lambası</title>
+  <!-- Sekme simgesi + paylaşım önizlemesi (2026-10-16 denetim: yoktu). -->
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="Deneyap kartıyla adım adım elektronik ve kodlama: LED yak, devre kur, kartı programla. Öğretmensiz, kendi hızında.">
+  <meta property="og:title" content="Deneyap Atölyem - Ders 1.6 Trafik Lambası">
+  <meta property="og:description" content="Deneyap kartıyla adım adım elektronik ve kodlama: LED yak, devre kur, kartı programla. Öğretmensiz, kendi hızında.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:image" content="https://ardaozirmak.github.io/assets/img/kart/kart-led-acik.webp">
 
-  <!-- Hız (2026-10-05): senkron Supabase betiği ve bulut isteği için bağlantı önceden açılır. -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- Hız: bulut isteği için bağlantı önceden açılır. supabase-js 2026-10-16'dan beri
+       assets/vendor'da (CDN yavaşken senkron betik sayfayı kilitliyordu). -->
   <link rel="preconnect" href="https://odozoqsqnapiyweugfth.supabase.co" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 
-  <script src="assets/js/tema.js"></script>
+  <script src="assets/js/tema.js?v=1c6a25d"></script>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="assets/css/hareket.css">
-  <link rel="stylesheet" href="assets/css/index-theme.css">
-  <link rel="stylesheet" href="assets/css/fx.css">
-  <link rel="stylesheet" href="assets/css/ikonlar.css">
-  <link rel="stylesheet" href="assets/css/panel.css">
-  <link rel="stylesheet" href="assets/css/ders-ekler.css">
-  <link rel="stylesheet" href="assets/css/board-svg.css">
-  <link rel="stylesheet" href="assets/css/wiring-diagram.css">
-  <link rel="stylesheet" href="assets/css/parts-gallery.css">
-  <link rel="stylesheet" href="assets/css/learner.css">
-  <link rel="stylesheet" href="assets/css/ai-helper.css">
-  <link rel="stylesheet" href="assets/css/oku.css">
-  <link rel="stylesheet" href="assets/css/odak.css">
-  <link rel="stylesheet" href="assets/css/lesson-1-4.css">
+  <link rel="stylesheet" href="assets/css/hareket.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/index-theme.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/fx.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ikonlar.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/panel.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ders-ekler.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/board-svg.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/wiring-diagram.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/parts-gallery.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/learner.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ai-helper.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ai-sohbet.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/oku.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/odak.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/lesson-1-4.css?v=1c6a25d">
 </head>
 <body>
 
@@ -134,12 +143,14 @@
               <stop offset="1" stop-color="#b6bbc3"/>
             </linearGradient>
           </defs>
-          <path d="M152 353 C 106 349 101 263 131 241 C 151 227 171 237 171 210" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>
-          <path d="M151 352 C 105 348 100 262 130 240 C 150 226 170 236 170 209" stroke="url(#cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
-          <path d="M150.4 351.3 C 104.4 347.3 99.4 261.3 129.4 239.3 C 149.4 225.3 169.4 235.3 169.4 208.3" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>
+          <!-- Kablo: laptopun sağ yanındaki takılı fişin ucundan (135.08, 364.93; render'ın ISARET kablo noktası) çıkış
+               yönünde başlar, fişin kablo ucuna (170, 209) aşağıdan girer. #layer-dataflow aynı eğriden örneklendi. -->
+          <path d="M136.08 365.93 C 165.83 369.83 171 280 171 210" stroke="#000000" stroke-width="8" fill="none" stroke-linecap="round" opacity="0.14"/>
+          <path d="M135.08 364.93 C 164.83 368.83 170 279 170 209" stroke="url(#cableGrad)" stroke-width="6.5" fill="none" stroke-linecap="round"/>
+          <path d="M134.48 364.23 C 164.23 368.13 169.4 278.3 169.4 208.3" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.6"/>
         </svg>
 
-        <svg id="layer-plug" viewBox="0 0 32 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg id="layer-plug" viewBox="0 0 48 46" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="plugGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stop-color="#f2f4f7"/>
@@ -147,82 +158,45 @@
               <stop offset="1" stop-color="#93a0ac"/>
             </linearGradient>
           </defs>
-          <rect x="14" y="-1" width="4" height="17" rx="1.5" fill="#dcdfe3" stroke="#aeb3ba" stroke-width="0.5"/>
-          <rect x="15" y="1" width="1.2" height="13" fill="#ffffff" opacity="0.5"/>
-          <rect x="0" y="16" width="32" height="20" rx="4" fill="url(#plugGrad)" stroke="#727d89" stroke-width="1.5"/>
-          <rect x="2" y="18" width="6" height="16" rx="2" fill="#ffffff" opacity="0.35"/>
-          <rect x="5" y="18" width="22" height="8" rx="2" fill="#dfe1e5" opacity="0.5"/>
-          <circle cx="16" cy="30" r="1.1" fill="#727d89" opacity="0.6"/>
-          <rect x="8" y="36" width="16" height="8" rx="2" fill="#2b333d" stroke="#4a545f" stroke-width="1"/>
-          <rect x="10" y="37" width="12" height="2" rx="1" fill="#4a545f" opacity="0.8"/>
+          <rect x="22" y="-1" width="4" height="17" rx="1.5" fill="#dcdfe3" stroke="#aeb3ba" stroke-width="0.5"/>
+          <rect x="23" y="1" width="1.2" height="13" fill="#ffffff" opacity="0.5"/>
+          <rect x="0" y="16" width="48" height="20" rx="5" fill="url(#plugGrad)" stroke="#727d89" stroke-width="1.5"/>
+          <rect x="3" y="18" width="7" height="16" rx="2" fill="#ffffff" opacity="0.35"/>
+          <rect x="7" y="18" width="34" height="8" rx="2" fill="#dfe1e5" opacity="0.5"/>
+          <circle cx="24" cy="30" r="1.1" fill="#727d89" opacity="0.6"/>
+          <rect x="9" y="36" width="30" height="8" rx="2" fill="#c3cad2" stroke="#7d8791" stroke-width="1"/>
+          <rect x="13" y="39" width="22" height="2" rx="1" fill="#2b333d" opacity="0.85"/>
         </svg>
 
         <div id="layer-dataflow"></div>
 
-        <svg id="layer-laptop" viewBox="0 0 200 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg id="layer-laptop" viewBox="0 0 1000 1019" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- 2026-10-14: 3B sahnelerdeki laptopun Blender render'ı (blender/laptop.py → assets/img/kart/laptop.webp);
+               viewBox render'ın pikselleri. Ekran içeriği SVG (keskin yazı): 160 × 100'lük çerçevede, matrisle
+               render'daki eğik ekrana oturur — köşeler betiğin ISARET satırından. Takılı fiş ayrı kırpıntı (laptop-fis.webp).
+               Yer ve boy: styles.css #layer-laptop. -->
           <defs>
             <linearGradient id="screenGlare" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
               <stop offset="0.35" stop-color="#ffffff" stop-opacity="0"/>
               <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
             </linearGradient>
-            <linearGradient id="deckGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#333f4d"/>
-              <stop offset="1" stop-color="#242e39"/>
-            </linearGradient>
-            <linearGradient id="trackpadGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#2d3844"/>
-              <stop offset="1" stop-color="#1c242d"/>
-            </linearGradient>
           </defs>
-
-          <ellipse cx="100" cy="140" rx="96" ry="5" fill="#000000" opacity="0.18"/>
-          <rect x="94" y="135" width="12" height="5" fill="#0b0f14" stroke="#3a4450" stroke-width="1"/>
-          <rect x="12" y="4" width="176" height="112" rx="10" fill="#171c24" stroke="#2c3540" stroke-width="2"/>
-          <rect class="lt-ekran" x="24" y="14" width="152" height="92" rx="5" fill="#0b1220"/>
-
-          <circle cx="31" cy="20" r="2" fill="#ef4444"/>
-          <circle cx="38" cy="20" r="2" fill="#f59e0b"/>
-          <circle cx="45" cy="20" r="2" fill="#22c55e"/>
-          <line x1="24" y1="26" x2="176" y2="26" stroke="#1e293b" stroke-width="1"/>
-
-          <text x="100" y="58" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#6FB7FF" text-anchor="middle">DENEYAP ATÖLYEM</text>
-          <text x="100" y="76" font-family="Arial, sans-serif" font-size="7" fill="#A6957E" text-anchor="middle">Arduino IDE 2.3.10</text>
-
-          <g opacity="0.55">
-            <rect x="30" y="34" width="18" height="2.4" rx="1.2" fill="#334155"/>
-            <rect x="30" y="40" width="28" height="2.4" rx="1.2" fill="#334155"/>
-            <rect x="30" y="46" width="14" height="2.4" rx="1.2" fill="#334155"/>
+          <image href="assets/img/kart/laptop.webp" width="1000" height="1019"/>
+          <image href="assets/img/kart/laptop-fis.webp" x="840" y="800" width="150" height="76"/>
+          <g transform="matrix(4.6231 0.6106 -0.356 4.606 209.9 54.6)">
+            <rect class="lt-ekran" width="160" height="100" fill="#0b1220"/>
+            <rect width="160" height="10.6" fill="#ffffff" opacity="0.06"/>
+            <circle cx="5.6" cy="5.3" r="1.9" fill="#ef4444"/><circle cx="11.3" cy="5.3" r="1.9" fill="#f59e0b"/><circle cx="16.9" cy="5.3" r="1.9" fill="#22c55e"/>
+            <rect x="9.4" y="17.5" width="32" height="2.8" fill="#7FB4FF" opacity="0.6"/><rect x="125" y="17.5" width="25.6" height="2.8" fill="#7FB4FF" opacity="0.6"/>
+            <rect x="9.4" y="24.4" width="48" height="2.8" fill="#E5C07B" opacity="0.6"/><rect x="112.2" y="24.4" width="38.4" height="2.8" fill="#E5C07B" opacity="0.6"/>
+            <rect x="9.4" y="31.3" width="22.4" height="2.8" fill="#98C379" opacity="0.6"/><rect x="132.68" y="31.3" width="17.92" height="2.8" fill="#98C379" opacity="0.6"/>
+            <text class="lt-vurgu" x="80" y="52" font-family="Arial, sans-serif" font-size="10.6" font-weight="bold" fill="#6FB7FF" text-anchor="middle">DENEYAP ATÖLYEM</text>
+            <text x="80" y="61.3" font-family="Arial, sans-serif" font-size="5.6" fill="#A6957E" text-anchor="middle">Arduino IDE 2.3.10</text>
+            <rect x="51.9" y="78" width="56.25" height="8.1" fill="#1e293b"/>
+            <rect x="55" y="80.5" width="28.1" height="3.1" fill="#6FB7FF" opacity="0.85"/>
+            <rect width="160" height="100" fill="url(#screenGlare)"/>
           </g>
-          <g opacity="0.55">
-            <rect x="152" y="34" width="18" height="2.4" rx="1.2" fill="#334155"/>
-            <rect x="146" y="40" width="24" height="2.4" rx="1.2" fill="#334155"/>
-            <rect x="156" y="46" width="14" height="2.4" rx="1.2" fill="#334155"/>
-          </g>
-
-          <rect x="70" y="86" width="60" height="10" rx="3" fill="#1e293b"/>
-          <rect x="74" y="89" width="30" height="4" rx="2" fill="#6FB7FF" opacity="0.8"/>
-          <rect x="24" y="14" width="152" height="92" rx="5" fill="url(#screenGlare)"/>
-
-          <circle cx="100" cy="18" r="1.8" fill="#1f2937"/>
-          <circle cx="100.6" cy="17.4" r="0.5" fill="#3a4a5c"/>
-
-          <rect x="4" y="116" width="192" height="22" rx="7" fill="url(#deckGrad)" stroke="#3a4450" stroke-width="2"/>
-
-          <rect x="0" y="121" width="9" height="13" rx="1.5" fill="#0b0f14" stroke="#3a4450" stroke-width="1"/>
-          <rect x="1.5" y="123.5" width="4" height="8" rx="1" fill="#333f4d"/>
-
-          <g opacity="0.5">
-            <rect x="14" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
-            <rect x="26" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
-            <rect x="38" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
-            <rect x="153" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
-            <rect x="165" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
-            <rect x="177" y="120" width="9" height="4" rx="1" fill="#1a222c"/>
-          </g>
-          <rect x="84" y="125" width="32" height="8" rx="3" fill="url(#trackpadGrad)" stroke="#3a4450" stroke-width="0.6"/>
-          <circle cx="22" cy="127" r="1.6" fill="#22c55e"/>
-          <circle cx="22" cy="127" r="3" fill="#22c55e" opacity="0.25"/>
         </svg>
 
       </div>
@@ -310,38 +284,39 @@
 
   <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
 
-  <script src="assets/js/storage.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
-  <script src="assets/js/cloud-config.js" onerror="/* hesapsız mod */"></script>
-  <script src="assets/js/cloud.js"></script>
-  <script src="assets/js/sync.js"></script>
-  <script src="assets/js/learner.js"></script>
-  <script src="assets/js/yonetici.js"></script>
-  <script src="assets/js/fx.js"></script>
-  <script src="assets/vendor/motion.min.js"></script>
-  <script src="assets/vendor/anime.umd.min.js"></script>
-  <script src="assets/js/hareket.js"></script>
-  <script src="assets/js/ikonlar.js"></script>
-  <script src="assets/js/seviye-yolu.js"></script>
-  <script src="assets/js/profile.js"></script>
-  <script src="assets/js/learner-ui.js"></script>
-  <script src="assets/js/lesson-engine.js"></script>
-  <script src="assets/js/odak.js"></script>
-  <script src="assets/js/board-svg.js"></script>
-  <script src="assets/js/usb-link.js"></script>
-  <script src="assets/js/lesson-page.js"></script>
-  <script src="assets/js/parts-gallery.js"></script>
-  <script src="assets/js/wiring-diagram.js"></script>
-  <script src="assets/js/sahne3b.js"></script>
-  <script src="assets/data/lesson-1-6.js"></script>
-  <script src="assets/js/ders-sira.js"></script>
-  <script src="assets/js/kart-sahne3b.js"></script>
-  <script src="assets/js/ai-helper.js"></script>
-  <script src="assets/js/ders-ekler.js"></script>
+  <script src="assets/js/storage.js?v=1c6a25d"></script>
+  <script src="assets/vendor/supabase.min.js?v=1c6a25d"></script>
+  <script src="assets/js/cloud-config.js?v=1c6a25d" onerror="/* hesapsız mod */"></script>
+  <script src="assets/js/cloud.js?v=1c6a25d"></script>
+  <script src="assets/js/sync.js?v=1c6a25d"></script>
+  <script src="assets/js/learner.js?v=1c6a25d"></script>
+  <script src="assets/js/yonetici.js?v=1c6a25d"></script>
+  <script src="assets/js/fx.js?v=1c6a25d"></script>
+  <script src="assets/vendor/motion.min.js?v=1c6a25d"></script>
+  <script src="assets/vendor/anime.umd.min.js?v=1c6a25d"></script>
+  <script src="assets/js/hareket.js?v=1c6a25d"></script>
+  <script src="assets/js/ikonlar.js?v=1c6a25d"></script>
+  <script src="assets/js/seviye-yolu.js?v=1c6a25d"></script>
+  <script src="assets/js/profile.js?v=1c6a25d"></script>
+  <script src="assets/js/learner-ui.js?v=1c6a25d"></script>
+  <script src="assets/js/lesson-engine.js?v=1c6a25d"></script>
+  <script src="assets/js/odak.js?v=1c6a25d"></script>
+  <script src="assets/js/board-svg.js?v=1c6a25d"></script>
+  <script src="assets/js/usb-link.js?v=1c6a25d"></script>
+  <script src="assets/js/lesson-page.js?v=1c6a25d"></script>
+  <script src="assets/js/parts-gallery.js?v=1c6a25d"></script>
+  <script src="assets/js/wiring-diagram.js?v=1c6a25d"></script>
+  <script src="assets/js/sahne3b.js?v=1c6a25d"></script>
+  <script src="assets/data/lesson-1-6.js?v=1c6a25d"></script>
+  <script src="assets/js/ders-sira.js?v=1c6a25d"></script>
+  <script src="assets/js/kart-sahne3b.js?v=1c6a25d"></script>
+  <script src="assets/js/ai-sohbet.js?v=1c6a25d"></script>
+  <script src="assets/js/ai-helper.js?v=1c6a25d"></script>
+  <script src="assets/js/ders-ekler.js?v=1c6a25d"></script>
   <!-- Sesli okuma: zamanlamalar URETILMIS bir JS dosyasindan gelir.
        file:// altinda fetch() yok, ders verisiyle ayni desen. -->
-  <script src="assets/ses/zamanlar.js"></script>
-  <script src="assets/js/oku.js"></script>
+  <script src="assets/ses/zamanlar.js?v=1c6a25d"></script>
+  <script src="assets/js/oku.js?v=1c6a25d"></script>
   <script>
     /* Hesabı olmayan dersi açamaz (Arda: "siteyi açınca hesabı olmayan
        erişim sağlayamaz"). Portalda değil de doğrudan bu adrese gelen

@@ -6,10 +6,11 @@
    Tasarım kararları: docs/superpowers/specs/2026-09-21-ai-yardimci-design.md
 
    SINIRLAR (kasıtlı):
-   - Sayfa içi gerçek sohbet YOK. Sunucu + API anahtarı + her mesajın parası
-     demek; o kova ticaret kovası. Mekanizma bugünkü yol: prompt üretilir,
-     panoya yazılır, çocuğun seçtiği araç yeni sekmede açılır
-     (LessonEngine.openAiTool + copyPromptText — ikisi de zaten var).
+   - 2026-10-14'ten beri cevap SAYFANIN İÇİNDE (Arda: "chatgpt'ye yönlendirmeyi
+     bırak, site içinde kendi AI yardımcımız olacak"): "Evet, takıldım" paneli
+     açar (assets/js/ai-sohbet.js), soru sunucuya KİMLİK olarak gider
+     ('takildim' + ders + adım), metni sunucu kurar. Serbest yazı yok.
+     Eski yol (prompt üret → panoya yaz → ChatGPT sekmesi) kalktı.
    - Ses YOK (Kurallar.md: ses ödül anına saklanır).
    - Kendiliğinden konuşma yalnızca ADIMIN ŞARTI SAĞLANMAMIŞKEN. Tezgahta
      çalışan, şartı geçmiş çocuk dürtülmez. 2026-09-07'de geri alınan "AI
@@ -107,48 +108,16 @@
     return false;
   }
 
-  /* ---------- PROMPT: hibrit bağlam ----------
-     Sıra: ders helpPrompt'u → nerede olduğu → adıma özel not → sabit kuyruk.
-     Ders yoksa (portal) ilk ve üçüncü parça düşer, kalan metin yine çalışır.
-     Ders 1.3 yazılırken `aiHelp` yazmayı unutsa bile yardımcı çalışsın diye
-     hiçbir parça zorunlu değil. */
-  function promptUret() {
-    var parca = [];
-
-    var ders = window.LessonEngine && LessonEngine.helpPrompt;
-    if (ders) parca.push(ders);
-
-    var dersAdi = document.querySelector('.header-lesson-title');
-    var adimBasligi = document.getElementById('stepTitle');
-    if (dersAdi && adimBasligi) {
-      parca.push('Şu an buradayım: ' + dersAdi.innerText.trim() +
-                 ' — ' + adimBasligi.innerText.trim() + '.');
-    } else {
-      parca.push('Deneyap Mini v2 kartıyla ders yapan bir öğrenciyim ve ' +
-                 'derslerin listelendiği sayfadayım.');
-    }
-
-    var ek = window.LessonEngine && LessonEngine.stepHelp;
-    if (ek) parca.push(ek);
-
-    parca.push('Bu adımda takıldım. Bana yardım et ama hepsini birden ' +
-               'anlatma: her seferinde TEK bir soru sor, cevabımı bekle, ' +
-               'sonra bir sonraki adıma geç. Kısa cümlelerle, yaşıma uygun ' +
-               've sabırlı bir dille anlat.');
-
-    var metin = parca.join('\n\n');
-    return window.Profile ? Profile.personalize(metin) : metin;
-  }
-
+  /* ---------- SOR: site içi panel ----------
+     Sorunun METNİ burada üretilmez: sunucu (supabase/functions/ai-sohbet) dersin
+     yardım notunu, çocuğun nerede olduğunu ve "takıldım" kuyruğunu kendi
+     kopyasından kurar. Eskiden metin burada birleşip iki kez kişiselleştiriliyor,
+     adım başlığına "Bana oku" düğmesinin yazısı da karışıyordu; ikisi de kalktı. */
   function sor() {
-    var metin = promptUret();
-    /* window.open TIKLAMANIN kendi tick'inde çağrılmalı (bkz. lesson-engine
-       openAiTool notu) — pano yazmasını beklersek tarayıcı sekmeyi engelliyor. */
-    if (window.LessonEngine && LessonEngine.openAiTool) {
-      var gitti = LessonEngine.openAiTool(metin);
-      LessonEngine.copyPromptText(metin, LessonEngine.aiSentMessage(gitti));
-    }
     balonKapat();
+    if (window.AiSohbet) {
+      AiSohbet.baslat({ istek: 'takildim', baslik: dersMi() ? 'Bu adımda takıldım' : 'Takıldım, nereden devam edeyim?' });
+    }
   }
 
   /* ---------- DOM ---------- */
@@ -179,6 +148,8 @@
     dugme = kok.querySelector('.ai-helper-dugme');
 
     dugme.addEventListener('click', function () {
+      // Sohbet paneli açıksa robot onu kapatır (panel robotun hemen üstünde açılıyor).
+      if (window.AiSohbet && AiSohbet.acik) { AiSohbet.kapat(); return; }
       if (balon.hidden) balonAc(false); else balonKapat();
     });
     kok.querySelector('.ai-helper-evet').addEventListener('click', function () {
@@ -203,13 +174,13 @@
     var soz = kok.querySelector('.ai-helper-soz');
     if (tanitim) {
       soz.textContent = 'Ben senin AI yardımcınım. Bir yerde takılırsan bu ' +
-        'düğmeye bas — takıldığın adımı anlatan bir soruyu senin için hazırlarım.';
+        'düğmeye bas — sana burada, adım adım yol gösteririm.';
       kok.querySelector('.ai-helper-evet').textContent = 'Nasıl çalıştığını gör';
       kok.querySelector('.ai-helper-hayir').textContent = 'Tamam, anladım';
       tanitimAcik = true;
     } else {
-      soz.textContent = 'Takıldın mı? İstersen bu adımı anlatan bir soruyu ' +
-        'senin için hazırlayayım.';
+      soz.textContent = 'Takıldın mı? İstersen bu adımda sana burada yol ' +
+        'göstereyim.';
       kok.querySelector('.ai-helper-evet').textContent = 'Evet, takıldım';
       kok.querySelector('.ai-helper-hayir').textContent = 'İyiyim';
     }
@@ -246,6 +217,7 @@
   function bostaDoldu() {
     if (!balon || !balon.hidden) return;
     if (gizliMi()) { sayacKur(); return; }
+    if (window.AiSohbet && AiSohbet.acik) { sayacKur(); return; }   // çocuk zaten yardımcıyla konuşuyor
     if (!dersMi()) return;                  // portalda adım/şart yok, dürtme yok
     if (susanAdim === adim()) return;       // "İyiyim" denmişti
     if (stepHazirMi()) { sayacKur(); return; } // çocuk şartı geçmiş, çalışıyor
@@ -323,7 +295,6 @@
     },
     kapat: balonKapat,
     sor: sor,
-    promptUret: promptUret,
     gizliMi: gizliMi,
     get acik() { return !!balon && !balon.hidden; }
   };

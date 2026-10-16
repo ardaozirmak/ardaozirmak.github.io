@@ -6,26 +6,35 @@
   <!-- Tarayıcı çubuğu sayfanın zeminiyle aynı renk olsun (--color-bg). -->
   <meta name="theme-color" content="#FFF8F0">
   <title>Deneyap Atölyem - Eğitim Portalı</title>
+  <!-- Sekme simgesi + paylaşım önizlemesi (2026-10-16 denetim: yoktu). -->
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <meta name="description" content="Deneyap kartıyla adım adım elektronik ve kodlama: LED yak, devre kur, kartı programla. Öğretmensiz, kendi hızında.">
+  <meta property="og:title" content="Deneyap Atölyem - Eğitim Portalı">
+  <meta property="og:description" content="Deneyap kartıyla adım adım elektronik ve kodlama: LED yak, devre kur, kartı programla. Öğretmensiz, kendi hızında.">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:image" content="https://ardaozirmak.github.io/assets/img/kart/kart-led-acik.webp">
 
   <!-- Baloo 2 (başlık/UI) + Nunito (gövde metni, Türkçe tam kapsamalı) + Fira Code (kod) — index.html ile aynı marka kimliği -->
-  <!-- Hız (2026-10-05): senkron Supabase betiği ve bulut isteği için bağlantı önceden açılır. -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <!-- Hız: bulut isteği için bağlantı önceden açılır. supabase-js 2026-10-16'dan beri
+       assets/vendor'da (CDN yavaşken senkron betik sayfayı kilitliyordu). -->
   <link rel="preconnect" href="https://odozoqsqnapiyweugfth.supabase.co" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
 
-  <script src="assets/js/tema.js"></script>
+  <script src="assets/js/tema.js?v=1c6a25d"></script>
   <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="assets/css/hareket.css">
-  <link rel="stylesheet" href="assets/css/portal.css">
-  <link rel="stylesheet" href="assets/css/fx.css">
-  <link rel="stylesheet" href="assets/css/ikonlar.css">
-  <link rel="stylesheet" href="assets/css/panel.css">
-  <link rel="stylesheet" href="assets/css/learner.css">
-  <link rel="stylesheet" href="assets/css/ai-helper.css">
-  <link rel="stylesheet" href="assets/css/oku.css">
-  <link rel="stylesheet" href="assets/css/odak.css">
+  <link rel="stylesheet" href="assets/css/hareket.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/portal.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/fx.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ikonlar.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/panel.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/learner.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ai-helper.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/ai-sohbet.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/oku.css?v=1c6a25d">
+  <link rel="stylesheet" href="assets/css/odak.css?v=1c6a25d">
 </head>
 <body class="portal-body">
 
@@ -178,29 +187,30 @@
 
   </main>
 
-  <script src="assets/js/storage.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
-  <script src="assets/js/cloud-config.js" onerror="/* hesapsız mod */"></script>
-  <script src="assets/js/cloud.js"></script>
-  <script src="assets/js/sync.js"></script>
-  <script src="assets/js/learner.js"></script>
-  <script src="assets/js/yonetici.js"></script>
-  <script src="assets/js/fx.js"></script>
-  <script src="assets/vendor/motion.min.js"></script>
-  <script src="assets/vendor/anime.umd.min.js"></script>
-  <script src="assets/js/hareket.js"></script>
-  <script src="assets/js/ikonlar.js"></script>
-  <script src="assets/js/seviye-yolu.js"></script>
-  <script src="assets/js/kart3b.js"></script>
-  <script src="assets/js/profile.js"></script>
-  <script src="assets/js/learner-ui.js"></script>
-  <script src="assets/js/portal.js"></script>
-  <script src="assets/js/atolyem.js"></script>
-  <script src="assets/js/ai-helper.js"></script>
+  <script src="assets/js/storage.js?v=1c6a25d"></script>
+  <script src="assets/vendor/supabase.min.js?v=1c6a25d"></script>
+  <script src="assets/js/cloud-config.js?v=1c6a25d" onerror="/* hesapsız mod */"></script>
+  <script src="assets/js/cloud.js?v=1c6a25d"></script>
+  <script src="assets/js/sync.js?v=1c6a25d"></script>
+  <script src="assets/js/learner.js?v=1c6a25d"></script>
+  <script src="assets/js/yonetici.js?v=1c6a25d"></script>
+  <script src="assets/js/fx.js?v=1c6a25d"></script>
+  <script src="assets/vendor/motion.min.js?v=1c6a25d"></script>
+  <script src="assets/vendor/anime.umd.min.js?v=1c6a25d"></script>
+  <script src="assets/js/hareket.js?v=1c6a25d"></script>
+  <script src="assets/js/ikonlar.js?v=1c6a25d"></script>
+  <script src="assets/js/seviye-yolu.js?v=1c6a25d"></script>
+  <script src="assets/js/kart3b.js?v=1c6a25d"></script>
+  <script src="assets/js/profile.js?v=1c6a25d"></script>
+  <script src="assets/js/learner-ui.js?v=1c6a25d"></script>
+  <script src="assets/js/portal.js?v=1c6a25d"></script>
+  <script src="assets/js/atolyem.js?v=1c6a25d"></script>
+  <script src="assets/js/ai-sohbet.js?v=1c6a25d"></script>
+  <script src="assets/js/ai-helper.js?v=1c6a25d"></script>
   <!-- Sesli okuma: zamanlamalar URETILMIS bir JS dosyasindan gelir.
        file:// altinda fetch() yok, ders verisiyle ayni desen. -->
-  <script src="assets/ses/zamanlar.js"></script>
-  <script src="assets/js/oku.js"></script>
+  <script src="assets/ses/zamanlar.js?v=1c6a25d"></script>
+  <script src="assets/js/oku.js?v=1c6a25d"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var btn = document.getElementById('profileHeaderBtn');

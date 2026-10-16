@@ -9,8 +9,10 @@
    3. Merak kancası: son adımdaki "Sıradaki ders" kartına bir merak
       sorusu ve "ilk adımı şimdi gör (1 dk)" çağrısı eklenir.
    4. Gerçek mucit fotoğrafı: son adımda "kartında LED yanarken bir
-      fotoğraf çek" — küçültülüp YALNIZ bu tarayıcıya kaydedilir
-      (mucit_foto_v1; hesaba/senkrona gitmez), portalda rozetin yanında.
+      fotoğraf çek" — küçültülüp YALNIZ bu tarayıcıya, HESAP BAŞINA
+      kaydedilir (mucit_foto_v1:<öğrenci>; senkrona gitmez), portalda
+      rozetin yanında. Hesap başına: ortak bilgisayarda önceki çocuğun
+      fotoğrafı sonrakinde çıkıyordu (2026-10-16).
    Karanlık desen yok: geri sayım, kayıp korkusu, kapatılamayan pencere yok.
    ============================================================ */
 (function () {
@@ -36,6 +38,12 @@
     return v && v.xpPrefix;
   }
   var ON = dersOn();
+
+  /* atolyem.js fotoAnahtari ile AYNI anahtar. */
+  function fotoAnahtari() {
+    var l = window.Learner && Learner.isActive && Learner.isActive() ? Learner.current() : null;
+    return 'mucit_foto_v1:' + (l && l.id ? l.id : 'yerel');
+  }
 
   // ---------- 1. Yakın hedef ----------
   var pil = null, pilZaman = null;
@@ -72,7 +80,7 @@
     }
     if (alan.querySelector('.mucit-foto')) return;
     var foto = {};
-    try { foto = JSON.parse(localStorage.getItem('mucit_foto_v1') || '{}') || {}; } catch (e) {}
+    try { foto = JSON.parse(localStorage.getItem(fotoAnahtari()) || '{}') || {}; } catch (e) {}
     var kutu = document.createElement('div');
     kutu.className = 'mucit-foto';
     kutu.innerHTML = '<div class="mucit-onizleme">' + (foto[ON] ? '<img src="' + foto[ON] + '" alt="Mucit fotoğrafın">' : '<img src="assets/img/fx/fx-yildiz.webp" alt="" class="mucit-bos">') + '</div>' +
@@ -94,8 +102,8 @@
           c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
           var veri = c.toDataURL('image/jpeg', 0.72);
           try {
-            var t = JSON.parse(localStorage.getItem('mucit_foto_v1') || '{}') || {};
-            t[ON] = veri; localStorage.setItem('mucit_foto_v1', JSON.stringify(t));
+            var t = JSON.parse(localStorage.getItem(fotoAnahtari()) || '{}') || {};
+            t[ON] = veri; localStorage.setItem(fotoAnahtari(), JSON.stringify(t));
           } catch (e) { if (window.showToast) showToast('Fotoğraf kaydedilemedi (tarayıcı izin vermedi).', 'warn'); return; }
           kutu.remove(); sonAdim();
           if (window.FX) { FX.awardOnce(ON + '_mucit_foto', 15, 'XP', document.querySelector('.mucit-onizleme')); }

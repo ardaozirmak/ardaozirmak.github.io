@@ -1,48 +1,48 @@
 /* 3B Deneyap Mini v2 kartı — portal hero'su (three.js r149, UMD).
    Spec: docs/superpowers/specs/2026-09-28-hareket-katmani-design.md
 
-   Kartın üst yüzü derslerdeki 2B çizimin KENDİSİ (BoardSVG) — kural:
-   öğretici çizim her yerde aynı karttır, çocuk portalda gördüğünü derste
-   de görür. Üstüne kalkan, USB-C, düğmeler, LED yuvası ve pin başlıkları
-   gerçek yükseklikleriyle kabartılır. Ölçüler board-svg.js koordinatından:
+   Kart derslerdeki 3B kartın AYNISI — kural: öğretici çizim her yerde aynı
+   karttır, çocuk portalda gördüğünü derste de görür. Gövde Blender glb'si
+   (blender/deneyap.py → assets/3b/kart-model.js, gerçek Mini v2 yerleşimi,
+   2026-10-14); baskı (pin adları, BUTON/RESET/GÜÇ) BoardSVG'den şeffaf katman;
+   parça yerleri BoardSVG.KONUM'dan. Ölçüler board-svg.js koordinatından:
    X = (x - 86) / 20, Z = (y - 160) / 20 (kart 140x268 → 7 x 13.4 birim).
 
-   Doğrudan çağrılmaz: Hareket.kart3b() tembel yükler ve kurar. Buradaki
-   tek dış sözleşme `kur(kap, { onFaz })` → true/false (kuruldu mu). */
+   Doğrudan çağrılmaz: Hareket.kart3b() tembel yükler (three, GLTFLoader,
+   board-svg, kart-model) ve kurar. Dış sözleşme `kur(kap, { onFaz })` →
+   denetim nesnesi ({ yoket }) ya da false (kurulamadı). */
 window.Kart3B = (function () {
   'use strict';
 
-  const W = 7, D = 13.4, T = 0.32;          // kart gövdesi
+  const W = 7, D = 13.4;                     // kart gövdesi (140 x 268 birim / 20)
   const X = (x) => (x - 86) / 20;
   const Z = (y) => (y - 160) / 20;
   const DONGU_MS = 2000;                     // delay(1000) + delay(1000)
 
-  function ustDoku(cb) {
-    const olcek = 4;
-    // Yazı stili tek kaynaktan (board-svg.js STIL_3B): resim olarak çizilen SVG'ye sayfa CSS'i ulaşmaz.
+  /* Kartın baskısı şeffaf zeminde (sahne3b.js kartYazilari ile aynı yöntem). Yazı stili tek
+     kaynaktan (board-svg.js STIL_3B): resim olarak çizilen SVG'ye sayfa CSS'i ulaşmaz; içindeki
+     <image> (2B render) de yüklenmez — burada istenen de yalnız baskı. */
+  function yaziDokusu(cb) {
+    const olcek = 6;
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="16 26 140 268" width="' + 140 * olcek +
-      '" height="' + 268 * olcek + '"><style>' + BoardSVG.STIL_3B + '</style>' + BoardSVG.pinlerUstte(BoardSVG.groupMarkup({})) + '</svg>';
-    /* Kart gövdesi Blender render'ı (board-svg.js <image>). Resim olarak çizilen
-       SVG kendi içindeki dış görseli YÜKLEMEZ (tarayıcı güvenliği): önce render
-       tuvale çizilir, yazılar ve LED'ler SVG'den üstüne basılır. Render kapsamı
-       kart yerelinde x10..162, y12..300; tuval x16..156, y26..294 gösteriyor. */
-    const c = document.createElement('canvas');
-    c.width = 140 * olcek; c.height = 268 * olcek;
-    const x = c.getContext('2d');
-    const govde = new Image();
-    const yazilar = new Image();
-    let kalan = 2, hata = false;
-    const bitti = function () {
-      if (--kalan) return;
-      if (hata) { cb(null); return; }
-      x.drawImage(govde, (10 - 16) * olcek, (12 - 26) * olcek, 152 * olcek, 288 * olcek);
-      x.drawImage(yazilar, 0, 0, c.width, c.height);
+      '" height="' + 268 * olcek + '"><style>' + BoardSVG.STIL_3B + '</style>' +
+      BoardSVG.pinlerUstte(BoardSVG.groupMarkup({ isiksiz: true })) + '</svg>';
+    const img = new Image();
+    img.onload = function () {
+      const c = document.createElement('canvas');
+      c.width = 140 * olcek; c.height = 268 * olcek;
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
       cb(c);
     };
-    govde.onload = yazilar.onload = bitti;
-    govde.onerror = yazilar.onerror = function () { hata = true; bitti(); };
-    govde.src = window.KART_GOVDE_URI || 'assets/img/kart/deneyap-kart.webp';
-    yazilar.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    img.onerror = function () { cb(null); };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  }
+
+  // glb base64 JS'e gömülü (file:// altında .glb fetch edilemez).
+  function tampon(b64) {
+    const s = atob(b64), u = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i);
+    return u.buffer;
   }
 
   function radyal(ic, dis, boyut) {
@@ -53,20 +53,6 @@ window.Kart3B = (function () {
     g.addColorStop(0, ic); g.addColorStop(1, dis);
     x.fillStyle = g; x.fillRect(0, 0, c.width, c.height);
     return new THREE.CanvasTexture(c);
-  }
-
-  function yaziDoku(metin, zemin, renk) {
-    const c = document.createElement('canvas');
-    c.width = 256; c.height = 192;
-    const x = c.getContext('2d');
-    x.fillStyle = zemin; x.fillRect(0, 0, 256, 192);
-    x.fillStyle = 'rgba(0,0,0,0.12)';
-    for (let i = 0; i < 6; i++) x.fillRect(24, 26 + i * 8, 90 + (i % 3) * 30, 3);
-    x.fillStyle = renk; x.font = '700 34px Arial, sans-serif'; x.textAlign = 'center';
-    x.fillText(metin, 128, 128);
-    const t = new THREE.CanvasTexture(c);
-    t.encoding = THREE.sRGBEncoding;
-    return t;
   }
 
   /* Kartın arkası: düz kırmızı, ortada küçük "DENEYAP" baskısı. Doku
@@ -109,7 +95,8 @@ window.Kart3B = (function () {
 
   function kur(kap, secenek) {
     secenek = secenek || {};
-    if (!window.THREE || !window.BoardSVG || !kap) return false;
+    if (!window.THREE || !THREE.GLTFLoader || !window.KART_GLB || !window.BoardSVG || !BoardSVG.KONUM || !kap) return false;
+    let kapandi = false;       // glb ve yazı dokusu kapandıktan sonra gelirse sahneye eklenmesin
     let renderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
@@ -120,6 +107,9 @@ window.Kart3B = (function () {
     renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
     renderer.setSize(gen(), yuk());
     renderer.outputEncoding = THREE.sRGBEncoding;
+    /* Derslerdeki 3B sahneyle aynı tonlama (sahne3b.js): glb'nin beyaz parçaları (RGB LED, tuşlar,
+       I2C soketi) tonlamasız ışıkta beyaza kırpılıyordu. */
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.domElement.className = 'hk-3b-tuval';
     kap.appendChild(renderer.domElement);
 
@@ -143,90 +133,105 @@ window.Kart3B = (function () {
     }
     kameraKonumla();
 
-    sahne.add(new THREE.HemisphereLight(0xfff6ea, 0x5a3a2c, 0.95));
-    const gunes = new THREE.DirectionalLight(0xffffff, 0.85);
+    /* Işık derslerdeki 3B sahneye yakın (sahne3b.js: yarım küre 0.4 + güneş 1.75 + ortam yansıması):
+       eski düz levha için ayarlı güçlü ışık (0.95 + 0.85) glb'yi beyaza kırpıyordu. */
+    sahne.add(new THREE.HemisphereLight(0xfff6ea, 0x5a3a2c, 0.45));
+    const gunes = new THREE.DirectionalLight(0xfff8ee, 1.5);
     gunes.position.set(-7, 14, 9);
     sahne.add(gunes);
-    const dolgu = new THREE.DirectionalLight(0xffe3c4, 0.35);
+    const dolgu = new THREE.DirectionalLight(0xffe3c4, 0.3);
     dolgu.position.set(8, 4, -6);
     sahne.add(dolgu);
 
     const kart = new THREE.Group();
     sahne.add(kart);
 
-    // --- gövde: yuvarlak köşeli PCB, üst yüzde 2B çizim ---
-    const kenarMat = new THREE.MeshStandardMaterial({ color: 0x8e1c15, roughness: 0.62 });
-    const ustMat = new THREE.MeshStandardMaterial({ color: 0xc93c34, roughness: 0.5, metalness: 0.02 });
-    const govdeGeo = new THREE.ExtrudeGeometry(yuvarlakDikdortgen(W, D, 0.62),
-      { depth: T, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 8 });
-    govdeGeo.rotateX(-Math.PI / 2);
-    const govde = new THREE.Mesh(govdeGeo, [ustMat, kenarMat]);
-    kart.add(govde);
-    /* Alt yüz: ExtrudeGeometry iki kapağa da aynı dokuyu basıyor, kart ters
-       çevrilince üst çizimin AYNALI kopyası görünürdü. Altına düz arka yüz. */
-    const arkaGeo = new THREE.ShapeGeometry(yuvarlakDikdortgen(W + 0.06, D + 0.06, 0.65), 8);
+    /* Ortam yansıması (sahne3b.js ile aynı sıcak oda): glb'nin metal pedleri, USB-C ve lehimler
+       ortam olmadan siyaha kaçıyor. */
+    const pm = new THREE.PMREMGenerator(renderer);
+    const oda = new THREE.Scene();
+    oda.add(new THREE.Mesh(new THREE.SphereGeometry(10, 16, 8), new THREE.MeshBasicMaterial({ color: 0xE8DCCB, side: THREE.BackSide })));
+    [[0, 8, 0, 0xffffff, 6], [-6, 3, 4, 0xfff1dd, 4], [6, 3, -4, 0xdfe8ff, 3]].forEach(function (l) {
+      const p = new THREE.Mesh(new THREE.PlaneGeometry(4, 4), new THREE.MeshBasicMaterial({ color: new THREE.Color(l[3]).multiplyScalar(l[4]) }));
+      p.position.set(l[0], l[1], l[2]); p.lookAt(0, 0, 0); oda.add(p);
+    });
+    sahne.environment = pm.fromScene(oda, 0.04).texture;
+    pm.dispose();
+
+    /* --- gövde: derslerdeki 3B kartın AYNISI (blender/deneyap.py → assets/3b/kart-model.js) ---
+       2026-10-14 (Arda: "deneyap kart üzerindeki detayları arttır, görseldeki gibi"): eskiden düz
+       bir levha + üstüne basılmış 2B render + elle kutulanmış kalkan/tuş/USB'ydi, parçalar gerçek
+       kartın yerinde değildi. glb'de 1 SVG birimi 0.01, burada 1/20 → ×5; kart merkezi (86, 160).
+       PCB glb'de z −3..0.2 birim: alt yüzü y=0'a oturur, Y() deneyap.py yüksekliğini sahneye çevirir. */
+    const B = 1 / 20, TABAN = 3 * B;
+    const Y = (z) => TABAN + z * B;
+    const model = new THREE.Group();
+    model.scale.setScalar(5);
+    model.position.set(-86 * B, TABAN, -160 * B);
+    kart.add(model);
+    new THREE.GLTFLoader().parse(tampon(window.KART_GLB), '', function (g) {
+      if (kapandi) return;
+      const koyulasan = [];
+      g.scene.traverse(function (n) {
+        if (!n.isMesh) return;
+        /* Lehim maskesi doygun kırmızı kalsın (sahne3b.js ile aynı ayar ve gerekçe). */
+        if (/^(pcb|yol)/.test(n.material.name) && koyulasan.indexOf(n.material) < 0) {
+          koyulasan.push(n.material); n.material.color.multiplyScalar(0.55); n.material.envMapIntensity = 0.35;
+          n.material.roughness = 0.5; if ('clearcoat' in n.material) n.material.clearcoat = 0;
+        }
+        if (/^yollar/.test(n.name)) n.material.side = THREE.FrontSide;
+      });
+      model.add(g.scene);
+    }, function () { /* glb okunamadı: başlıklar ve gölge kalır, kart görünmez */ });
+
+    /* Alt yüz: düz kırmızı + "DENEYAP" baskısı (kart ters çevrilince). */
+    const arkaGeo = new THREE.ShapeGeometry(yuvarlakDikdortgen(W, D, 0.15), 8);
     arkaGeo.rotateX(Math.PI / 2);
     const arka = new THREE.Mesh(arkaGeo, new THREE.MeshStandardMaterial({
       map: arkaDoku(), color: 0xffffff, roughness: 0.6 }));
-    arka.position.y = -0.04;
+    arka.position.y = -0.004;
     kart.add(arka);
-    ustDoku(function (tuval) {
-      if (!tuval) return;
+
+    /* Baskı (pin adları, BUTON/RESET/GÜÇ, DAHİLİ LED) gövdenin üstünde şeffaf katman; ESP32-S2 yazısı
+       çipin üstünde ikinci düzlem (çip 2.3 birim yüksek, katmanı örter). */
+    const ust = Y(0.32);
+    yaziDokusu(function (tuval) {
+      if (!tuval || kapandi) return;
       const t = new THREE.CanvasTexture(tuval);
       t.encoding = THREE.sRGBEncoding;
       t.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      /* ExtrudeGeometry kapak UV'si şeklin kendi (x, y) koordinatı:
-         [-W/2, W/2] x [-D/2, D/2] → [0, 1]'e taşı. */
-      t.repeat.set(1 / W, 1 / D);
-      t.offset.set(0.5, 0.5);
-      ustMat.map = t;
-      ustMat.color.set(0xffffff);
-      ustMat.needsUpdate = true;
+      const d = new THREE.Mesh(new THREE.PlaneGeometry(W, D), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
+      d.rotation.x = -Math.PI / 2; d.position.set(0, ust, 0); kart.add(d);
+      const C = BoardSVG.KONUM.cip, g = new THREE.PlaneGeometry(C.w * B, C.h * B), uv = g.attributes.uv;
+      for (let i = 0; i < uv.count; i++) {
+        uv.setXY(i, (C.x - 16 + uv.getX(i) * C.w) / 140, 1 - (C.y - 26 + (1 - uv.getY(i)) * C.h) / 268);
+      }
+      const e = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
+      e.rotation.x = -Math.PI / 2; e.position.set(X(C.x + C.w / 2), Y(2.32), Z(C.y + C.h / 2)); kart.add(e);
     });
 
-    const ust = T + 0.03;
-    const metal = new THREE.MeshStandardMaterial({ color: 0xc9cfd6, metalness: 0.85, roughness: 0.32 });
-
-    // --- ESP32-S2 kalkanı (svg 46..122 x 70..126) ---
-    const kalkanUst = new THREE.MeshStandardMaterial({ map: yaziDoku('ESP32-S2', '#b9c0c8', '#3a4450'),
-      metalness: 0.7, roughness: 0.35 });
-    const kalkan = new THREE.Mesh(new THREE.BoxGeometry(3.8, 0.34, 2.8),
-      [metal, metal, kalkanUst, metal, metal, metal]);
-    kalkan.position.set(X(84), ust + 0.17, Z(98));
-    kart.add(kalkan);
-
-    // --- USB-C (svg 68..104 x 18..32), kenardan taşar ---
-    const usb = kutu(1.8, 0.42, 1.1, metal, X(86), ust + 0.21, Z(26));
-    kart.add(usb);
-    kart.add(kutu(1.3, 0.16, 0.05, new THREE.MeshStandardMaterial({ color: 0x1a1f26 }), X(86), ust + 0.21, Z(26) - 0.56));
-
-    // --- BUTON / RESET ---
-    const beyaz = new THREE.MeshStandardMaterial({ color: 0xeef1f4, roughness: 0.4 });
-    const siyahYuvarlak = new THREE.MeshStandardMaterial({ color: 0x2a2f36, roughness: 0.5 });
-    [65, 105].forEach(function (cx) {
-      kart.add(kutu(1.3, 0.2, 1.1, beyaz, X(cx), ust + 0.1, Z(187)));
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.14, 20), siyahYuvarlak);
-      cap.position.set(X(cx), ust + 0.26, Z(187));
-      kart.add(cap);
-    });
-
-    // --- dahili RGB LED (svg 80..88 x 223.5..231.5) ---
-    kart.add(kutu(0.66, 0.16, 0.66, new THREE.MeshStandardMaterial({ color: 0x14181d }), X(84), ust + 0.08, Z(227.5)));
-    const ledMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, emissive: 0x2f7bff, emissiveIntensity: 0, roughness: 0.3 });
-    const led = kutu(0.42, 0.12, 0.42, ledMat, X(84), ust + 0.2, Z(227.5));
+    // --- dahili RGB LED: merceğin üstünde yalnız yanıkken görünen ışık yüzü + nokta ışık + hale ---
+    const K = BoardSVG.KONUM;
+    /* Yanıkken tonlamasız saf mavi (kart-sahne3b.js ile aynı gerekçe: ACES yüksek ışımayı beyaza
+       çekiyordu). Saydamlık ritimle açılır; sönükken modelin krem merceği görünür. */
+    const ledMat = new THREE.MeshBasicMaterial({ color: 0x1e7bff, toneMapped: false, transparent: true, opacity: 0 });
+    let ledGuc = 0;
+    const led = new THREE.Mesh(new THREE.CylinderGeometry(10.5 * B, 10.5 * B, 0.01, 32), ledMat);
+    led.position.set(X(K.led[0]), Y(3.87), Z(K.led[1]));   // merceğin üstü 3.84 birim (deneyap.py)
     kart.add(led);
     const ledIsik = new THREE.PointLight(0x3b8bff, 0, 5, 2);
-    ledIsik.position.set(X(84), ust + 0.8, Z(227.5));
+    ledIsik.position.set(X(K.led[0]), Y(3.75) + 0.5, Z(K.led[1]));
     kart.add(ledIsik);
     const hale = new THREE.Sprite(new THREE.SpriteMaterial({ map: radyal('rgba(90,160,255,0.95)', 'rgba(90,160,255,0)'),
       blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0 }));
     hale.scale.set(3.2, 3.2, 1);
-    hale.position.set(X(84), ust + 0.35, Z(227.5));
+    hale.position.set(X(K.led[0]), Y(3.75) + 0.15, Z(K.led[1]));
     kart.add(hale);
 
-    // --- güç LED'i: kart beslendikçe hep yanık ---
+    // --- GÜÇ LED'i: kart beslendikçe yanık (sönükken modelin beyaz gövdesi görünür) ---
     const gucMat = new THREE.MeshStandardMaterial({ color: 0xff5a4d, emissive: 0xff2a1a, emissiveIntensity: 1.2 });
-    kart.add(kutu(0.24, 0.1, 0.24, gucMat, X(84), ust + 0.05, Z(262)));
+    const gucParca = kutu(6 * B, 0.01, 3.9 * B, gucMat, X(K.guc[0]), Y(1.55), Z(K.guc[1]));
+    kart.add(gucParca);
 
     // --- pin başlıkları: kartın altında siyah plastik + altın iğneler ---
     const plastik = new THREE.MeshStandardMaterial({ color: 0x1b1d21, roughness: 0.7 });
@@ -371,11 +376,13 @@ window.Kart3B = (function () {
         }
       }
       const hedef = yanik ? 1 : 0;
-      ledMat.emissiveIntensity += (hedef * 2.2 - ledMat.emissiveIntensity) * 0.35;
-      ledIsik.intensity += (hedef * 2.4 - ledIsik.intensity) * 0.35;
-      hale.material.opacity += (hedef * 0.9 - hale.material.opacity) * 0.35;
+      ledGuc += (hedef - ledGuc) * 0.35;
+      ledMat.opacity = ledGuc;                // sönükken modelin krem merceği görünür
+      ledIsik.intensity = ledGuc * 2.4;
+      hale.material.opacity = ledGuc * 0.6;
       const guc = typeof secenek.gucYanik === 'function' ? !!secenek.gucYanik() : true;
       gucMat.emissiveIntensity = guc ? 1.2 : 0;
+      gucParca.visible = guc;
 
       renderer.render(sahne, kamera);
       etiketleriBoya();
@@ -386,7 +393,7 @@ window.Kart3B = (function () {
       /* Kapatınca WebGL bağlamını geri ver — tarayıcı aynı anda ancak
          sınırlı sayıda bağlam tutar, açıp kapamak birikmesin. */
       yoket: function () {
-        calisiyor = false;
+        calisiyor = false; kapandi = true;
         cancelAnimationFrame(rafId);
         if (io) io.disconnect();
         if (ro) ro.disconnect();

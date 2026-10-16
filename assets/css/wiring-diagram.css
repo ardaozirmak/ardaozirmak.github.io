@@ -263,8 +263,10 @@
   from { stroke-dashoffset: 1; }
   to   { stroke-dashoffset: 0; }
 }
-/* Kablo ucu, çizim bitmeden görünmesin. */
-.is-placing .wd-pin {
+/* Kablo ucu, çizim bitmeden görünmesin. Seçici g.wd-pin: kartın pin YAZILARI da wd-pin
+   sınıfında (text.wd-pin, 180° dönük); kart parça olarak inerken bu ölçek animasyonu onların
+   dönüşünü ezip yazıları ters çeviriyordu. */
+.is-placing g.wd-pin {
   animation: wd-fade 220ms var(--wd-ease) 420ms both;
 }
 @keyframes wd-fade {
@@ -452,7 +454,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wd-footer .wd-bar { flex: 0 0 auto; }
+/* Sığmazsa SARAR (2026-10-16 denetimi): 2.1/2.2/3.1'de çubukta dört öğe var
+   (Geri, Hadi kuralım, İleri, "Devre tamam!") ve ≥1100px'te dar sağ
+   sütundaydı; flex 0 0 auto ile 70-150 px taşıyor, "Devre tamam!" hiç
+   görünmüyor, İleri yarım kalıyordu. Önce çubuk ilerleme yazısının altına
+   iner, yine sığmazsa kendi içinde sarar. */
+.wd-footer { flex-wrap: wrap; row-gap: 8px; }
+.wd-footer .wd-bar {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  row-gap: 8px;
+}
 /* Dar ekranda yan yana sigmaz: eski alt alta duzene doner. */
 @media (max-width: 640px) {
   .wd-footer { flex-direction: column; align-items: stretch; gap: 8px; }
@@ -681,7 +697,7 @@
   .is-placing .wd-wire,
   .is-placing .wd-wire-gloss,
   .is-placing .wd-wire-casing,
-  .is-placing .wd-pin,
+  .is-placing g.wd-pin,
   .wd-chip { animation: none; }
 
   .wd-part.is-active .wd-pin-ring { animation: none; opacity: .5; }
@@ -911,9 +927,10 @@
   justify-content: center;
   gap: 4px;
   padding: 10px 14px;
-  border: 1.5px solid var(--color-border-soft, #F7EBDD);
+  /* Rehber kartı = bilgi yüzeyi: açık mavi (2026-10-14 renk dili, styles.css --yuzey-mavi). */
+  border: 1.5px solid var(--cizgi-mavi, var(--color-border-soft, #F7EBDD));
   border-radius: var(--radius-lg, 20px);
-  background: var(--color-surface, #fff);
+  background: var(--yuzey-mavi, var(--color-surface, #fff));
 }
 /* 2026-09-19 — Arda: "her animasyon adiminda yazan kismi kalin koyu yazi
    yapalim belli olsun." Kart cocugun kurulum boyunca okudugu TEK metin,
@@ -1053,8 +1070,19 @@
 .wd-svg.is-unplugged .wd-usb-off { display: block; }
 .wd-svg.is-unplugged .wd-data { display: none; }
 
+/* Kart tezgahta değilken (boş tezgah, kart adımı olan derslerde) kablo, fiş ve kartın dışındaki
+   kılavuz çizgiler de yok: havada asılı fiş "kart nerede?" dedirtiyordu. Kart adımında kart inip
+   oturduktan SONRA gelirler (gecikme ≈ takma hareketi); geri alınınca hemen kalkarlar. */
+#wd-usb, .wd-laptop-fis { transition: opacity 280ms var(--wd-ease) 700ms; }
+.wd-svg.is-kartsiz #wd-usb,
+.wd-svg.is-kartsiz .wd-laptop-fis,
+.wd-svg.is-kartsiz .wd-guide { opacity: 0; transition-delay: 0s; }
+.wd-svg.is-kartsiz .wd-data { display: none; }
+
 #wd-usb-plug { transition: transform .55s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.wd-svg.is-unplugged #wd-usb-plug { transform: translateY(-14px); }
+/* Takılı değil = fiş soketten DIŞARI (sola) çekilmiş; kablo eğrisi .wd-usb-off'ta aynı yere (x 2)
+   biter. Eskiden translateY(-14px) idi: yatay kartta fişi yana kaydırıyordu, sokette kalıyordu. */
+.wd-svg.is-unplugged #wd-usb-plug { transform: translateX(-24px); }
 
 @media (prefers-reduced-motion: reduce) {
   #wd-usb-plug { transition: none; }

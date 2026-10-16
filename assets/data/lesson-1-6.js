@@ -33,7 +33,7 @@ window.LESSON_DATA_1_6 = {
     "pinAciklama": "Kartın alt kenarında <code>D5</code>'in yanında <strong>MI</strong>, <code>D6</code>'nın yanında <strong>MC</strong> yazar. Üst kenarda <strong>D9</strong> kendi adıyla yazar; hemen solunda <strong>GND</strong> var. Modülde pinlerin yanında <strong>R</strong>, <strong>Y</strong>, <strong>G</strong>, <strong>GND</strong> yazar.",
     "kurKapisi": "Trafik lambası modülünü bağla: <strong>Hadi kuralım</strong>'a bas ve dört kabloyu tak.",
     "bosBaslik": "Trafik lambası modülü: üç ışık ve dirençleri hazır.",
-    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: önce modülü breadboard’a tak, sonra dört kablo (GND, R, Y, G).",
+    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: önce kart ve modül breadboard’a, sonra dört kablo (GND, R, Y, G).",
     "bosNot": " Ders 1.5’in LED’lerini ve dirençlerini breadboard’dan çıkar; bu derste ışıklar modülde.",
     "bitisKontrol": "Kartında 1.5'in kodu duruyorsa ışıklar karışık yanar. Trafik lambası kodunu bir sonraki adımda yükleyeceksin."
   },
@@ -91,7 +91,7 @@ window.LESSON_DATA_1_6 = {
     },
     {
       "title": "Adım 3: Devreyi Kur",
-      "desc": "Kartını bilgisayara tak. <strong>Hadi kuralım</strong>'a bas: modülü breadboard'a takacağız, sonra dört kablo: GND, R (D5), Y (D6), G (D9)."
+      "desc": "Kartını bilgisayara tak. <strong>Hadi kuralım</strong>'a bas: kartı ve modülü breadboard'a takacağız, sonra dört kablo: GND, R (D5), Y (D6), G (D9)."
     },
     {
       "title": "Adım 4: Kodu Yükle",
@@ -119,14 +119,23 @@ window.LESSON_DATA_1_6 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "Trafik lambası modülünü breadboard'a, kartın sağına dik tak: LED'ler sana baksın.",
     "Kartın üstteki <strong>GND</strong> pininden modülün <strong>GND</strong> sütununa siyah kablo.",
     "<strong>D5</strong> (kartta MI) → modülün <strong>R</strong> sütunu.",
     "<strong>D6</strong> (kartta MC) → modülün <strong>Y</strong> sütunu.",
     "<strong>D9</strong> → modülün <strong>G</strong> sütunu."
   ],
-  "//wiringGuide": "Adım sırası wiring-diagram.js modulAdimlari ile aynı: modül, GND, D5 (R), D6 (Y), D9 (G).",
+  "//wiringGuide": "Adım sırası wiring-diagram.js modulAdimlari ile aynı: kart, modül, GND, D5 (R), D6 (Y), D9 (G).",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["breadboard"],
+      "xray": false,
+      "neden": "Her şey karta bağlanacak, önce o yerinde olmalı.",
+      "nereye": "Kart breadboard'da değilse kitten çıkar ve tak: USB-C girişi <b>solda</b>, pin sıraları orta kanalın <b>iki yanında</b>. Takılıysa yerinde bırak.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik var mı?"
+    },
     {
       "ad": "Trafik lambası modülü",
       "adim3": ["led", "kart"],

@@ -25,6 +25,10 @@
      çocuğu 14 sn "Giriliyor…" ekranında tutmak yerine, geç gelen veri
      indiğinde fx.js kendi sayacını tazeliyor (bkz. fx.js Store aboneliği). */
   var PULL_TIMEOUT = 5000;
+  /* Süresi biten oturumun izi: kimin oturumuydu (ad + kullanıcı adı).
+     Giriş ekranı bunu okuyup "Oturumun bitti, şifreni yaz" der ve kullanıcı
+     adını hazır yazar. Cihaza ait, buluta gitmez. */
+  var EXPIRED_KEY = 'learner_expired_v1';
   var session = null;
 
   try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (e) { session = null; }
@@ -34,6 +38,86 @@
       if (session) localStorage.setItem(SESSION_KEY, JSON.stringify(session));
       else localStorage.removeItem(SESSION_KEY);
     } catch (e) { /* gizli sekme */ }
+  }
+
+  /* Belirtecin süresi (exp, saniye) — imzayı istemci doğrulayamaz, ama
+     süreyi okuyabilir: bitmiş belirteçle sunucuya gidip 401 beklemek
+     yerine açılışta anlaşılır. Okunamazsa null (sunucu karar verir). */
+  function belirtecSonu(t) {
+    try {
+      var p = String(t || '').split('.')[0].replace(/-/g, '+').replace(/_/g, '/');
+      var data = JSON.parse(atob(p + '==='.slice((p.length + 3) % 4)));
+      return typeof data.exp === 'number' ? data.exp : null;
+    } catch (e) { return null; }
+  }
+
+  function bitenOturum() {
+    try { return JSON.parse(localStorage.getItem(EXPIRED_KEY) || 'null'); } catch (e) { return null; }
+  }
+  function bitenOturumuUnut() {
+    try { localStorage.removeItem(EXPIRED_KEY); } catch (e) { /* gizli sekme */ }
+  }
+
+  /* Oturum bitti (2026-10-16): belirteç 30 günü doldurdu ya da sunucu
+     reddetti. Eskiden bu sessizdi: çocuk girişli görünüyor, ilerlemesi
+     buluta gitmiyordu. Şimdi oturum kapanır, ama ÇALIŞMA ALANI ve sahibi
+     KALIR — aynı çocuk yeniden girince adopt() hiçbir şeyi silmez, aradaki
+     ilerleme ilk çekimle buluta gider. */
+  function expire() {
+    if (!session) return;
+    var l = session.learner || {};
+    try {
+      localStorage.setItem(EXPIRED_KEY, JSON.stringify({ username: l.username || '', name: l.display_name || '' }));
+    } catch (e) { /* gizli sekme */ }
+    if (window.Sync) window.Sync.stop();
+    session = null;
+    persist();
+    if (window.LearnerUI && typeof window.LearnerUI.requireAccount === 'function') {
+      try { window.LearnerUI.requireAccount(); } catch (e) { /* ekran yoksa sorun değil */ }
+    }
+  }
+
+  if (session && session.token) {
+    var son = belirtecSonu(session.token);
+    if (son !== null && son < Math.floor(Date.now() / 1000)) {
+      // Sayfa açılırken: henüz ekran yok, yalnız iz bırak ve oturumu kapat.
+      var l0 = session.learner || {};
+      try {
+        localStorage.setItem(EXPIRED_KEY, JSON.stringify({ username: l0.username || '', name: l0.display_name || '' }));
+      } catch (e) { /* gizli sekme */ }
+      session = null;
+      persist();
+    }
+  }
+
+  /* Başka sekmede hesap değişti (2026-10-16 denetim bulgusu): localStorage
+     bütün sekmelerde ortak, ama fx.js XP'yi açılışta belleğe alıyor. Okulda
+     önceki çocuğun açık kalan sekmesinde tıklanınca onun XP'si ve "kaldığın
+     yer"i yeni çocuğun hesabına yazılıyordu. Bu sekme bayatladıysa senkron
+     durur ve sayfa yeniden yüklenir (yeni hesapla ya da giriş ekranıyla).
+     Aynı çocuğun belirteci yenilendiyse yalnız bellekteki oturum güncellenir. */
+  window.addEventListener('storage', function (e) {
+    if (e.key !== null && e.key !== SESSION_KEY && e.key !== OWNER_KEY) return;
+    var yeni = null;
+    try { yeni = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch (err) { yeni = null; }
+    var buId = session && session.learner ? String(session.learner.id) : null;
+    var yeniId = yeni && yeni.token && yeni.learner ? String(yeni.learner.id) : null;
+    if (buId === yeniId) {
+      if (session && yeni && yeni.token) session.token = yeni.token;
+      return;
+    }
+    if (window.Sync) window.Sync.stop();
+    session = null;   // depoya YAZMA: depo artık öbür sekmenin
+    window.location.reload();
+  });
+
+  if (window.Sync) {
+    window.Sync.onToken = function (t) {
+      if (!session) return;
+      session.token = t;
+      persist();
+    };
+    window.Sync.onExpired = expire;
   }
 
   function current() { return session ? session.learner : null; }
@@ -79,6 +163,7 @@
     session = { token: data.token, learner: data.learner };
     persist();
     setOwner(yeni);
+    bitenOturumuUnut();
     // Profil bilgisini mevcut Profile modülünün beklediği biçime yaz
     if (data.learner && data.learner.display_name) {
       window.Store.setJSON('profile_v1', {
@@ -152,13 +237,20 @@
     /* Çalışma alanı artık kimsenin değil: bir sonraki giriş "sahip
        değişti mi" sorusunu temiz bir sayfadan sorsun. */
     try { localStorage.removeItem(OWNER_KEY); } catch (e) { /* gizli sekme */ }
+    bitenOturumuUnut();
   }
 
   if (isActive() && window.Sync) window.Sync.start(session.token);
 
   window.Learner = {
     current: current, isActive: isActive,
+    /* Site içi AI yardımcısı (ai-sohbet.js) belirteci istek GÖVDESİNDE gönderir —
+       learner-sync ile aynı desen (Authorization başlığında anon anahtar). */
+    token: function () { return session ? session.token : null; },
     register: register, login: login, recover: recover,
-    switchBox: switchBox
+    switchBox: switchBox,
+    /* Süresi biten oturumun izi ({ username, name }) ya da null. */
+    expiredSession: bitenOturum,
+    expire: expire
   };
 })();

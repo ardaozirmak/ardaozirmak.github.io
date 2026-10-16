@@ -75,7 +75,7 @@ window.LESSON_DATA_1_1 = {
     },
     {
       "title": "Adım 8: AI'a Sor",
-      "desc": "Tebrikler, sınavı geçtin! Aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas, bir prompt seç ve kendi AI aracına yapıştır. Hazır olunca rozetin için İleri'ye bas."
+      "desc": "Tebrikler, sınavı geçtin! Aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas ve bir soru seç: AI yardımcın burada, sayfadan çıkmadan cevaplar. Hazır olunca rozetin için İleri'ye bas."
     },
     {
       "title": "Adım 9: Rozetini Al",

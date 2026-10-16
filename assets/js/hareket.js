@@ -577,9 +577,12 @@ window.Hareket = (function () {
       const yukle = [];
       if (!window.THREE) yukle.push(scriptYukle('assets/vendor/three.min.js'));
       if (!window.BoardSVG) yukle.push(scriptYukle('assets/js/board-svg.js'));
-      // Kart gövdesi render'ı data: adresiyle (file:// tuvali kirletmesin, bkz. kart3b.js).
-      if (!window.KART_GOVDE_URI) yukle.push(scriptYukle('assets/img/kart/deneyap-kart-uri.js'));
+      // Kart gövdesi derslerdeki Blender glb'si, base64 JS'te (file:// altında .glb fetch edilemez).
+      if (!window.KART_GLB) yukle.push(scriptYukle('assets/3b/kart-model.js'));
       Promise.all(yukle).then(function () {
+        // GLTFLoader kendini THREE'ye bağlar: three yüklendikten SONRA.
+        return window.THREE && !THREE.GLTFLoader ? scriptYukle('assets/vendor/GLTFLoader.js') : null;
+      }).then(function () {
         const vurgu = kodVurgu(kodPre);
         const kuruldu = window.Kart3B && Kart3B.kur(kap, {
           onFaz: function (yanik) {
@@ -635,9 +638,11 @@ window.Hareket = (function () {
       if (!window.THREE) yukle.push(scriptYukle('assets/vendor/three.min.js'));
       if (!window.BoardSVG) yukle.push(scriptYukle('assets/js/board-svg.js'));
       if (!window.Kart3B) yukle.push(scriptYukle('assets/js/kart3b.js'));
-      if (!window.KART_GOVDE_URI) yukle.push(scriptYukle('assets/img/kart/deneyap-kart-uri.js'));
+      if (!window.KART_GLB) yukle.push(scriptYukle('assets/3b/kart-model.js'));
       dugme.disabled = true;
       Promise.all(yukle).then(function () {
+        return window.THREE && !THREE.GLTFLoader ? scriptYukle('assets/vendor/GLTFLoader.js') : null;
+      }).then(function () {
         dugme.disabled = false;
         pano = document.createElement('div');
         pano.className = 'hk-3b-incele';

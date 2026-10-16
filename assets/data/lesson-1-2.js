@@ -74,7 +74,7 @@ window.LESSON_DATA_1_2 = {
     },
     {
       "title": "Adım 8: AI'a Sor",
-      "desc": "Mini sınavı geçtin, tebrikler! Şimdi öğrendiklerini pekiştirmek için aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas, Sokratik promptlardan birini seç ve kendi AI aracına yapıştırarak düşünerek öğren. Hazır olduğunda rozetini almak için İleri'ye bas."
+      "desc": "Mini sınavı geçtin, tebrikler! Şimdi öğrendiklerini pekiştirmek için aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas ve Sokratik sorulardan birini seç: AI yardımcın burada, sana sorular sorarak düşündürür. Hazır olduğunda rozetini almak için İleri'ye bas."
     },
     {
       "title": "Adım 9: Rozetini Al",
@@ -82,14 +82,23 @@ window.LESSON_DATA_1_2 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "LED'i breadboard'a tak.",
     "LED'in uzun bacağından (+) bir jumper kabloyla kartın <strong>D5</strong> pinine bağlan — kartta o pinin yanında <strong>MI</strong> yazar.",
     "LED'in kısa bacağını (−) 220 ohm dirence bağla.",
     "Direncin diğer ucundan bir jumper kabloyla kartın <strong>GND</strong> pinine bağlan."
   ],
-  "//wiringGuide": "Adim 4 rehberli kurulum: her parcanin NEDEN/NEREYE/KONTROL metni. Sira wiringSteps ile AYNI: LED, kirmizi kablo, direnc, siyah kablo. Hedef kitle 5. sinif: ~8-9 kelimelik cumleler, 'anot'/'katot' YASAK.",
+  "//wiringGuide": "Adim 4 rehberli kurulum: her parcanin NEDEN/NEREYE/KONTROL metni. Sira wiringSteps ile AYNI: kart, LED, kirmizi kablo, direnc, siyah kablo. Hedef kitle 5. sinif: ~8-9 kelimelik cumleler, 'anot'/'katot' YASAK.",
   "//wiringGuide-adim3": "adim3 = o parcanin Adim 3 (Parcalari Tani) kartlarindan hangileri rehberde geri cagrilacak. METIN BURAYA YAZILMAZ, yalnizca id verilir; cumleler PartsGallery.get(id) ile tek kaynaktan okunur. xray:true = o adimda soru 'ayni sutunda mi' oldugu icin cocuk tahtanin icini gormeli, 'Icini gor' dugmesi nabiz atar.",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["kart", "breadboard"],
+      "xray": true,
+      "neden": "Devrenin beyni bu kart. Önce onu yerine oturt.",
+      "nereye": "Kitten çıkardığın kartı tak: USB-C girişi <b>solda</b>, pinlerin bir sırası orta kanalın <b>üstünde</b>, öbürü <b>altında</b>. İki ucundan eşit bastır.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik kaldı mı? Kablolar oraya takılacak."
+    },
     {
       "ad": "LED",
       "adim3": ["led", "breadboard"],

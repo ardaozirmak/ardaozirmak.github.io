@@ -1,0 +1,175 @@
+/* ai-sohbet.css — site içi AI yardımcısı paneli (assets/js/ai-sohbet.js), 2026-10-14.
+   Robot düğmesinin (ai-helper.css: sağ alt, 56 px, gezinme çubuğunun 14 px üstü) üstünde açılır.
+   Renkler değişkenden (styles.css: --yuzey-mavi, --modul-*): açık ve koyu temada aynı kural.
+   Yazı kutusu YOK — çocuk yalnız hazır cevap düğmelerine basar. */
+
+.ai-sohbet {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--nav-h, 0px) + 82px);
+  z-index: calc(var(--z-floating, 40) + 1);
+  width: min(380px, calc(100vw - 32px));
+  max-height: min(540px, calc(100vh - var(--nav-h, 0px) - 110px));
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #23180F);
+  border: 2px solid var(--cizgi-mavi, var(--color-border, #EAD3AE));
+  border-radius: var(--radius-lg, 20px);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(43, 33, 24, 0.16));
+  overflow: hidden;
+  font-family: var(--font-body, 'Nunito', sans-serif);
+  animation: aiSohbetGir 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.ai-sohbet[hidden] { display: none; }
+@keyframes aiSohbetGir { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.ai-sohbet-bas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+  background: var(--yuzey-mavi, #EAF1FC);
+  border-bottom: 1px solid var(--cizgi-mavi, rgba(45, 98, 181, 0.32));
+}
+.ai-sohbet-kure { width: 32px; height: 32px; flex: none; }
+.ai-sohbet-ad { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; line-height: 1.25; }
+.ai-sohbet-ad strong {
+  font-family: var(--font-heading, 'Baloo 2', sans-serif);
+  font-size: var(--text-lg, 17px);
+  color: var(--metin-mavi, var(--color-accent, #1D4ED8));
+}
+.ai-sohbet-hak { font-size: var(--text-xs, 12px); color: var(--color-text-muted, #7C6552); }
+.ai-sohbet-hak:empty { display: none; }
+.ai-sohbet-kapat {
+  width: 40px; height: 40px; flex: none;
+  border: none; border-radius: 50%;
+  background: transparent; color: var(--color-text-muted, #7C6552);
+  font-size: 18px; line-height: 1; cursor: pointer;
+}
+.ai-sohbet-kapat:hover { background: var(--color-accent-soft, rgba(29, 78, 216, 0.12)); }
+.ai-sohbet-kapat:focus-visible { outline: 3px solid var(--color-accent, #1D4ED8); outline-offset: 1px; }
+
+.ai-sohbet-liste {
+  flex: 1;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-sohbet-balon {
+  max-width: 88%;
+  padding: 9px 13px;
+  border-radius: 16px;
+  font-size: var(--text-md, 15px);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+/* Çocuğun seçtiği soru / bastığı cevap: modülün rengi (Modül 1 kırmızı, 2 mavi, 3 turuncu). */
+.ai-sohbet-balon.cocuk {
+  align-self: flex-end;
+  background: var(--modul-yuzey, var(--color-primary-soft, #FDECEE));
+  color: var(--modul-metin, var(--color-text, #23180F));
+  border: 1px solid var(--modul-cizgi, transparent);
+  border-bottom-right-radius: 6px;
+  font-weight: 700;
+}
+.ai-sohbet-balon.ai {
+  align-self: flex-start;
+  background: var(--yuzey-mavi, #EAF1FC);
+  border: 1px solid var(--cizgi-mavi, rgba(45, 98, 181, 0.32));
+  border-bottom-left-radius: 6px;
+}
+.ai-sohbet-balon.ai p { margin: 0 0 6px; }
+.ai-sohbet-balon.ai p:last-child { margin-bottom: 0; }
+.ai-sohbet-balon.ai ul, .ai-sohbet-balon.ai ol { margin: 4px 0 6px; padding-left: 20px; }
+.ai-sohbet-balon.ai li + li { margin-top: 3px; }
+.ai-sohbet-balon.ai strong { font-weight: 800; }
+.ai-sohbet-balon.ai code {
+  font-family: var(--font-mono, 'Fira Code', monospace);
+  font-size: 0.92em;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--cizgi-mavi, rgba(45, 98, 181, 0.32));
+}
+
+/* "Düşünüyor…": model düşünen türden, ilk parça birkaç saniye sürebilir. */
+.ai-sohbet-yaziyor { display: inline-flex; align-items: center; gap: 4px; color: var(--color-text-muted, #7C6552); }
+.ai-sohbet-yaziyor i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-accent, #1D4ED8);
+  animation: aiSohbetNokta 1s ease-in-out infinite;
+}
+.ai-sohbet-yaziyor i:nth-child(2) { animation-delay: 0.15s; }
+.ai-sohbet-yaziyor i:nth-child(3) { animation-delay: 0.3s; }
+.ai-sohbet-yaziyor em { margin-left: 6px; font-style: normal; font-size: var(--text-sm, 13px); }
+@keyframes aiSohbetNokta { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+
+.ai-sohbet-cevaplar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--color-border-soft, #F7EBDD);
+}
+.ai-sohbet-cevaplar:empty { display: none; }
+.ai-sohbet-cevap, .ai-sohbet-tekrar, .ai-sohbet-giris {
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill, 999px);
+  border: 2px solid var(--color-accent, #1D4ED8);
+  background: var(--color-surface, #fff);
+  color: var(--metin-mavi, var(--color-accent, #1D4ED8));
+  font: 800 var(--text-md, 15px)/1 var(--font-body, 'Nunito', sans-serif);
+  cursor: pointer;
+}
+/* Dört cevap 2×2 eşit ızgara (3+1 dağınık duruyordu); tek düğme ("Anlamadım") satırı doldurur. */
+.ai-sohbet-cevap { flex: 1 1 calc(50% - 4px); }
+.ai-sohbet-cevap:hover, .ai-sohbet-tekrar:hover, .ai-sohbet-giris:hover { background: var(--color-accent-soft, rgba(29, 78, 216, 0.12)); }
+.ai-sohbet-cevap:focus-visible, .ai-sohbet-tekrar:focus-visible, .ai-sohbet-giris:focus-visible {
+  outline: 3px solid var(--color-accent, #1D4ED8); outline-offset: 2px;
+}
+.ai-sohbet-not { margin: 0; font-size: var(--text-sm, 13px); color: var(--color-text-muted, #7C6552); }
+
+.ai-sohbet-hata {
+  align-self: stretch;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--yuzey-sari, #FFF7DB);
+  border: 1px solid var(--cizgi-sari, rgba(249, 185, 26, 0.45));
+}
+.ai-sohbet-hata p { margin: 0; flex: 1 1 200px; font-size: var(--text-md, 15px); line-height: 1.45; }
+
+/* Panel açıkken bildirimler (styles.css .toast: sağ alt, z 100) cevap düğmelerinin üstüne biniyordu
+   (ör. "İlk Hata rozeti!" Hâlâ olmadı'ya basınca). Masaüstünde panelin soluna, dar ekranda üste alınır. */
+body:has(.ai-sohbet:not([hidden])) .toast {
+  right: calc(16px + min(380px, calc(100vw - 32px)) + 12px);
+}
+
+@media (max-width: 480px) {
+  .ai-sohbet {
+    left: 8px;
+    right: 8px;
+    width: auto;
+    bottom: calc(var(--nav-h, 0px) + 78px);
+    max-height: calc(100vh - var(--nav-h, 0px) - 96px);
+  }
+  body:has(.ai-sohbet:not([hidden])) .toast {
+    right: 12px;
+    bottom: auto;
+    top: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-sohbet { animation: none; }
+  .ai-sohbet-yaziyor i { animation: none; opacity: 0.6; }
+}

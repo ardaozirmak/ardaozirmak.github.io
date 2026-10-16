@@ -180,12 +180,12 @@ body.portal-body {
    (bkz. .bottom-nav button.primary) aynı dilde konuşan, dokunsal/basılabilir
    tek renkli buton — offset gölge basınca "içeri girer" gibi davranır. */
 .portal-btn.primary {
-  background: var(--color-primary);
+  background: var(--color-primary-fill);
   color: #fff;
-  box-shadow: 0 5px 0 var(--color-primary-hover);
+  box-shadow: 0 5px 0 var(--color-primary-fill-2);
 }
-.portal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--color-primary-hover); }
-.portal-btn.primary:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--color-primary-hover); }
+.portal-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--color-primary-fill-2); }
+.portal-btn.primary:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--color-primary-fill-2); }
 .portal-btn.ghost {
   background: var(--color-surface);
   color: var(--color-text-2);
@@ -195,10 +195,13 @@ body.portal-body {
 .portal-btn.ghost:hover { border-color: var(--color-primary-stroke); color: var(--color-primary); transform: translateY(-2px); }
 .portal-btn.ghost:active { transform: translateY(0); }
 
-/* ---------- MODÜL KARTI + İLERLEME ---------- */
+/* ---------- MODÜL KARTI + İLERLEME ----------
+   2026-10-14 (Arda: "bir tık renklilik"): her modül kendi Deneyap renginin açık
+   tonunda — Modül 1 kırmızı, 2 mavi, 3 turuncu (portal.js data-modul verir;
+   değişkenler styles.css). Ders kartları beyaz kalır, renkli zeminde öne çıkar. */
 .module-card {
-  background: var(--color-surface);
-  border: var(--border-w-thin) solid var(--color-border);
+  background: var(--modul-yuzey);
+  border: var(--border-w-thin) solid var(--modul-cizgi);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-clay-sm);
   padding: 24px;
@@ -215,7 +218,7 @@ body.portal-body {
 
 .module-card-head h2 {
   font-size: var(--text-2xl);
-  color: var(--color-text);
+  color: var(--modul-metin);
   font-weight: 700;
 }
 .module-card-head .module-sub {
@@ -228,9 +231,9 @@ body.portal-body {
   font-family: var(--font-mono);
   font-size: var(--text-sm);
   font-weight: 700;
-  color: var(--color-primary);
-  background: var(--color-primary-soft);
-  border: 1px solid var(--color-primary-stroke);
+  color: var(--modul-metin);
+  background: var(--color-surface);
+  border: 1px solid var(--modul-cizgi);
   padding: 6px 12px;
   border-radius: var(--radius-pill);
   white-space: nowrap;
@@ -238,8 +241,8 @@ body.portal-body {
 
 .module-progress-track {
   height: 8px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  border: 1px solid var(--modul-cizgi);
   border-radius: 6px;
   overflow: hidden;
   margin-top: 16px;
@@ -247,7 +250,7 @@ body.portal-body {
 .module-progress-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+  background: var(--modul);
   transition: width 0.5s var(--easing-default);
 }
 
@@ -262,7 +265,7 @@ body.portal-body {
 
 .lesson-card {
   position: relative;
-  background: var(--color-bg);
+  background: var(--color-surface);
   border: var(--border-w-thin) solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-clay-sm);
@@ -295,7 +298,7 @@ body.portal-body {
 }
 .lesson-card.is-open:hover {
   transform: translateY(-3px);
-  border-color: var(--color-primary-stroke);
+  border-color: var(--modul-cizgi);
   box-shadow: var(--shadow-clay-md);
 }
 .lesson-card.is-open:active {
@@ -318,9 +321,9 @@ body.portal-body {
 .lesson-card.is-featured {
   grid-column: span 2;
   background: var(--color-surface);
-  border-color: var(--color-primary);
+  border-color: var(--modul);
   padding: 24px;
-  box-shadow: 0 0 0 2px var(--color-primary-stroke) inset, var(--shadow-clay-md);
+  box-shadow: 0 0 0 2px var(--modul-cizgi) inset, var(--shadow-clay-md);
 }
 .lesson-card.is-featured .lesson-card-icon { width: 28px; height: 28px; }
 .lesson-card.is-featured .lesson-card-title { font-size: var(--text-xl); }
@@ -343,7 +346,7 @@ body.portal-body {
   letter-spacing: 0.5px;
 }
 
-.lesson-card-icon { width: 20px; height: 20px; color: var(--color-primary); }
+.lesson-card-icon { width: 20px; height: 20px; color: var(--modul); }
 
 .lesson-card-status {
   display: inline-flex;
@@ -358,7 +361,7 @@ body.portal-body {
 }
 .lesson-card-status .icon { width: 11px; height: 11px; }
 .lesson-card-status.done { background: var(--color-success-soft); color: var(--color-success-2); }
-.lesson-card-status.open { background: var(--color-primary-soft); color: var(--color-primary); }
+.lesson-card-status.open { background: var(--modul-yumusak); color: var(--modul-metin); }
 .lesson-card-status.soon { background: var(--color-surface-2); color: var(--color-text-2); }
 
 .lesson-card-title {
@@ -409,6 +412,11 @@ body.portal-body {
   color: var(--color-text-muted);
   margin-top: 4px;
 }
+/* İki sayı iki renk (2026-10-14): açık dersler sarı, tamamlananlar mavi. */
+.portal-info-item:nth-child(1) { background: var(--yuzey-sari); border-color: var(--cizgi-sari); }
+.portal-info-item:nth-child(1) .num { color: var(--metin-sari); }
+.portal-info-item:nth-child(2) { background: var(--yuzey-mavi); border-color: var(--cizgi-mavi); }
+.portal-info-item:nth-child(2) .num { color: var(--metin-mavi); }
 
 .portal-footer {
   text-align: center;
@@ -443,6 +451,10 @@ body.portal-body {
 .atl-kart { padding: 16px; border-radius: var(--radius-lg); background: var(--color-surface); border: var(--border-w-thin, 1px) solid var(--color-border);
   box-shadow: var(--shadow-clay-sm, 0 4px 14px rgba(0,0,0,.06)); display: flex; flex-direction: column; gap: 10px; }
 .atl-kart h3 { margin: 0; font: 800 var(--text-lg, 17px)/1.2 var(--font-heading); }
+/* Üç kart üç Deneyap rengi (2026-10-14): albüm sarı, görev turuncu, veli açık mavi. */
+.atl-album { background: var(--yuzey-sari); border-color: var(--cizgi-sari); }
+.atl-gorev { background: var(--yuzey-turuncu); border-color: var(--cizgi-turuncu); }
+.atl-veli  { background: var(--yuzey-acikmavi); border-color: var(--cizgi-acikmavi); }
 .atl-gorev-metin, .atl-gorev-not { margin: 0; font-size: var(--text-md); color: var(--color-text-2); line-height: 1.45; }
 .atl-rozetler { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
 .atl-rozet { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }

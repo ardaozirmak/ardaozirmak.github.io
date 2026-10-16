@@ -84,7 +84,7 @@ function renderStepContent() {
     interactiveArea.innerHTML = `
       <div class="quiz-box">
         <strong style="display:flex; align-items:center; gap:8px;"><svg class="icon"><use href="#icon-robot"/></svg>AI Yoldaşına Sor</strong>
-        <p class="step-card-desc" style="margin-top:8px;">Öğrendiklerini pekiştirmek için aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas ve Sokratik promptlardan birini kendi AI aracına yapıştır.</p>
+        <p class="step-card-desc" style="margin-top:8px;">Öğrendiklerini pekiştirmek için aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas ve Sokratik sorulardan birini seç: AI yardımcın burada, sana sorular sorarak cevaplar.</p>
         <div class="callout"><svg class="icon callout-icon"><use href="#icon-brain"/></svg><span>Hazır olduğunda <strong>İleri</strong> butonuyla rozetini almaya geç.</span></div>
       </div>`;
   } else if (currentStep === 9) {
@@ -637,7 +637,7 @@ function basaDon() {
     gates: {
       2: () => LessonEngine.materialsReadyFlag ||
            "Önce malzemelerini hazırlayıp 'Malzemeleri Hazırladım!' butonuna basmalısın!",
-      // Dört kurulum adımının (LED, D5 kablosu, direnç, GND kablosu) dördü
+      // Beş kurulum adımının (kart, LED, D5 kablosu, direnç, GND kablosu) beşi
       // de yerine gelmeden İleri açılmaz — spec §1 madde 4, Ders 1.1'deki
       // video kilidinin (video-player.js, "Sonraki" ended'e kadar disabled)
       // birebir karşılığı: burada da aynı gates{} mekanizması kullanılıyor,
@@ -649,7 +649,7 @@ function basaDon() {
       4: () => {
         if (!UsbLink.connected()) return UsbLink.gateMessage();
         if (!(wiring && wiring.isBuilt()))
-          return "Devreyi tamamlamadan ilerleyemezsin! Dört adımı da bitir.";
+          return "Devreyi tamamlamadan ilerleyemezsin! Beş adımı da bitir.";
         /* Arda: "illa o Arduino kod yükleme kısmını görmesi lazım."
            Devreyi kurmak yetmez — kodu nasıl yükleyeceğini görmeden
            Adım 5'teki "LED yandı mı?" sorusunun bir anlamı yok. */

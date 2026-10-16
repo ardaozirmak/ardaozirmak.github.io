@@ -30,7 +30,7 @@ window.LESSON_DATA_3_1 = {
     "pinAciklama": "Kartın üst kenarında soldan: <strong>5V</strong>, <strong>3V3</strong>, <strong>GND</strong>, <strong>D9</strong>, <strong>D10</strong>. Bu derste dördünü de kullanıyorsun.",
     "kurKapisi": "LED'i ve butonu kur: <strong>Hadi kuralım</strong>'a bas ve parçaları tak.",
     "bosBaslik": "Bir LED ve bir buton: butona basınca LED yanacak.",
-    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: önce LED tarafı, sonra buton tarafı.",
+    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: önce kart, sonra LED tarafı, en son buton tarafı.",
     "bosNot": " Önceki derslerin devresini breadboard’dan çıkar; bu derste LED D9’da.",
     "bitisKontrol": "Kartında eski kod duruyorsa buton bir şey yapmaz. Yeni kodu bir sonraki adımda yükleyeceksin."
   },
@@ -91,7 +91,7 @@ window.LESSON_DATA_3_1 = {
     },
     {
       "title": "Adım 3: Devreyi Kur",
-      "desc": "Kartını bilgisayara tak. <strong>Hadi kuralım</strong>'a bas: önce LED tarafını (D9), sonra buton tarafını (3V3, D10 ve 10K direnç) kuracağız."
+      "desc": "Kartını bilgisayara tak. <strong>Hadi kuralım</strong>'a bas: önce kartı breadboard'a takacağız, sonra LED tarafını (D9) ve buton tarafını (3V3, D10 ve 10K direnç) kuracağız."
     },
     {
       "title": "Adım 4: Kodu Yükle",
@@ -119,6 +119,7 @@ window.LESSON_DATA_3_1 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "Kartın üstteki <strong>GND</strong> pininden − rayına siyah kablo.",
     "LED'i tak: iki bacak da g satırında, kısa bacak solda.",
     "LED'in kısa bacağının sütunundan − rayına 220 ohm direnç.",
@@ -128,8 +129,16 @@ window.LESSON_DATA_3_1 = {
     "<strong>3V3</strong> → butonun sol sütunu.",
     "<strong>D10</strong> → butonun sağ sütunu."
   ],
-  "//wiringGuide": "Adım sırası wiring-diagram.js siraAdimlari + butonAdimlari ile aynı: GND, LED, 220, D9, buton, 10K, 3V3, D10.",
+  "//wiringGuide": "Adım sırası wiring-diagram.js siraAdimlari + butonAdimlari ile aynı: kart, GND, LED, 220, D9, buton, 10K, 3V3, D10.",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["breadboard"],
+      "xray": false,
+      "neden": "Her şey karta bağlanacak, önce o yerinde olmalı.",
+      "nereye": "Kart breadboard'da değilse kitten çıkar ve tak: USB-C girişi <b>solda</b>, pin sıraları orta kanalın <b>iki yanında</b>. Takılıysa yerinde bırak.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik var mı?"
+    },
     {
       "ad": "GND kablosu",
       "adim3": ["jumper", "breadboard"],
@@ -217,7 +226,8 @@ window.LESSON_DATA_3_1 = {
       "gorev": "Buton basılı tutulduğu sürece LED <strong>200 milisaniye</strong> aralıklarla yanıp sönsün; buton bırakılınca sönük kalsın.",
       "ipucu": "<code>if</code> bloğunun içine Ders 1.2'deki yakıp söndürmeyi yaz: <code>HIGH</code>, <code>delay(200)</code>, <code>LOW</code>, <code>delay(200)</code>.",
       "tip": "gozlem",
-      "secenekler": ["Basılıyken yanıp sönüyor", "Hâlâ sürekli yanıyor"]
+      "secenekler": ["Basılıyken yanıp sönüyor", "Hâlâ sürekli yanıyor"],
+      "beklenen": 0
     }
   ],
   "yetiskinKarti": [

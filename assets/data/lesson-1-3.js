@@ -86,6 +86,7 @@ window.LESSON_DATA_1_3 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "LED'i breadboard'a tak.",
     "LED'in uzun bacağından (+) bir jumper kabloyla kartın <strong>D5</strong> pinine bağlan — kartta o pinin yanında <strong>MI</strong> yazar.",
     "LED'in kısa bacağını (−) 220 ohm dirence bağla.",
@@ -93,6 +94,14 @@ window.LESSON_DATA_1_3 = {
   ],
   "//wiringGuide": "Ders 1.2 ile ayni devre (ders.md §4). Metin 1.2'nin dogrulanmis rehberi; yalnizca son kontrol cumlesi degisti, cunku bu derste kod bir SONRAKI adimda.",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["kart", "breadboard"],
+      "xray": true,
+      "neden": "Devrenin beyni bu kart. Önce onu yerine oturt.",
+      "nereye": "Kitten çıkardığın kartı tak: USB-C girişi <b>solda</b>, pinlerin bir sırası orta kanalın <b>üstünde</b>, öbürü <b>altında</b>. İki ucundan eşit bastır.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik kaldı mı? Kablolar oraya takılacak."
+    },
     {
       "ad": "LED",
       "adim3": ["led", "breadboard"],

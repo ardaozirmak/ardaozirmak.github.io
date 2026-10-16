@@ -12,7 +12,8 @@
    sutunlarinin uzerine tasiyordu. */
 .wd-brand     { font: 700 9px/1 Arial, sans-serif;  fill: #fff;     text-anchor: middle; letter-spacing: 1px; }
 .wd-brand-sub { font: 600 5.5px/1 Arial, sans-serif; fill: #f7e9e6; text-anchor: middle; letter-spacing: 1.6px; }
-.wd-chiptext  { font: 700 7.5px/1 Arial, sans-serif; fill: #c7ced6; text-anchor: middle; }
+/* Çipin lazer baskısı: gerçekte küçük ve soluk gri (2026-10-14, çıplak QFN çipin üstünde). */
+.wd-chiptext  { font: 700 5px/1 Arial, sans-serif; fill: #9aa0a8; text-anchor: middle; letter-spacing: 0.3px; }
 /* Pin adlari gercek karttaki gibi pedin USTUNDE, pin sirasinin cizgisinde,
    iki ped arasindaki bosluga ortali (Arda, 2026-10-07; konum board-svg.js
    pinAdlari). Bosluk 8.4 birim: 6.5 punto oraya sigar. Cocuk elindeki karta

@@ -30,7 +30,24 @@
   function json(k) { try { var v = JSON.parse(Store.get(k) || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
   function gunAnahtari(t) { var d = t || new Date(); return '' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2); }
   function ayniGun(ms) { return ms && gunAnahtari(new Date(ms)) === gunAnahtari(); }
-  function fotolar() { try { return JSON.parse(localStorage.getItem('mucit_foto_v1') || '{}') || {}; } catch (e) { return {}; } }
+  /* Fotoğraf HESAP BAŞINA saklanır (2026-10-16 denetim bulgusu: ortak
+     bilgisayarda önceki çocuğun fotoğrafı sonrakinin albümünde çıkıyordu).
+     Anahtar ders-ekler.js fotoAnahtari ile AYNI. Eski ortak anahtar
+     (mucit_foto_v1) kimin olduğu bilinmediği için okunmaz, silinir. */
+  function fotoAnahtari() {
+    var l = window.Learner && Learner.isActive && Learner.isActive() ? Learner.current() : null;
+    return 'mucit_foto_v1:' + (l && l.id ? l.id : 'yerel');
+  }
+  try { localStorage.removeItem('mucit_foto_v1'); } catch (e) {}
+  function fotolar() { try { return JSON.parse(localStorage.getItem(fotoAnahtari()) || '{}') || {}; } catch (e) { return {}; } }
+  /* Buluttan gelen ad ve yerelden gelen veri innerHTML'e kaçışsız girmesin. */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  /* Fotoğraf yalnız kendi ürettiğimiz JPEG data: adresi olabilir. */
+  function fotoMu(f) { return typeof f === 'string' && /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/.test(f); }
 
   // ---------- 2. Rozet albümü ----------
   function albumHtml() {
@@ -38,7 +55,7 @@
     return '<article class="atl-kart atl-album">' +
       '<h3>Rozet albümü</h3>' +
       '<ol class="atl-rozetler">' + DERSLER.map(function (d) {
-        var var_ = bitti(d), f = foto[d.on];
+        var var_ = bitti(d), f = fotoMu(foto[d.on]) ? foto[d.on] : null;
         return '<li class="atl-rozet' + (var_ ? ' is-var' : '') + '">' +
           '<span class="atl-cerceve">' + (var_ ? '<img src="assets/img/rozet/ders-' + d.ad.replace('.', '-') + '.webp" alt="" draggable="false">' : '<b aria-hidden="true">?</b>') +
           (f ? '<img class="atl-foto" src="' + f + '" alt="Ders ' + d.ad + ' mucit fotoğrafın">' : '') + '</span>' +
@@ -50,7 +67,9 @@
   // ---------- 3. Günlük görev ----------
   function bugunIlerledi() {
     var devam = json('devam_v1');
-    return Object.keys(devam).some(function (k) { return ayniGun(devam[k] && devam[k].t); });
+    // ilerledi: en ileri adım arttığında yazılır (lesson-engine devamYaz).
+    // t değil: t geri gidişte de yazılıyor.
+    return Object.keys(devam).some(function (k) { return ayniGun(devam[k] && devam[k].ilerledi); });
   }
   function gorevHtml() {
     var anahtar = 'gunluk_' + gunAnahtari();
@@ -88,7 +107,7 @@
   function veliHtml() {
     var s = ozetMetni();
     return '<details class="atl-kart atl-veli"><summary><h3>Veli özeti</h3><span>Bu haftayı ailene göster</span></summary>' +
-      '<ul>' + s.slice(1).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' +
+      '<ul>' + s.slice(1).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
       '<button type="button" class="atl-veli-kopyala">Özeti kopyala</button></details>';
   }
 

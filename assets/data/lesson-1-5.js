@@ -32,7 +32,7 @@ window.LESSON_DATA_1_5 = {
     "pinAciklama": "Kartın alt kenarında <code>D5</code>'in yanında <strong>MI</strong>, <code>D6</code>'nın yanında <strong>MC</strong> yazar. Üst kenarda <strong>D9</strong> ve <strong>D10</strong> kendi adlarıyla yazar; hemen sollarında <strong>GND</strong> var.",
     "kurKapisi": "Dört LED'i tek sıraya diz: <strong>Hadi kuralım</strong>'a bas ve parçaları tak.",
     "bosBaslik": "Bu derste devre yeniden diziliyor: dört LED tek sırada.",
-    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: önce GND, sonra LED’ler, dirençler ve dört kablo.",
+    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: önce kart, sonra GND, LED’ler, dirençler ve dört kablo.",
     "bosNot": " Ders 1.4’teki devreni sök; LED’ler ve dirençler yine işine yarayacak.",
     "bitisKontrol": "Kartında eski kod duruyorsa LED'ler sırayla yanmaz. Yeni kodu bir sonraki adımda yükleyeceksin."
   },
@@ -119,6 +119,7 @@ window.LESSON_DATA_1_5 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "Kartın üstteki <strong>GND</strong> pininden − rayına siyah kablo.",
     "Dört LED'i yan yana tak: iki bacak da g satırında, kısa bacak solda.",
     "Her LED'in kısa bacağının sütunundan − rayına bir direnç.",
@@ -127,8 +128,16 @@ window.LESSON_DATA_1_5 = {
     "<strong>D9</strong> → 3. LED'in uzun bacağı.",
     "<strong>D10</strong> → 4. LED'in uzun bacağı."
   ],
-  "//wiringGuide": "Adım sırası wiring-diagram.js siraAdimlari ile aynı: GND, LED'ler, dirençler, sonra her pinin kablosu.",
+  "//wiringGuide": "Adım sırası wiring-diagram.js siraAdimlari ile aynı: kart, GND, LED'ler, dirençler, sonra her pinin kablosu.",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["breadboard"],
+      "xray": false,
+      "neden": "Her şey karta bağlanacak, önce o yerinde olmalı.",
+      "nereye": "Kart breadboard'da değilse kitten çıkar ve tak: USB-C girişi <b>solda</b>, pin sıraları orta kanalın <b>iki yanında</b>. Takılıysa yerinde bırak.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik var mı?"
+    },
     {
       "ad": "GND kablosu",
       "adim3": ["jumper", "breadboard"],
@@ -352,7 +361,7 @@ window.LESSON_DATA_1_5 = {
       "cat": "Pekiştirme",
       "catColor": "blue",
       "title": "Beşinci LED Hesabı",
-      "prompt": "Sen ileri seviye bir mentorsun. Deneyap Mini v2'de dört LED'lik bir desenim var; her adım 4 satır, 6 adım = 30 satır. Beşinci LED eklersem kaç satır olacağını sen hesaplama; 'adım sayısı nasıl değişir, her adımda kaç satır olur' diye sorarak bana hesaplattır. Pin numarası ya da direnç değeri verme, gerekmiyor zaten."
+      "prompt": "Sen ileri seviye bir mentorsun. Deneyap Mini v2'de dört LED'lik bir desenim var; her adım 4 digitalWrite + 1 delay = 5 satır, 6 adım = 30 satır. Beşinci LED eklersem kaç satır olacağını sen hesaplama; 'adım sayısı nasıl değişir, her adımda kaç satır olur' diye sorarak bana hesaplattır. Pin numarası ya da direnç değeri verme, gerekmiyor zaten."
     },
     {
       "level": 1,

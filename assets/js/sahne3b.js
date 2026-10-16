@@ -116,7 +116,7 @@ window.Sahne3B = (function () {
     var olcek = 6;
     var stil = BoardSVG.STIL_3B;
     var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="16 26 140 268" width="' + 140 * olcek + '" height="' + 268 * olcek +
-      '"><style>' + stil + '</style>' + BoardSVG.pinlerUstte(BoardSVG.groupMarkup({})) + '</svg>';
+      '"><style>' + stil + '</style>' + BoardSVG.pinlerUstte(BoardSVG.groupMarkup({ isiksiz: true })) + '</svg>';
     var img = new Image();
     img.onload = function () {
       var c = document.createElement('canvas'); c.width = 140 * olcek; c.height = 268 * olcek;
@@ -303,11 +303,14 @@ window.Sahne3B = (function () {
     kart.add(golgeli(M.kart));
     /* Bakır yollar (blender/deneyap.py) çift taraflı ince şerit: kendi üstüne gölge düşürmesin. */
     M.kart.traverse(function (n) { if (n.isMesh && /^yollar/.test(n.name)) { n.castShadow = false; n.material.side = THREE.FrontSide; } });
-    /* Lehim maskesi: güçlü tepe ışığında pembeye kaçıyordu — gerçek kart koyu, doygun kırmızı. */
+    /* Lehim maskesi: ACES tonlaması ve ortam yansıması parlak kırmızıyı turuncuya/pembeye çekiyordu
+       (2026-10-14 yeni kartta ~(240,110,85) ölçüldü); gerçek kart parlak ama DOYGUN kırmızı (Arda'nın
+       fotoğrafı ~(240,34,34)). Taban koyulaşır, yansıma ve cila kısılır. kart-sahne3b.js ile aynı. */
     var koyulasan = [];   // malzeme paylaşılıyor (viyalar + yollar aynı 'yol'): her biri TEK kez koyulaşsın
     M.kart.traverse(function (n) {
       if (n.isMesh && /^(pcb|yol)/.test(n.material.name) && koyulasan.indexOf(n.material) < 0) {
-        koyulasan.push(n.material); n.material.color.multiplyScalar(0.78); n.material.envMapIntensity = 0.6;
+        koyulasan.push(n.material); n.material.color.multiplyScalar(0.55); n.material.envMapIntensity = 0.35;
+        n.material.roughness = 0.5; if ('clearcoat' in n.material) n.material.clearcoat = 0;
       }
     });
     var baslik = new THREE.MeshStandardMaterial({ color: 0x1B1F24, roughness: 0.6 });
@@ -326,22 +329,35 @@ window.Sahne3B = (function () {
       var t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 4;
       var d = new THREE.Mesh(new THREE.PlaneGeometry(1.40, 2.68), new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
       d.rotation.x = -Math.PI / 2; d.position.set(0.86, 0.0032, 1.60); kart.add(d);
-      // ESP32-S2 yazısı kalkanın üstündeki etikette (x51..117, y94.5..103.5)
-      var g = new THREE.PlaneGeometry(0.66, 0.09), uv = g.attributes.uv;
+      /* ESP32-S2 baskısı çipin üst yüzünde (BoardSVG.KONUM.cip; çip 2.3 birim yüksek, yazı katmanını
+         örter): aynı dokunun çip bölgesi çipin üstüne ikinci düzlem olarak basılır. */
+      var C = BoardSVG.KONUM.cip, g = new THREE.PlaneGeometry(C.w * S, C.h * S), uv = g.attributes.uv;
       for (var i = 0; i < uv.count; i++) {
-        uv.setXY(i, (51 - 16 + uv.getX(i) * 66) / 140, 1 - (94.5 - 26 + (1 - uv.getY(i)) * 9) / 268);
+        uv.setXY(i, (C.x - 16 + uv.getX(i) * C.w) / 140, 1 - (C.y - 26 + (1 - uv.getY(i)) * C.h) / 268);
       }
       var e = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ map: t, transparent: true, depthWrite: false }));
-      e.rotation.x = -Math.PI / 2; e.position.set(0.84, 0.0595, 0.99); kart.add(e);
+      e.rotation.x = -Math.PI / 2; e.position.set((C.x + C.w / 2) * S, 0.0232, (C.y + C.h / 2) * S); kart.add(e);
     });
     sahne.add(kart);
 
-    // Laptop (mutlak), ekran tuvali
-    var laptop = golgeli(M.laptop); laptop.position.y = MASA_Y; sahne.add(laptop);
+    /* Laptop (blender/laptop.py, 2026-10-14). Arda: "kartın yanında bilgisayar ucuz ve küçük kaldı"
+       → "Büyük, köşesi kadraj dışı". Model gerçek 14" oranında, kendi yerelinde (orijin taban izinin
+       ortası, +x port yanı, +z ekranın baktığı yön); sahne yerini, dönüşünü ve ölçeğini burada verir.
+       Tezgâhın solunda, ekranı kameraya biraz dönük; sol ön köşesi kadrajın dışına taşar. Kablo sağ
+       yandaki takılı fişin ucundan ('kablo_cikis') başlar. */
+    var LAPTOP = { x: -0.96, z: 2.93, don: THREE.MathUtils.degToRad(12), olcek: 0.76 };
+    var laptop = new THREE.Group(); laptop.add(golgeli(M.laptop));
+    laptop.position.set(LAPTOP.x, MASA_Y, LAPTOP.z); laptop.rotation.y = LAPTOP.don; laptop.scale.setScalar(LAPTOP.olcek);
+    sahne.add(laptop); laptop.updateMatrixWorld(true);
+    var kabloCikis = M.laptop.getObjectByName('kablo_cikis');
+    var laptopFis = M.laptop.getObjectByName('lt_fis');   // takılı fiş (laptop.py: malzemeye göre birleşik ağ)
+    var kabloBas = kabloCikis ? kabloCikis.getWorldPosition(new THREE.Vector3()) : new THREE.Vector3(-0.4, MASA_Y + 0.05, 1.5);
+    var kabloYon = new THREE.Vector3(1, 0, 0).applyQuaternion(laptop.quaternion);   // fişten dışarı (yerel +x)
     var ekranTuval = document.createElement('canvas'); ekranTuval.width = 512; ekranTuval.height = 320;
     var ekranDoku = new THREE.CanvasTexture(ekranTuval); ekranDoku.encoding = THREE.sRGBEncoding;
     ekranDoku.flipY = false;   // glTF UV'leri ters eksenli: yoksa başlık altta kalıyordu
-    laptop.traverse(function (n) { if (n.isMesh && /ekran/.test(n.name)) n.material = new THREE.MeshBasicMaterial({ map: ekranDoku }); });
+    // Ekran gerçekten ışık saçar: tonlamasız (ACES parlak IDE renklerini soldurmasın).
+    laptop.traverse(function (n) { if (n.isMesh && /ekran/.test(n.name)) n.material = new THREE.MeshBasicMaterial({ map: ekranDoku, toneMapped: false }); });
 
     // Fiş + Type-C kablo
     var fis = golgeli(M.fis); sahne.add(fis);
@@ -356,7 +372,8 @@ window.Sahne3B = (function () {
     var bacakMat = new THREE.MeshStandardMaterial({ color: 0xD8DDE3, metalness: 1, roughness: 0.28 });
     var elektronMat = new THREE.MeshBasicMaterial({ color: 0xFFD23F });
     var parca = {};
-    var parcaAdlari = Array.prototype.map.call(svg.querySelectorAll('[id^="wd-part-"]'), function (e) { return e.id.slice(8); });
+    var parcaAdlari = Array.prototype.map.call(svg.querySelectorAll('[id^="wd-part-"]'), function (e) { return e.id.slice(8); })
+      .filter(function (ad) { return ad !== 'kart'; });   // kart kendi yolundan (kartGuncelle)
 
     function tup(noktalar, r, mat) {
       var e = new THREE.CatmullRomCurve3(noktalar);
@@ -677,36 +694,58 @@ window.Sahne3B = (function () {
     var ro = window.ResizeObserver ? new ResizeObserver(kameraKonumla) : null;
     if (ro) ro.observe(stage);
 
-    function kartGuncelle() {
+    /* Kart adımı (2026-10-14, wiring-diagram.js KART_ADIMI): kartın #wd-part-kart parçası olduğu
+       derslerde boş tezgahta kart yok, adımında yukarıdan inip oturur (öbür parçalarla aynı yay);
+       USB fişi ve kablo ona takılı, onunla iner. Matris kartın 2B yerinden; 2B takma hareketi
+       (anime.js, sarmalayıcıda satır içi transform) sürerken okunmaz — yoksa 3B kart 2B'nin eğilip
+       kaymasını taklit eder. Son iyi matris tutulur (kart hayaletken de okunabiliyor: opacity 0). */
+    var kartParca = svg.querySelector('#wd-part-kart'), kartDurum = { gorun: true, bas: null, inis: 0, m: null };
+    function kartGuncelle(zaman) {
       var img = svg.querySelector('#wd-board image.bsvg-render');
       if (!img) return null;
-      var m = svgMatris(svg, img);
-      kart.matrix.copy(matris4(m)); kart.matrix.elements[13] = KART_Y; kart.matrixWorldNeedsUpdate = true;
+      if (kartParca) {
+        var gorun = !kartParca.classList.contains('is-ghost');
+        if (gorun && !kartDurum.gorun) kartDurum.bas = zaman;
+        kartDurum.gorun = gorun;
+        var t = kartDurum.bas == null ? 1 : Math.min(1, (zaman - kartDurum.bas) / 520);
+        kartDurum.inis = gorun ? (1 - yay(t)) * 0.9 : 0;
+        kart.visible = gorun;
+      }
+      if (!kartDurum.m || !(kartParca && kartParca.style.transform)) kartDurum.m = svgMatris(svg, img);
+      var m = kartDurum.m;
+      kart.matrix.copy(matris4(m)); kart.matrix.elements[13] = KART_Y + kartDurum.inis; kart.matrixWorldNeedsUpdate = true;
       return m;
     }
 
     function fisGuncelle(km, zaman) {
       if (!km) return;
+      // Kart tezgahta değilken fiş, kablo ve veri topları da yok (2B'de .is-kartsiz ile aynı).
+      fis.visible = kartDurum.gorun;
+      if (laptopFis) laptopFis.visible = kartDurum.gorun;
+      if (kablo) kablo.visible = kartDurum.gorun;
+      if (!kartDurum.gorun) { veri.forEach(function (v) { v.visible = false; }); return; }
       var takili = !svg.classList.contains('is-unplugged');
-      // Soket ağzı: kart yerelinde USB'nin üst kenarının ortası (86, 18); dışarı yönü yerel -y.
-      var agiz = new DOMPoint(86, 20).matrixTransform(km), ic = new DOMPoint(86, 40).matrixTransform(km);
+      /* Soket ağzı: BoardSVG.KONUM.usb.agiz (kart yereli, dışarı yönü yerel -y). Nokta ağzın 2 birim
+         içinden alınır, takılıyken fiş 0.02 dışarı oturur: dilin ucu tam ağızda. */
+      var A = BoardSVG.KONUM.usb.agiz;
+      var agiz = new DOMPoint(A[0], A[1] + 2).matrixTransform(km), ic = new DOMPoint(A[0], A[1] + 22).matrixTransform(km);
       var dis = new THREE.Vector3((agiz.x - ic.x), 0, (agiz.y - ic.y)).normalize();
       // Soketin merkezi kartta 3.25 birim yüksekte; fiş modelinin merkezi kendi tabanının 6 birim üstünde.
       var hedefUc = nokta(agiz.x, agiz.y, KART_Y + 0.0325 - 0.06).addScaledVector(dis, takili ? 0.02 : 0.34);
       var fu = fis.userData;
       if (!fu.uc) { fu.uc = hedefUc.clone(); }
       fu.uc.lerp(hedefUc, 0.12);
-      fis.position.copy(fu.uc);
+      fis.position.copy(fu.uc); fis.position.y += kartDurum.inis;   // kart inerken fiş ona takılı iner
       fis.rotation.set(0, Math.atan2(dis.z, -dis.x) , 0);
-      // Kablo: laptopun sağındaki porttan masaya sarkar, fişin arkasına girer.
-      var arka = fu.uc.clone().addScaledVector(dis, 0.5);
-      var durum = takili + '|' + arka.x.toFixed(3) + arka.z.toFixed(3);
+      // Kablo: laptopun sağ yanındaki fişten çıkar, masaya iner, kartın fişinin arkasına girer.
+      var arka = fis.position.clone().addScaledVector(dis, 0.62);   // fişin boyun ucu (parca3b.py: dil ucundan 64 birim)
+      var durum = takili + '|' + arka.x.toFixed(3) + arka.y.toFixed(3) + arka.z.toFixed(3);
       if (durum !== kabloDurum) {
         kabloDurum = durum;
         if (kablo) { sahne.remove(kablo); kablo.geometry.dispose(); }
-        var port = new THREE.Vector3(-0.405, MASA_Y + 0.03, 1.50);
-        var orta = port.clone().lerp(arka, 0.5);
-        kablo = tup([port, port.clone().add(new THREE.Vector3(0.18, -0.01, 0.06)), new THREE.Vector3(orta.x, MASA_Y + 0.022, orta.z + 0.35),
+        var cik = kabloBas.clone().addScaledVector(kabloYon, 0.12);
+        var orta = cik.clone().lerp(arka, 0.5);
+        kablo = tup([kabloBas, cik.setY(kabloBas.y - 0.012), new THREE.Vector3(orta.x, MASA_Y + 0.022, orta.z + 0.22),
                      arka.clone().addScaledVector(dis, 0.28).setY(MASA_Y + 0.04), arka.clone().addScaledVector(dis, 0.06), arka], 0.021, kabloMat);
         kablo.receiveShadow = true;
         kabloEgri = kablo.userData.egri;
@@ -785,7 +824,7 @@ window.Sahne3B = (function () {
       // İlk karenin zaman damgası kurulumdan biraz geride kalabiliyor: negatif olmasın.
       var z = Math.max(0, zaman - basla);
       var canli = svg.classList.contains('is-live') || svg.classList.contains('is-live1');
-      var km = kartGuncelle();
+      var km = kartGuncelle(z);
       fisGuncelle(km, z);
       parcaGuncelle(z, canli);
       yuz.material.opacity = svg.classList.contains('is-xray') ? 0.35 : 1;
@@ -811,7 +850,8 @@ window.Sahne3B = (function () {
       tuval.remove(); dugme.remove(); ipucu.remove(); renderer.dispose();
       kurulu = null;
     }
-    return { stage: stage, svg: svg, yoket: yoket, renderer: renderer, hareket: hareket };
+    return { stage: stage, svg: svg, yoket: yoket, renderer: renderer, hareket: hareket,
+      kart: function () { return { gorun: kart.visible, y: +(KART_Y + kartDurum.inis).toFixed(3), fis: fis.visible }; } };
   }
 
   /* Sahne sonradan çiziliyor (WiringDiagram.mount); #wd-svg gelince kur. */
@@ -839,6 +879,7 @@ window.Sahne3B = (function () {
   return { kur: kur, get kurulu() { return !!kurulu; },
     bilgi: function () {
       return kurulu ? { ucgen: kurulu.renderer.info.render.triangles, cagri: kurulu.renderer.info.render.calls,
-        hareket: kurulu.hareket.acik, yon: +kurulu.hareket.yon.toFixed(3), egim: +kurulu.hareket.egim.toFixed(3) } : null;
+        hareket: kurulu.hareket.acik, yon: +kurulu.hareket.yon.toFixed(3), egim: +kurulu.hareket.egim.toFixed(3),
+        kart: kurulu.kart ? kurulu.kart() : null } : null;
     } };
 })();

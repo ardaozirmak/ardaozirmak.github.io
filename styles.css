@@ -28,6 +28,10 @@
   --color-primary-soft:   rgba(214, 39, 58, 0.10);
   --color-primary-stroke: rgba(214, 39, 58, 0.32);
   --color-primary-hover:  #B81F2F;
+  /* Üstünde BEYAZ yazı olan dolgu (düğme zemini) + keycap gölgesi/gradyan sonu.
+     Açıkta primary ile aynı; koyuda ayrışır (aşağıda). */
+  --color-primary-fill:   #D6273A;
+  --color-primary-fill-2: #B81F2F;
   --color-accent:         #1D4ED8;
   --color-accent-hover:   #163FB0;
   /* Metin ici mavi vurgu (rehber kartindaki <b>) icin yumusak zemin;
@@ -48,6 +52,67 @@
   --color-arduino:      #c93c34;
   --color-arduino-2:    #8e1c15;
   --color-bg-deep:      #101820;
+
+  /* === DENEYAP RENKLERİ (2026-10-14) ===
+     Arda: "siteye bir tık renklilik ekle" → seçimi "Deneyap logosunun renkleri +
+     renkli yüzeyler". Renkler logonun harflerinden: kırmızı (D, P), turuncu-sarı
+     (E, Y), mavi ve açık mavi (N, A). Degrade YOK, her yüzey tek renk.
+       --renk-*    dolu renk: nokta, çizgi, simge, ilerleme (yazı DEĞİL)
+       --dolgu-*   üstüne yazı konan dolu zemin (iki temada aynı; yazısı --dolgu-yazi-*)
+       --yuzey-*   o rengin açık zemini: kutu, kart
+       --metin-*   o rengin yazı tonu: kendi yüzeyinde ve kremde AA (≥ 4.5)
+       --cizgi-*   kenarlık · --yumusak-* küçük hap zemini (yarı saydam)
+     Modül rengi (--modul*) aşağıda [data-modul] ile seçilir: 1 kırmızı, 2 mavi, 3 turuncu.
+     Ölçüm: tests/test-renk.mjs (açık + koyu temada kontrast). */
+  --renk-kirmizi:      #D6273A;
+  --renk-turuncu:      #F28C1C;
+  --renk-sari:         #F9B91A;
+  --renk-mavi:         #2D62B5;
+  --renk-acikmavi:     #3FA6DC;
+  /* Logo turuncusu beyaz zeminde 2.5:1 kalıyor; nokta/simge gibi arayüz
+     işaretlerinin 3:1 eşiği için bir ton koyusu. */
+  --renk-turuncu-koyu: #D9720A;
+
+  --dolgu-kirmizi:     #D6273A;
+  --dolgu-turuncu:     #F28C1C;
+  --dolgu-sari:        #F9B91A;
+  --dolgu-mavi:        #2D62B5;
+  --dolgu-acikmavi:    #3FA6DC;
+  --koyu-yazi:         #23180F;   /* sarı/turuncu/açık mavi dolgunun yazısı: iki temada da koyu */
+
+  --yuzey-kirmizi:     #FFEDEB;
+  --yuzey-turuncu:     #FFF0E0;
+  --yuzey-sari:        #FFF7DB;
+  --yuzey-mavi:        #EAF1FC;
+  --yuzey-acikmavi:    #E5F4FB;
+
+  --metin-kirmizi:     #B81F2F;
+  --metin-turuncu:     #A9520A;
+  --metin-sari:        #8A5A00;
+  --metin-mavi:        #1F4E9A;
+  --metin-acikmavi:    #17648F;
+
+  --cizgi-kirmizi:     rgba(214, 39, 58, 0.32);
+  --cizgi-turuncu:     rgba(242, 140, 28, 0.45);
+  --cizgi-sari:        rgba(232, 168, 12, 0.50);
+  --cizgi-mavi:        rgba(45, 98, 181, 0.32);
+  --cizgi-acikmavi:    rgba(63, 166, 220, 0.42);
+
+  --yumusak-kirmizi:   rgba(214, 39, 58, 0.10);
+  --yumusak-turuncu:   rgba(242, 140, 28, 0.16);
+  --yumusak-mavi:      rgba(45, 98, 181, 0.12);
+
+  /* Modül rengi: varsayılan Modül 1 (kırmızı).
+     --modul-metin normal boy yazı (≥ 4.5:1); --modul-baslik yalnız ≥ 24px başlık
+     (AA büyük yazı ≥ 3:1) — turuncu orada kahverengiye kaçmadan canlı kalır. */
+  --modul-baslik:      var(--renk-kirmizi);
+  --modul:             var(--renk-kirmizi);
+  --modul-dolgu:       var(--dolgu-kirmizi);
+  --modul-dolgu-yazi:  #FFFFFF;
+  --modul-yuzey:       var(--yuzey-kirmizi);
+  --modul-metin:       var(--metin-kirmizi);
+  --modul-cizgi:       var(--cizgi-kirmizi);
+  --modul-yumusak:     var(--yumusak-kirmizi);
 
   --font-heading: 'Baloo 2', 'Inter', sans-serif;
   /* Comic Neue'de latin-ext yok: ş ve ğ sessizce Arial'a düşüyor,
@@ -173,10 +238,16 @@
   --color-text-2:       #DCCAB5;
   --color-text-3:       #EADCCB;
 
-  --color-primary:        #E8394C;
-  --color-primary-soft:   rgba(232, 57, 76, 0.18);
-  --color-primary-stroke: rgba(232, 57, 76, 0.45);
-  --color-primary-hover:  #FF5467;
+  /* 2026-10-16 kontrast düzeltmesi (denetim): #E8394C beyaz yazıyla 4,10, koyu
+     yüzeyde metin olarak 4,14 veriyordu (AA 4,5). Tek renk ikisini birden
+     karşılayamıyor: METİN rengi açıldı (#F25A6A: yüzeyde 5,21), DOLGU ayrı
+     token oldu ve marka kırmızısında kaldı (beyaz yazıyla 4,99). */
+  --color-primary:        #F25A6A;
+  --color-primary-soft:   rgba(242, 90, 106, 0.18);
+  --color-primary-stroke: rgba(242, 90, 106, 0.45);
+  --color-primary-hover:  #FF6B7A;
+  --color-primary-fill:   #D6273A;
+  --color-primary-fill-2: #B81F2F;
   --color-accent:         #4574F2;
   --color-accent-hover:   #5E88FF;
   --color-accent-soft:    rgba(94, 136, 255, 0.20);
@@ -194,6 +265,61 @@
   --shadow-clay-sm: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1.5px 0 rgba(255, 255, 255, 0.05);
   --shadow-clay-md: 0 8px 20px rgba(0, 0, 0, 0.40), inset 0 1.5px 0 rgba(255, 255, 255, 0.05);
   --shadow-clay-lg: 0 14px 32px rgba(0, 0, 0, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.06);
+
+  /* Deneyap renkleri, koyu karşılık: yüzeyler rengin koyu tonu, yazılar açık tonu.
+     --dolgu-* bilerek YOK: üstünde beyaz/koyu yazı taşıyan dolgu iki temada aynı. */
+  --renk-kirmizi:      #E8394C;
+  --renk-turuncu:      #F59A3A;
+  --renk-sari:         #F9C23C;
+  --renk-mavi:         #4F86E0;
+  --renk-acikmavi:     #4FB6E8;
+  --renk-turuncu-koyu: #F59A3A;
+
+  --yuzey-kirmizi:     #2E1B1D;
+  --yuzey-turuncu:     #2E2116;
+  --yuzey-sari:        #2C2614;
+  --yuzey-mavi:        #19243A;
+  --yuzey-acikmavi:    #152B36;
+
+  --metin-kirmizi:     #FF8A95;
+  --metin-turuncu:     #FFB766;
+  --metin-sari:        #FFD45E;
+  --metin-mavi:        #8DB4FF;
+  --metin-acikmavi:    #7FD0F5;
+
+  --cizgi-kirmizi:     rgba(232, 57, 76, 0.45);
+  --cizgi-turuncu:     rgba(245, 154, 58, 0.50);
+  --cizgi-sari:        rgba(249, 194, 60, 0.45);
+  --cizgi-mavi:        rgba(79, 134, 224, 0.50);
+  --cizgi-acikmavi:    rgba(79, 182, 232, 0.45);
+
+  --yumusak-kirmizi:   rgba(232, 57, 76, 0.18);
+  --yumusak-turuncu:   rgba(245, 154, 58, 0.20);
+  --yumusak-mavi:      rgba(79, 134, 224, 0.22);
+}
+
+/* Modül rengi. Ders sayfasında <html data-modul="2">, portalda modül kutusunda
+   (portal.js). Modül 1 öznitelik istemez: :root varsayılanı kırmızı. Değişkenler
+   palete bağlı olduğu için koyu temada kendiliğinden koyu karşılığa döner. */
+[data-modul="2"] {
+  --modul-baslik:      var(--renk-mavi);
+  --modul:             var(--renk-mavi);
+  --modul-dolgu:       var(--dolgu-mavi);
+  --modul-dolgu-yazi:  #FFFFFF;
+  --modul-yuzey:       var(--yuzey-mavi);
+  --modul-metin:       var(--metin-mavi);
+  --modul-cizgi:       var(--cizgi-mavi);
+  --modul-yumusak:     var(--yumusak-mavi);
+}
+[data-modul="3"] {
+  --modul-baslik:      var(--renk-turuncu-koyu);
+  --modul:             var(--renk-turuncu-koyu);
+  --modul-dolgu:       var(--dolgu-turuncu);
+  --modul-dolgu-yazi:  var(--koyu-yazi);
+  --modul-yuzey:       var(--yuzey-turuncu);
+  --modul-metin:       var(--metin-turuncu);
+  --modul-cizgi:       var(--cizgi-turuncu);
+  --modul-yumusak:     var(--yumusak-turuncu);
 }
 
 body {
@@ -293,8 +419,8 @@ h1, h2, h3,
    Eskiden kırmızıdan turkuaza geçiyordu (`linear-gradient(90deg,
    --color-primary, --color-accent-2)`) — çubuğun tonunun kayması
    hiçbir şey anlatmıyor, yalnızca üretilmiş arayüz izlenimi veriyordu.
-   Marka kırmızısı tek başına; derinlik için hafif bir koyulaşma var. */
-.lesson-progress-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover)); width: 12.5%; transition: width .4s ease; }
+   Modülün rengi tek başına, düz (2026-10-14: Modül 2 mavi, 3 turuncu). */
+.lesson-progress-fill { height: 100%; background: var(--modul); width: 12.5%; transition: width .4s ease; }
 
 /* KIRPMA `clip`, `hidden` DEGIL — ikisi ayni sekilde kirpar ama `hidden`
    elemani bir KAYDIRMA KABI yapar ve icindeki her `position: sticky`
@@ -409,9 +535,9 @@ h1, h2, h3,
 .lesson-item .lesson-status .icon { width: 14px; height: 14px; }
 
 .lesson-item.active {
-  background: var(--color-primary-soft);
-  border-color: var(--color-primary-stroke);
-  color: var(--color-primary-hover);
+  background: var(--modul-yumusak);
+  border-color: var(--modul-cizgi);
+  color: var(--modul-metin);
   font-weight: 700;
   padding: 10px 16px;
   font-size: var(--text-md);
@@ -423,7 +549,7 @@ h1, h2, h3,
   animation: lessonSlideIn var(--t-slow) var(--easing-default) both,
              lessonPulse 2.4s ease-in-out 600ms infinite;
 }
-.lesson-item.active .lesson-num { background: var(--color-primary); color: #fff; }
+.lesson-item.active .lesson-num { background: var(--modul-dolgu); color: var(--modul-dolgu-yazi); }
 .lesson-item.locked .lesson-num { background: transparent; }
 
 .lesson-item:not(.locked):not(.active):hover {
@@ -453,8 +579,8 @@ h1, h2, h3,
   to   { opacity: 1; transform: translateX(0)    scale(1);    }
 }
 @keyframes lessonPulse {
-  0%, 100% { box-shadow: 0 0 0 1px var(--color-primary-stroke), 0 6px 18px var(--color-primary-stroke); }
-  50%      { box-shadow: 0 0 0 2px var(--color-primary-stroke), 0 10px 28px var(--color-primary-stroke); }
+  0%, 100% { box-shadow: 0 0 0 1px var(--modul-cizgi), 0 6px 18px var(--modul-cizgi); }
+  50%      { box-shadow: 0 0 0 2px var(--modul-cizgi), 0 10px 28px var(--modul-cizgi); }
 }
 
 .panel {
@@ -614,7 +740,7 @@ h1, h2, h3,
   color: var(--color-text);
 }
 .wiring-list li.is-active .wiring-jump::before {
-  background: var(--color-primary);
+  background: var(--color-primary-fill);
   color: #fff;
 }
 
@@ -662,8 +788,10 @@ h1, h2, h3,
   top: 12px;
 }
 
-/* PWR ışığı: bağlantı yokken tamamen SÖNÜK/SİYAH, kart bilgisayara takılınca KIRMIZI yanar. */
-#layer-pwr-led { fill: #1a1410; filter: none; transition: fill 0.25s ease; }
+/* PWR ışığı: bağlantı yokken SÖNÜK, kart bilgisayara takılınca KIRMIZI yanar. Sönükken
+   görünmez: GÜÇ LED'inin beyaz gövdesi artık render'da (2026-10-14 gerçek kart); eski
+   koyu nokta (#1a1410) beyaz gövdenin üstünde siyah leke gibi duruyordu. */
+#layer-pwr-led { fill: transparent; filter: none; transition: fill 0.25s ease; }
 #layer-pwr-halo { opacity: 0; transition: opacity 0.25s ease; }
 .connected #layer-pwr-led {
   fill: var(--color-danger);
@@ -685,18 +813,21 @@ h1, h2, h3,
 #layer-led { opacity: 0.3; transition: opacity 0.15s ease, fill 0.15s ease; }
 #layer-led.active { opacity: 1; fill: #6fa8ff; filter: drop-shadow(0 0 6px #6fa8ff); }
 
-/* Laptop altta, biraz sağda (2026-10-07: kart üstte, port aşağıda). Sol yanındaki USB-C portu
-   (laptop viewBox x0..9, y121..134) sahnede ≈ (151, 352): kablo oradan çıkar, laptopun solundan
-   dolanıp fişe yukarı girer. */
+/* Laptop sol altta (2026-10-14, 3B kart sahnesiyle aynı düzen): Blender render'ı (blender/laptop.py),
+   220 px — eski çizimin 1.4 katı; Arda: "kartın yanında bilgisayar küçük kaldı" → "Büyük, köşesi
+   kadraj dışı": sol kenarı panelin 66 px dışında (panel overflow:hidden kırpar). Kapağın sağ üst köşesi
+   fişin solunda kalır (fiş x 153'ten başlar). Sağ yandaki takılı fişin ucu (render'da 914, 831.5)
+   sahnede (135.1, 364.9): kablo oradan fişe aşağıdan girer (#layer-kablo). Render kendi temas gölgesini
+   taşıdığı için süzgeç gölgesi hafif. */
 #layer-laptop {
   z-index: 2;
   position: absolute;
-  left: 150px;
-  top: 250px;
-  width: 160px;
+  left: -66px;
+  top: 182px;
+  width: 220px;
   height: auto;
   opacity: 1;
-  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   pointer-events: none;
   display: none;
 }
@@ -740,13 +871,16 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
 
 /* Type-C Ucu: Kartın soketine tam girecek şekilde boyutlandırıldı. 2026-10-07'den beri port
    aşağıda: fiş dikeyde çevrilir (ucu yukarı), soketin 20 px ALTINDA asılı durur, takılınca yukarı
-   kayar. Eski düzendeki ölçü korunur: ucun üstü soket ağzının 9.4 px içinde → top = 186.1 − 10.9. */
+   kayar. Ucun üstü soket ağzının 9.4 px içinde. 2026-10-14 gerçek oranlı soket (BoardSVG.KONUM.usb:
+   46 birim = 27 px, ağız yerel y 17 → sahnede 186.6): fiş 34 px (viewBox 48, 0.708 px/birim),
+   ortası soketin ortası 170 → left 153; dilin üstü 2 birim = 1.4 px → top = 186.6 − 9.4 − 1.4 ≈ 176;
+   kablo ucu (#layer-kablo, y 209) fişin sapına (top + 33.3) oturur. */
 #layer-plug {
   z-index: 4;
   position: absolute;
-  left: 158px;
-  top: 175px;
-  width: 24px;
+  left: 153px;
+  top: 176px;
+  width: 34px;
   height: auto;
   transform: translateY(20px) scaleY(-1);
   transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -756,13 +890,13 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
 }
 .connected #layer-plug { transform: translateY(0) scaleY(-1); display: block; }
 
-/* Veri akışı topu #layer-kablo'daki kablo eğrisi (2026-10-07: "M151 352 C 105 348 100 262
-   130 240 C 150 226 170 236 170 209") üzerinden, uzunluğa göre eşit aralıkla örneklendi —
-   elle tahmin edilmedi. Laptoptan karta akar. */
+/* Veri akışı topu #layer-kablo'daki kablo eğrisi (2026-10-14: "M135.08 364.93 C 164.83 368.83
+   170 279 170 209") üzerinden, uzunluğa göre eşit aralıkla örneklendi — elle tahmin edilmedi.
+   Laptoptan karta akar. */
 #layer-dataflow {
   position: absolute;
-  left: 151px;
-  top: 352px;
+  left: 135.08px;
+  top: 364.93px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -776,13 +910,13 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
 .connected #layer-dataflow { opacity: 1; animation: dataFlow 1.4s linear infinite; }
 
 @keyframes dataFlow {
-  0%   { top: 352px;   left: 151px;   opacity: 0; }
+  0%   { top: 364.93px; left: 135.08px; opacity: 0; }
   8%   { opacity: 1; }
-  25%  { top: 321.9px; left: 116.7px; }
-  50%  { top: 274.9px; left: 112.3px; }
-  75%  { top: 236.1px; left: 136.7px; }
+  25%  { top: 334.7px;  left: 159.49px; }
+  50%  { top: 293.21px; left: 166.49px; }
+  75%  { top: 251.15px; left: 169.27px; }
   92%  { opacity: 1; }
-  100% { top: 209px;   left: 170px;   opacity: 0; }
+  100% { top: 209px;    left: 170px;    opacity: 0; }
 }
 
 .sim-controls {
@@ -822,7 +956,9 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
 }
 
 .step-content { flex: 1; min-height: 0; overflow: hidden; }
-.step-content h2 { font-size: 18px; color: var(--color-primary); margin-bottom: 10px; font-weight: 700; }
+.step-content h2 { font-size: 18px; color: var(--modul-metin); margin-bottom: 10px; font-weight: 700; }
+/* Adım 1'in büyük başlığı (index-theme.css: 56px, mobilde 28px) büyük yazı: canlı ton. */
+.step1-hero #stepTitle { color: var(--modul-baslik); }
 /* DIKKAT: bu secici (0,1,1) `.step-card-desc`'i (0,1,0) yener. Sabit px
    yazilirsa olcek token'i sessizce yutulur — 19 Eylul'de tam olarak bu
    oldu (istenen 15px yerine 14px cikti). Token disinda deger yazma. */
@@ -1262,16 +1398,16 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
   transform: translateY(-1px);
 }
 .bottom-nav button.primary {
-  background: var(--color-primary);
+  background: var(--color-primary-fill);
   color: #fff;
   border-color: transparent;
   /* Keycap ofseti: portal-btn ve devre kurma çubuğuyla aynı dokunsal dil.
      4px, hap forma geçince fazla kalın duruyordu. */
-  box-shadow: 0 3px 0 var(--color-primary-hover);
+  box-shadow: 0 3px 0 var(--color-primary-fill-2);
 }
 .bottom-nav button.primary:hover { color: #fff; border-color: transparent; }
-.bottom-nav button.primary:hover { background: var(--color-primary); transform: translateY(-1px); }
-.bottom-nav button.primary:active { box-shadow: 0 1px 0 var(--color-primary-hover); transform: translateY(2px); }
+.bottom-nav button.primary:hover { background: var(--color-primary-fill); transform: translateY(-1px); }
+.bottom-nav button.primary:active { box-shadow: 0 1px 0 var(--color-primary-fill-2); transform: translateY(2px); }
 
 #stepIndicator { font-weight: 700; color: var(--color-text-muted); font-size: 15px; min-width: 52px; text-align: center; }
 /* "Kaydedildi ✓" (lesson-engine.js devam_v1, 2026-10-04): akışa girmez (320px'te çubuk dar),
@@ -1328,9 +1464,9 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
 }
 .step-dot.locked:hover { background: transparent; transform: none; }
 .step-dot.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px var(--color-primary-soft);
+  background: var(--modul);
+  border-color: var(--modul);
+  box-shadow: 0 0 0 3px var(--modul-yumusak);
   width: 10px;
   height: 10px;
 }
@@ -1382,8 +1518,8 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
   height: 18px;
   margin-top: -9px;
   border-radius: 999px;
-  background: var(--color-primary-soft);
-  border: 1.5px solid var(--color-primary);
+  background: var(--modul-yumusak);
+  border: 1.5px solid var(--modul);
   pointer-events: none;
   will-change: transform;
 }
@@ -1580,13 +1716,31 @@ body[data-adim="1"]:not([data-kablo-goruldu]) #simulationBox #layer-kart, body[d
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary-stroke);
+  background: var(--dolgu-kirmizi);
+  color: #FFFFFF;
+  border: 1px solid transparent;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 700;
 }
+/* Numara çipleri sırayla Deneyap logosunun renklerinde (2026-10-14). Dolgu iki
+   temada aynı; açık dolguların (turuncu, sarı, açık mavi) yazısı koyu kalır. */
+.material-item:nth-of-type(5n+2) .mat-num { background: var(--dolgu-turuncu);   color: var(--koyu-yazi); }
+.material-item:nth-of-type(5n+3) .mat-num { background: var(--dolgu-sari);      color: var(--koyu-yazi); }
+.material-item:nth-of-type(5n+4) .mat-num { background: var(--dolgu-mavi);      color: #FFFFFF; }
+.material-item:nth-of-type(5n+5) .mat-num { background: var(--dolgu-acikmavi);  color: var(--koyu-yazi); }
+
+/* ---------- Renkli yüzeyler (2026-10-14) ----------
+   Kutunun işine göre bir logo renginin açık tonu: malzeme şeftali, kablo açık
+   mavi, Merak Köşesi sarı. Yalnız zemin ve kenarlık değişir; içerideki kartlar
+   (malzeme satırı, port düğmesi) beyaz kalır ki renkli zeminde öne çıksın. */
+.quiz-box.malzeme-kutu { background: var(--yuzey-turuncu); border-color: var(--cizgi-turuncu); }
+.quiz-box.usb-link { background: var(--yuzey-acikmavi); border-color: var(--cizgi-acikmavi); }
+.quiz-box.pin-map[data-kutu="merakBody"] { background: var(--yuzey-sari); border-color: var(--cizgi-sari); }
+/* Adım kartlarının içindeki ipucu notları ("Kolaylık: ...") bilgi kutusu: açık mavi.
+   Düz .callout'un kendisi pembe kalır — kablo/güç uyarıları da onu kullanıyor. */
+.step-card-body .callout:not(.yellow):not(.green) { background: var(--yuzey-acikmavi); border-color: var(--cizgi-acikmavi); }
+.step-card-body .callout:not(.yellow):not(.green) .callout-icon { color: var(--metin-acikmavi); }
 
 /* ========== ADIM 3 HOTSPOTLAR ========== */
 .hotspot-zone {

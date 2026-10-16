@@ -34,7 +34,7 @@ window.LESSON_DATA_2_2 = {
     "pinAciklama": "Kartın alt kenarında <code>D5</code>'in yanında <strong>MI</strong>, <code>D6</code>'nın yanında <strong>MC</strong> yazar. Üst kenarda <strong>D9</strong> kendi adıyla yazar; hemen solunda <strong>GND</strong> var. Modülde pinlerin yanında <strong>R</strong>, <strong>Y</strong>, <strong>G</strong>, <strong>GND</strong> yazar.",
     "kurKapisi": "Ders 1.6'nın devresini kur: <strong>Hadi kuralım</strong>'a bas. Devren duruyorsa yalnız kontrol et.",
     "bosBaslik": "Ders 1.6'nın trafik lambası devresi. Yeni parça yok.",
-    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: modül breadboard’da, sonra dört kablo (GND, R, Y, G).",
+    "bosIpucu": "▶ <strong>Hadi kuralım</strong>’a bas: kart ve modül breadboard’da, sonra dört kablo (GND, R, Y, G).",
     "bosNot": " Ders 1.6’nın devresi duruyorsa hiçbir şeye dokunma: bu ders yalnız koda yazı satırları ekliyor.",
     "bitisKontrol": "Kartında 1.6'nın kodu duruyorsa lamba yanar ama ekrana yazı gelmez. Yeni kodu bir sonraki adımda yükleyeceksin."
   },
@@ -120,14 +120,23 @@ window.LESSON_DATA_2_2 = {
     }
   ],
   "wiringSteps": [
+    "Deneyap kartı breadboard'a tak: USB-C girişi solda, pin sıraları orta kanalın iki yanında.",
     "Trafik lambası modülünü breadboard'a, kartın sağına dik tak: LED'ler sana baksın.",
     "Kartın üstteki <strong>GND</strong> pininden modülün <strong>GND</strong> sütununa siyah kablo.",
     "<strong>D5</strong> (kartta MI) → modülün <strong>R</strong> sütunu.",
     "<strong>D6</strong> (kartta MC) → modülün <strong>Y</strong> sütunu.",
     "<strong>D9</strong> → modülün <strong>G</strong> sütunu."
   ],
-  "//wiringGuide": "Adım sırası wiring-diagram.js modulAdimlari ile aynı: modül, GND, D5 (R), D6 (Y), D9 (G). Metin 1.6 ile aynı.",
+  "//wiringGuide": "Adım sırası wiring-diagram.js modulAdimlari ile aynı: kart, modül, GND, D5 (R), D6 (Y), D9 (G). Metin 1.6 ile aynı.",
   "wiringGuide": [
+    {
+      "ad": "Deneyap kart",
+      "adim3": ["breadboard"],
+      "xray": false,
+      "neden": "Her şey karta bağlanacak, önce o yerinde olmalı.",
+      "nereye": "Kart breadboard'da değilse kitten çıkar ve tak: USB-C girişi <b>solda</b>, pin sıraları orta kanalın <b>iki yanında</b>. Takılıysa yerinde bırak.",
+      "kontrol": "Bütün pinler delikte mi? Kartın üstünde ve altında birer sıra boş delik var mı?"
+    },
     {
       "ad": "Trafik lambası modülü",
       "adim3": ["led", "kart"],
@@ -184,7 +193,8 @@ window.LESSON_DATA_2_2 = {
       "gorev": "Seri Monitör'deki <code>SARI</code> yazısının da sarı ışıkla aynı anda göründüğünü gözlemle.",
       "ipucu": "Gözünü bir lambaya, bir ekrana çevir. <code>SARI</code> satırı sarıyı yakan üç <code>digitalWrite</code>'ın hemen altında.",
       "tip": "gozlem",
-      "secenekler": ["Yazı ışıkla aynı anda geldi", "Yazı ışıktan sonra geldi"]
+      "secenekler": ["Yazı ışıkla aynı anda geldi", "Yazı ışıktan sonra geldi"],
+      "beklenen": 0
     }
   ],
   "yetiskinKarti": [

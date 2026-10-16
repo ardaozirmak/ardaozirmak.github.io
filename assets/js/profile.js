@@ -120,7 +120,10 @@
     overlay.innerHTML =
       '<div class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle">' +
       '<h3 id="profileModalTitle">Seni Tanıyalım!</h3>' +
-      '<p>AI Yoldaşı promptlarını sana ve yaşına uygun hale getirmek için birkaç bilgi alalım. Bu bilgi sadece bu tarayıcıda saklanır.</p>' +
+      /* Eski metin "sadece bu tarayıcıda saklanır" diyordu; oysa profile_v1
+         hesap senkronuna giriyor (sync.js), ad ve yaş buluta gidiyor
+         (2026-10-16 denetim bulgusu). AI'ya ad gitmiyor (ai-sohbet). */
+      '<p>Derslerin yaşına uygun seviyede açılması için birkaç bilgi alalım. Bu bilgisayarda saklanır; giriş yaptıysan hesabına da kaydedilir. AI yardımcısına adın gönderilmez.</p>' +
       '<label for="profileNameInput">Sana nasıl hitap edelim?</label>' +
       '<input type="text" id="profileNameInput" maxlength="40" placeholder="Adın veya lakabın" value="' + (current.name || '').replace(/"/g, '&quot;') + '">' +
       '<label for="profileAgeInput">Yaşın</label>' +

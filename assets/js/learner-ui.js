@@ -82,6 +82,28 @@
     return null;
   }
 
+  /* Kurtarma kelimesi kuralı — supabase/functions/_shared/recovery.ts ile
+     AYNI liste ve eşik. Neden var, orada yazıyor (kısaca: "kedi" yazan
+     çocuğun hesabı sınıfta tahminle açılıyordu). Girdi indirgenmiş olmalı. */
+  var KURTARMA_MIN = 5;
+  var YAYGIN_KELIME = ('kedi kopek kus balik aslan kaplan tavsan zurafa maymun ayi kurt tilki inek ' +
+    'koyun keci tavuk ordek kelebek yilan kaplumbaga penguen panda yunus hamster papagan kanarya ' +
+    'sincap baykus kartal ejderha dinozor unicorn kirmizi mavi yesil sari mor pembe siyah beyaz ' +
+    'turuncu pizza cikolata dondurma elma cilek karpuz makarna hamburger futbol basketbol voleybol ' +
+    'galatasaray fenerbahce besiktas trabzonspor anne anneanne babaanne baba abla kardes deneyap ' +
+    'sifre sifrem parola robot araba minecraft roblox fortnite oyun okul ogretmen istanbul ankara ' +
+    'izmir turkiye ataturk 12345 123456 1234567 12345678 abcde qwerty').split(' ');
+
+  function kurtarmaHatasi(rec, username) {
+    if (!rec) return 'Kurtarma kelimesi yazmalısın.';
+    if (rec.length < KURTARMA_MIN) return 'Kurtarma kelimen en az ' + KURTARMA_MIN + ' harf olsun.';
+    if (rec === username) return 'Kurtarma kelimen kullanıcı adınla aynı olmasın.';
+    if (YAYGIN_KELIME.indexOf(rec) !== -1 || YAYGIN_KELIME.indexOf(rec.replace(/[0-9-]+$/, '')) !== -1) {
+      return 'Bu kelimeyi herkes tahmin eder. İki kelimeyi birleştir, örneğin uçan-patates.';
+    }
+    return null;
+  }
+
   /* Adından kullanıcı adı önerilir. Beş alanlı bir formu 10 yaşındaki
      çocuk dolduramaz; öneri yazma yükünü alır, karar çocukta kalır
      (alan düzenlenebilir). */
@@ -191,7 +213,10 @@
     if (err && err.context && typeof err.context.json === 'function') {
       return err.context.json().then(function (body) {
         var code = body && body.error;
-        if (code === 'cok-deneme') return 'Çok fazla denedin. Biraz bekleyip tekrar dene.';
+        /* Engel artık doğru şifreyi de durduruyor (deneme sınırı doğrulamadan
+           önce, kullanıcı adı başına): çocuk "şifrem doğru ama giremiyorum"
+           diye kalmasın, ne olduğunu bilsin. */
+        if (code === 'cok-deneme') return 'Bu hesapta çok fazla yanlış deneme oldu, bir süre kilitli. Biraz sonra tekrar dene.';
         if (body && body.message) return body.message;
         if (code === 'kullanici-adi-dolu') return 'Bu kullanıcı adı kullanılıyor.';
         if (code === 'hatali-giris') return 'Kullanıcı adı ya da şifre yanlış.';
@@ -213,6 +238,37 @@
 
   function onGateKeydown(e) {
     if (e.key === 'Escape' && !lockedScreen) closeGate();
+    /* Odak tuzağı: Tab giriş kartının dışına çıkmasın. Denetim bulgusu
+       (2026-10-16): kilitli kapı fareyle aşılamıyordu ama Tab ile arkadaki
+       dersin düğmelerine gidilip Enter'la ders ilerletilebiliyordu.
+       Asıl kilit arkaya konan inert (arkayiKapat); bu, inert'i
+       desteklemeyen tarayıcı için yedek. */
+    if (e.key === 'Tab' && gateEl) {
+      var odaklar = [].filter.call(
+        gateEl.querySelectorAll('button, input, a[href], [tabindex]:not([tabindex="-1"])'),
+        function (el) { return !el.disabled && el.offsetParent !== null; });
+      if (!odaklar.length) { e.preventDefault(); return; }
+      var ilk = odaklar[0], son = odaklar[odaklar.length - 1];
+      var icinde = gateEl.contains(document.activeElement);
+      if (e.shiftKey && (document.activeElement === ilk || !icinde)) { e.preventDefault(); son.focus(); }
+      else if (!e.shiftKey && (document.activeElement === son || !icinde)) { e.preventDefault(); ilk.focus(); }
+    }
+  }
+
+  /* Kapı açıkken arkadaki sayfa klavyeye, fareye ve ekran okuyucuya kapalı. */
+  var inertEdilen = [];
+  function arkayiKapat() {
+    var cocuklar = document.body.children;
+    for (var i = 0; i < cocuklar.length; i++) {
+      var el = cocuklar[i];
+      if (el === gateEl || el.hasAttribute('inert') || el.tagName === 'SCRIPT') continue;
+      el.setAttribute('inert', '');
+      inertEdilen.push(el);
+    }
+  }
+  function arkayiAc() {
+    for (var i = 0; i < inertEdilen.length; i++) inertEdilen[i].removeAttribute('inert');
+    inertEdilen = [];
   }
 
   var bodyStyle = null;
@@ -223,12 +279,15 @@
     gateEl.className = 'learner-gate';
     gateEl.setAttribute('role', 'dialog');
     gateEl.setAttribute('aria-modal', 'true');
+    // Erişilebilir ad: her ekranın başlığı aynı id'yi taşır.
+    gateEl.setAttribute('aria-labelledby', 'learnerGateTitle');
     gateEl.addEventListener('mousedown', function (e) {
       if (e.target === gateEl && !lockedScreen) closeGate();
     });
     document.addEventListener('keydown', onGateKeydown);
     document.body.appendChild(gateEl);
     kilitle();
+    arkayiKapat();
     return gateEl;
   }
 
@@ -266,6 +325,7 @@
     gateEl.parentNode.removeChild(gateEl);
     gateEl = null;
     kilidiAc();
+    arkayiAc();
     if (lastFocus && typeof lastFocus.focus === 'function') {
       try { lastFocus.focus(); } catch (e) { /* eleman kalkmış olabilir */ }
     }
@@ -416,7 +476,7 @@
   function renderStart() {
     var html =
       '<span class="learner-gate-eyebrow">Deneyap Atölyem</span>' +
-      '<h2 class="learner-gate-title">Başlayalım</h2>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">Başlayalım</h2>' +
       '<div class="learner-gate-what">' +
         '<span class="learner-gate-what-icon">🎒</span>' +
         '<p class="learner-gate-what-text">' +
@@ -468,7 +528,7 @@
     var d = sozluk(seviyeTahmin(bilgi.age));
     var html =
       '<button type="button" class="learner-gate-back">← Geri</button>' +
-      '<h2 class="learner-gate-title">' + esc(d.acBaslik) + '</h2>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">' + esc(d.acBaslik) + '</h2>' +
       '<p class="learner-gate-sub">Her girişte bu ikisini yazacaksın.</p>' +
       '<div class="learner-gate-error" role="alert"></div>' +
       '<div class="learner-gate-field text">' +
@@ -512,19 +572,22 @@
   function renderRecovery(bilgi) {
     var html =
       '<button type="button" class="learner-gate-back">← Geri</button>' +
-      '<h2 class="learner-gate-title">Şifreni unutursan</h2>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">Şifreni unutursan</h2>' +
       '<div class="learner-gate-what">' +
         '<span class="learner-gate-what-icon">🔑</span>' +
         '<p class="learner-gate-what-text">' +
-          'Bir <strong>kurtarma kelimesi</strong> seç. Şifreni unutursan ' +
-          'bu kelimeyle yeni şifre koyabilirsin. Kimseye söyleme.' +
+          /* <b>, <strong> değil: learner.css'te .learner-gate-what-text strong
+             blok (ilk ekranın başlığı); cümle içinde üç satıra bölüyordu. */
+          'Bir <b>kurtarma kelimesi</b> seç. Şifreni unutursan ' +
+          'bu kelimeyle yeni şifre koyabilirsin. Kimseye söyleme. ' +
+          'Arkadaşın tahmin edemesin: <b>iki kelimeyi birleştir</b>.' +
         '</p>' +
       '</div>' +
       '<div class="learner-gate-error" role="alert"></div>' +
       '<div class="learner-gate-field text">' +
         '<label for="gateRecInput">Kurtarma kelimen</label>' +
         '<input type="text" id="gateRecInput" class="learner-gate-input" maxlength="32" ' +
-          'placeholder="örn. en sevdiğin hayvan" autocomplete="off" spellcheck="false">' +
+          'placeholder="örn. uçan patates" autocomplete="off" spellcheck="false">' +
       '</div>' +
       '<div class="learner-gate-actions">' +
         '<button type="button" class="portal-btn primary learner-gate-cta" id="gateRecBtn">Hazırım</button>' +
@@ -538,7 +601,8 @@
     function submit() {
       hideError(gate);
       var rec = normalizeUsername(recInput.value);
-      if (rec.length < 2) { showError(gate, 'Bir kelime yazar mısın?'); recInput.focus(); return; }
+      var rErr = kurtarmaHatasi(rec, bilgi.username);
+      if (rErr) { showError(gate, rErr); recInput.focus(); return; }
       var tam = { name: bilgi.name, age: bilgi.age, username: bilgi.username, password: bilgi.password, recovery: rec };
       // Cihazda ilerleme varsa kime ait olduğu sorulur; sormadan taşımak
       // başkasının rozetini, sormadan silmek çocuğun emeğini kaybettirir.
@@ -553,7 +617,7 @@
   function renderAdoptAsk(bilgi) {
     var html =
       '<button type="button" class="learner-gate-back">← Geri</button>' +
-      '<h2 class="learner-gate-title">Burada bir ilerleme var</h2>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">Burada bir ilerleme var</h2>' +
       '<p class="learner-gate-sub">Bu bilgisayarda rozetler duruyor. Senin mi?</p>' +
       '<div class="learner-gate-error" role="alert"></div>' +
       '<div class="learner-gate-actions column">' +
@@ -595,7 +659,7 @@
     var kadi = (learner && learner.username) || '';
     var html =
       '<span class="learner-gate-eyebrow">' + (d.eyebrowIkon ? '<img class="fx-ikon" src="assets/img/fx/fx-' + d.eyebrowIkon + '.webp" alt="" aria-hidden="true" draggable="false"> ' : '') + esc(d.eyebrow) + '</span>' +
-      '<h2 class="learner-gate-title">' + esc(d.hazirBaslik) + '</h2>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">' + esc(d.hazirBaslik) + '</h2>' +
       '<p class="learner-gate-sub">Kullanıcı adını bir yere yaz, unutma.</p>' +
       '<div class="learner-code-card">' +
         '<div class="learner-code-avatar">' + esc(basHarf(learner && learner.display_name)) + '</div>' +
@@ -636,15 +700,22 @@
   }
 
   // ---------- Giriş ekranı ----------
-  function renderLogin() {
+  /* biten: süresi dolan oturumun izi ({ username, name }, learner.js
+     expiredSession). Varsa ekran neden açıldığını söyler ve kullanıcı adı
+     hazır gelir — çocuk "beni attı" sanmasın, ilerlemesinin durduğunu bilsin. */
+  function renderLogin(biten) {
+    biten = (biten && biten.username) ? biten : null;
     var html =
       '<button type="button" class="learner-gate-back">← Geri</button>' +
-      '<h2 class="learner-gate-title">Giriş yap</h2>' +
-      '<p class="learner-gate-sub">Kullanıcı adın ve şifrenle gir.</p>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">' + (biten ? 'Tekrar hoş geldin' + (biten.name ? ', ' + esc(biten.name) : '') : 'Giriş yap') + '</h2>' +
+      (biten
+        ? '<p class="learner-gate-sub learner-gate-biten">Güvenlik için oturumun kapandı. Şifreni yaz, rozetlerin ve puanların yerinde.</p>'
+        : '<p class="learner-gate-sub">Kullanıcı adın ve şifrenle gir.</p>') +
       '<div class="learner-gate-error" role="alert"></div>' +
       '<div class="learner-gate-field text">' +
         '<label for="gateLoginUser">Kullanıcı adın</label>' +
         '<input type="text" id="gateLoginUser" class="learner-gate-input" maxlength="16" ' +
+          'value="' + esc(biten ? biten.username : '') + '" ' +
           'autocomplete="off" autocapitalize="off" spellcheck="false" style="text-transform:lowercase;">' +
       '</div>' +
       sifreAlani('gateLoginPass', 'Şifren', '') +
@@ -662,6 +733,7 @@
     var userInput = gate.querySelector('#gateLoginUser');
     var passInput = gate.querySelector('#gateLoginPass');
     var btn = gate.querySelector('#gateLoginBtn');
+    if (biten) passInput.focus();
 
     function submit() {
       hideError(gate);
@@ -692,7 +764,7 @@
   function renderForgot() {
     var html =
       '<button type="button" class="learner-gate-back">← Geri</button>' +
-      '<h2 class="learner-gate-title">Yeni şifre koyalım</h2>' +
+      '<h2 class="learner-gate-title" id="learnerGateTitle">Yeni şifre koyalım</h2>' +
       '<p class="learner-gate-sub">Kurtarma kelimeni hatırlıyor musun?</p>' +
       '<div class="learner-gate-error" role="alert"></div>' +
       '<div class="learner-gate-field text">' +
@@ -746,7 +818,8 @@
   function openGate() {
     lastFocus = document.activeElement;
     ensureGate();
-    renderStart();
+    var biten = window.Learner && window.Learner.expiredSession && window.Learner.expiredSession();
+    if (biten && biten.username) renderLogin(biten); else renderStart();
     isit();
   }
 
@@ -762,7 +835,11 @@
     if (window.Learner && window.Learner.isActive()) return false;
     if (!window.Cloud || !window.Cloud.enabled()) return false;
     kapiZorunlu = true;
+    /* Ders ortasında oturum biterse (learner.js expire) kapı zaten açık
+       olabilir; ikinci kez çizip çocuğun yazdığını silme. */
+    if (gateEl) { paintBadge(); return true; }
     openGate();
+    paintBadge();
     return true;
   }
 
@@ -854,6 +931,26 @@
     });
     badgeHost.querySelector('#learnerSwitchConfirmBtn').addEventListener('click', function (e) {
       e.stopPropagation();
+      var dugme = this;
+      /* Buluta gitmemiş ilerleme varsa çıkış onu siliyordu (2026-10-16
+         denetimi: rozet + 640 XP uyarısız gitti). Önce bir kez gönder;
+         gidemezse söyle, çocuk ya da yetişkin karar versin. */
+      if (dugme.getAttribute('data-yine-de') !== '1' && window.Sync && Sync.bekleyenVar && Sync.bekleyenVar()) {
+        dugme.disabled = true;
+        dugme.textContent = 'Kaydediliyor…';
+        Sync.flush().then(function (tamam) {
+          if (tamam && !Sync.bekleyenVar()) { cik(); return; }
+          dugme.disabled = false;
+          dugme.textContent = 'Yine de çık';
+          dugme.setAttribute('data-yine-de', '1');
+          var p = confirmBox.querySelector('p');
+          if (p) p.textContent = 'Son ilerlemen henüz hesabına kaydedilmedi (internet yok gibi). Çıkarsan bu bilgisayardaki son kısmı kaybolur.';
+        });
+        return;
+      }
+      cik();
+    });
+    function cik() {
       window.Learner.switchBox();
       /* Yeniden yükleme ŞART: fx.js XP'yi açılışta okuyup bellekte
          tutuyor, clearProgress belleği temizlemiyor. Ölçüldü: 60 XP'li
@@ -861,7 +958,7 @@
          yazılıyordu. Sayfa yeniden yüklenince kilitli giriş ekranı
          zaten requireAccount ile geri geliyor. */
       hesapDegisti();
-    });
+    }
   }
 
   /* Rozet header-bar'ın İÇİNE eklenmiyor: o kutu her sayfada ayrı

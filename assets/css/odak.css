@@ -96,7 +96,7 @@
 /* Portalda başlıktaki giriş düğmesi yazısını taşır ("Giriş yap"): portalın asıl çağrısı bu. */
 .learner-badge.is-baslikta.is-portal .learner-badge-open {
   padding: 3px 14px 3px 3px; gap: 8px;
-  border: 0; background: linear-gradient(165deg, var(--color-primary), var(--color-primary-hover));
+  border: 0; background: linear-gradient(165deg, var(--color-primary-fill), var(--color-primary-fill-2));
 }
 .learner-badge.is-baslikta.is-portal .learner-badge-open-icon { width: 30px; height: 30px; border: 0; }
 .learner-badge.is-baslikta.is-portal .learner-badge-open-text { display: flex; }

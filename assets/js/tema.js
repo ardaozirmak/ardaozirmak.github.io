@@ -29,9 +29,19 @@
   }
   function simdiki() { return kok.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
 
+  /* Mobil tarayıcının adres çubuğu da temayı izlesin (2026-10-16 denetimi:
+     koyu temada krem kalıyordu). Renkler --color-bg ile aynı. Meta, tema.js
+     çalışırken henüz okunmamış olabilir: DOMContentLoaded'da bir kez daha. */
+  var CUBUK = { dark: '#17120D', light: '#FFF8F0' };
+  function cubuk(t) {
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', CUBUK[t === 'dark' ? 'dark' : 'light']);
+  }
+
   function uygula(t) {
     if (t === 'dark') kok.setAttribute('data-theme', 'dark');
     else kok.setAttribute('data-theme', 'light');
+    cubuk(t);
     boya();
   }
 
@@ -79,6 +89,7 @@
 
   /* fx.js yüklenmeyen bir sayfada düğme yine de bulunsun. */
   document.addEventListener('DOMContentLoaded', function () {
+    cubuk(simdiki());
     setTimeout(function () {
       if (btn && btn.isConnected) return;
       var b = dugme();

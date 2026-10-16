@@ -187,8 +187,8 @@
           interactiveArea.innerHTML = `
             <div class="quiz-box">
               <strong style="display:flex; align-items:center; gap:8px;"><svg class="icon"><use href="#icon-robot"/></svg>AI Yoldaşına Sor</strong>
-              <p class="step-card-desc" style="margin-top:8px;">Öğrendiklerini pekiştirmek için aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas. Düşünmeni sağlayan, cevabı doğrudan söylemeyen sorulardan birini seç. Kopyaladığında AI yeni sekmede açılır, oraya yapıştırman yeterli.</p>
-              <div class="callout"><svg class="icon callout-icon"><use href="#icon-brain"/></svg><span>Bir prompt seçtikten ve AI ile konuştuktan sonra <strong>İleri</strong> butonuyla rozetini almaya geçebilirsin.</span></div>
+              <p class="step-card-desc" style="margin-top:8px;">Öğrendiklerini pekiştirmek için aşağıdaki <strong>AI Yoldaşına Sor</strong> butonuna bas. Düşünmeni sağlayan, cevabı doğrudan söylemeyen sorulardan birini seç. AI yardımcın burada, sayfadan çıkmadan cevaplar; sana soru sorarsa düğmelerle cevap verirsin.</p>
+              <div class="callout"><svg class="icon callout-icon"><use href="#icon-brain"/></svg><span>Bir soru seçip AI yardımcınla konuştuktan sonra <strong>İleri</strong> butonuyla rozetini almaya geçebilirsin.</span></div>
             </div>`;
         } else if (currentStep === 9) {
           interactiveArea.innerHTML = `

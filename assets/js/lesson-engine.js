@@ -80,6 +80,11 @@ window.LessonEngine = (function () {
     if (!cfg || !cfg.xpPrefix) return;
     const tum = devamTumu(), eski = tum[cfg.xpPrefix] || {};
     const yeni = { adim: adim, enIleri: Math.max(eski.enIleri || 1, adim), t: Date.now() };
+    /* ilerledi: en ileri adım GERÇEKTEN arttığı an. Portaldaki günlük görev
+       buna bakar; t'ye baktığında bitmiş derste bir noktaya basıp geri
+       dönmek görevi tamamlıyordu (2026-10-16 denetimi). */
+    if (yeni.enIleri > (eski.enIleri || 1)) yeni.ilerledi = yeni.t;
+    else if (eski.ilerledi) yeni.ilerledi = eski.ilerledi;
     if (eski.adim === yeni.adim && eski.enIleri === yeni.enIleri) return;
     tum[cfg.xpPrefix] = yeni;
     Store.set(DEVAM_KEY, JSON.stringify(tum));
@@ -319,7 +324,7 @@ window.LessonEngine = (function () {
     const btnHtml = (label) => `<svg class="icon"><use href="#icon-check"/></svg>${label}`;
     const items = m.items.map((label, i) => `<div class="material-item"><span class="mat-num">${i + 1}</span>${label}</div>`).join('');
     return `
-      <div class="quiz-box">
+      <div class="quiz-box malzeme-kutu">
         <strong style="display:flex; align-items:center; gap:8px;"><svg class="icon"><use href="#${m.icon || 'icon-box'}"/></svg>Gerekli Malzemeler</strong>
         ${items}
         ${m.note ? `<p class="step-card-desc" style="margin-top:8px;">${m.note}</p>` : ''}
@@ -370,9 +375,26 @@ window.LessonEngine = (function () {
   function ctlOkundu(i) {
     return !!(window.FX && FX.claimed(cfg.xpPrefix + '_ctl_' + i));
   }
+  /* Sayaca ve XP'ye yalnız KOD satırı girer (2026-10-16 denetimi): boş ve
+     yorum satırları da sayılıyordu, Ders 1.5'te sayaç 0/63'tü (8 boş, 14
+     yorum) ve boş satıra tıklamak +3 XP veriyordu. Boş/yorum satırı yine
+     tıklanır, açıklaması açılır; ama "çözülecek satır" sayılmaz. */
+  function ctlSayilir(i) {
+    const lines = cfg.ctlLines || [];
+    const ham = (lines[i] && lines[i].code) || '';
+    if (!ham.trim()) return false;
+    let blok = false;
+    for (let k = 0; k < i; k++) {
+      const c = lines[k].code || '';
+      if (!blok && c.indexOf('/*') !== -1 && c.indexOf('*/') === -1) blok = true;
+      else if (blok && c.indexOf('*/') !== -1) blok = false;
+    }
+    return !(blok || /^\s*(\/\/|\/\*|\*)/.test(ham));
+  }
   function ctlSayac() {
-    const n = cfg.ctlLines.length;
-    const k = cfg.ctlLines.filter((_, i) => ctlOkundu(i)).length;
+    const sayilan = cfg.ctlLines.map((_, i) => i).filter(ctlSayilir);
+    const n = sayilan.length;
+    const k = sayilan.filter((i) => ctlOkundu(i)).length;
     return { k: k, n: n, yuzde: n ? Math.round(k * 100 / n) : 0 };
   }
   function ctlSayacBoya() {
@@ -627,15 +649,18 @@ window.LessonEngine = (function () {
     if (sahne) { sahne.innerHTML = kodSahneHtml(etki); sahne.hidden = !etki; }
     if (window.Hareket) Hareket.kodSatiri(satir, desc, once, yeni);
     if (window.Hareket && etki && sahne) Hareket.kodSahne(sahne.firstElementChild, etki);
-    showToast("Bu satırın görevini öğrendin!");
+    const sayilir = ctlSayilir(i);
+    if (sayilir) showToast("Bu satırın görevini öğrendin!");
 
     if (window.FX) {
       if (!window.Hareket || !Hareket.aktif) { FX.pop(desc, 1.03); FX.highlight(desc); }
-      FX.awardOnce(cfg.xpPrefix + '_ctl_' + i, 3, 'XP', satir || desc);
-      if (satir) satir.classList.add('okundu');
+      if (sayilir) {
+        FX.awardOnce(cfg.xpPrefix + '_ctl_' + i, 3, 'XP', satir || desc);
+        if (satir) satir.classList.add('okundu');
+      }
       ctlSayacBoya();
 
-      const allRead = cfg.ctlLines.every((_, k) => FX.claimed(cfg.xpPrefix + '_ctl_' + k));
+      const allRead = cfg.ctlLines.every((_, k) => !ctlSayilir(k) || FX.claimed(cfg.xpPrefix + '_ctl_' + k));
       if (allRead && FX.awardOnce(cfg.xpPrefix + '_ctl_all', 25, 'XP', desc)) {
         FX.sound('unlock');
         FX.burst(desc, { count: 18, power: 170, emojis: ['🧠', '⭐'] });
@@ -676,109 +701,45 @@ window.LessonEngine = (function () {
     if (el) el.style.display = (state.currentStep === cfg.aiStep) ? 'block' : 'none';
   }
 
-  /* Prompt kopyalanınca çocuğun onu YAPIŞTIRACAĞI yer de açılır. Eskiden
-     ekran "kendi AI aracına yapıştır" diyordu ama bağlantı vermiyordu —
-     yanında yetişkin olmayan çocuk için bu adım tek başına bir engel.
-     Tercih localStorage'da, profile.js'teki desenle (dosya yok, sunucu yok). */
-  /* `q` alanı: soruyu adresin içine koyup göndermeyi destekleyen araçlar.
-     ChatGPT açılışta ?q= içeriğini sohbet kutusuna yazıyor — çocuğun
-     yapıştırması gerekmiyor. Claude ve Gemini bunu desteklemiyor, onlarda
-     eski yol (kopyala + Ctrl+V) sürüyor. Pano yedeği HER ZAMAN yazılıyor:
-     bağlantı bir şekilde boş açılırsa çocuk yine yapıştırabilsin. */
-  const AI_TOOLS = {
-    chatgpt: { label: 'ChatGPT', openLabel: "ChatGPT'de aç", url: 'https://chatgpt.com/', q: 'q' },
-    claude:  { label: 'Claude',  openLabel: "Claude'da aç",  url: 'https://claude.ai/new', q: null },
-    gemini:  { label: 'Gemini',  openLabel: "Gemini'de aç",  url: 'https://gemini.google.com/app', q: null },
-  };
-  /* Adres çubuğu sınırsız değil; uzun promptta gömme yerine panoya düşülür. */
-  const AI_URL_MAX = 6000;
-  const AI_TOOL_KEY = 'ai_tool_v1';
+  /* ---------- AI YOLDAŞINA SOR: site içi panel (2026-10-14) ----------
+     Arda: "chatgpt'ye yönlendirmeyi bırak, site içinde kendi AI yardımcımız
+     olacak" + "öğrenci kafasına göre sohbet edemez, sadece hazır promptlar".
+     Kartlar artık ChatGPT/Claude/Gemini sekmesi açmaz, panoya da yazmaz:
+     seçilen sorunun KİMLİĞİ panele gider (assets/js/ai-sohbet.js), metni
+     sunucu kendi kopyasından kurar. Görüntüleme sırası seviyeye göre
+     (Profile.sortByLevel) değişebilir; kimlik HER ZAMAN veri dosyasındaki
+     sıra ('hazir:<i>') — sunucunun kopyası o sırayla üretildi
+     (tools/ai-promptlar.mjs). Eski araç tercihi (ai_tool_v1) artık okunmuyor. */
+  const AI_PANEL_YOK = 'AI yardımcısı açılamadı. Sayfayı yenileyip tekrar dene.';
 
-  function aiTool() {
-    const v = Store.get(AI_TOOL_KEY);
-    return AI_TOOLS[v] ? v : 'chatgpt';
-  }
-
-  function setAiTool(key) {
-    if (!AI_TOOLS[key]) return;
-    Store.set(AI_TOOL_KEY, key);
-    toggleAiPrompts(); // modal içeriğini seçili araca göre yeniden çiz
-  }
-
-  /* Soru metnini adrese gömer. Gömülemiyorsa (araç desteklemiyor ya da
-     adres çok uzun) aracın boş sayfasını döndürür. */
-  function aiToolUrl(text) {
-    const t = AI_TOOLS[aiTool()];
-    if (!t.q || !text) return { url: t.url, sent: false };
-    const url = t.url + (t.url.indexOf('?') >= 0 ? '&' : '?') + t.q + '=' + encodeURIComponent(text);
-    return url.length > AI_URL_MAX ? { url: t.url, sent: false } : { url: url, sent: true };
-  }
-
-  /* window.open TIKLAMANIN kendi tick'inde çağrılmalı — pano yazma
-     promise'inin içine konursa tarayıcı bunu kullanıcı hareketi saymayıp
-     sekmeyi engelliyor. O yüzden kopyalamayla aynı anda, beklemeden.
-     Dönüş: soru adrese gömülebildi mi (ekranda ne yazacağını belirler). */
-  function openAiTool(text) {
-    const r = aiToolUrl(text);
-    window.open(r.url, '_blank', 'noopener');
-    return r.sent;
-  }
-
-  /* Ekranda ne yazacağı tek yerden gelsin: gönderildiyse "gönderildi",
-     gönderilemediyse çocuğa ne yapacağı söylensin. */
-  function aiSentMessage(sent) {
-    const label = AI_TOOLS[aiTool()].label;
-    return sent
-      ? 'Soru ' + label + "'ye gönderildi! Açılan sekmeye bak — gelmediyse Ctrl+V ile yapıştır."
-      : 'Soru kopyalandı! Açılan ' + label + ' sekmesine Ctrl+V ile yapıştır.';
-  }
-
+  /* Kartta MODEL TALİMATI gösterilmez (2026-10-16 denetimi): prompt metni
+     "Sen sabırlı bir öğretmensin… Bana pin numarası verme" diye modele
+     yazılmış; eskiden panoya kopyalanıp dış AI'ya yapıştırıldığı için
+     görünüyordu. Artık metni sunucu kuruyor (hazir:<i>), çocuk yalnız
+     başlığı görür. Veride isteğe bağlı kısa `soru` alanı varsa o yazılır. */
   function toggleAiPrompts() {
     state.displayedPrompts = (window.Profile ? Profile.sortByLevel(cfg.aiPrompts) : cfg.aiPrompts);
-    const profileHint = (window.Profile && !Profile.isSet())
-      ? `<p class="step-card-desc" style="margin-bottom:12px;"><img class="fx-ikon" src="assets/img/fx/fx-ampul.webp" alt="" aria-hidden="true" draggable="false"> <a href="portal.html" style="color:inherit;text-decoration:underline;">Portalda profilini doldurursan</a> (yaş + hitap tercihi) promptlar sana özel kişiselleşir ve seviyene uygun olanlar önce gösterilir.</p>`
-      : '';
-    const tool = aiTool();
-    const sends = !!AI_TOOLS[tool].q;
-    const toolPicker = `<p class="step-card-desc" style="margin-bottom:12px;">` +
-      (sends
-        ? `Bir soru seç: <strong>${AI_TOOLS[tool].label}</strong> yeni sekmede açılır ve soru <strong>hazır gelir</strong>, sen sadece cevabı oku. Başka bir tane kullanıyorsan seç: `
-        : `Soruyu kopyalayınca <strong>${AI_TOOLS[tool].label}</strong> yeni sekmede açılır, oraya yapıştır. Başka bir tane kullanıyorsan seç: `) +
-      Object.keys(AI_TOOLS).map(function (k) {
-        return k === tool
-          ? `<strong>${AI_TOOLS[k].label}</strong>`
-          : `<a href="#" onclick="LessonEngine.setAiTool('${k}');return false;" style="color:inherit;text-decoration:underline;">${AI_TOOLS[k].label}</a>`;
-      }).join(' · ') + `</p>`;
-    const html = profileHint + toolPicker + state.displayedPrompts.map((p, i) => `
+    const giris = `<p class="step-card-desc" style="margin-bottom:12px;">Bir soru seç: <strong>AI yardımcın</strong> burada, sayfadan çıkmadan cevaplar. Sana soru sorarsa düğmelerle cevap verirsin.</p>`;
+    const html = giris + state.displayedPrompts.map((p, i) => `
       <div class="ai-prompt-card">
         <span class="ai-prompt-cat cat-${p.catColor}">${p.cat}</span>
         <div class="ai-prompt-title">${p.title}</div>
-        <p class="ai-prompt-text">${p.prompt}</p>
-        <button class="sim-btn copy-user" onclick="LessonEngine.copyPrompt(${i})"><svg class="icon"><use href="#icon-${sends ? 'robot' : 'clipboard'}"/></svg>${sends ? `Bu soruyu ${AI_TOOLS[tool].label}'ye sor` : `Kopyala ve ${AI_TOOLS[tool].openLabel}`}</button>
+        ${p.soru ? `<p class="ai-prompt-text">${p.soru}</p>` : ''}
+        <button class="sim-btn copy-user" onclick="LessonEngine.copyPrompt(${i})"><svg class="icon"><use href="#icon-robot"/></svg>Yardımcıya sor</button>
       </div>`).join('');
     openModal('AI Yoldaşına Sor', html);
   }
 
-  /* Hazır bir prompt metnini profille kişiselleştirip kopyalar.
-     Sitede öğretmen yok — AI yoldaşı öğretmenin yerini tutuyor. Çocuğun
-     kendi başına çözemeyeceği teknik ayrıntılar (sürücü, kart ayarları,
-     derleyici hataları) ekrana METİN olarak basılmak yerine bu promptun
-     içine konuluyor: bilgi kaybolmuyor, sadece muhatabı değişiyor. */
-  function copyPromptText(raw, okMsg) {
-    const finalText = window.Profile ? Profile.personalize(raw) : raw;
-    return copyWithToast(finalText, okMsg || 'Prompt panoya kopyalandı!');
-  }
-
+  /* Adı tarihsel (eskiden panoya kopyalayıp sekme açıyordu); kartların inline
+     onclick'i ve testler bu adla çağırıyor. Seçilen hazır soruyu panelde sorar. */
   function copyPrompt(i) {
-    const raw = state.displayedPrompts[i].prompt;
-    const finalText = window.Profile ? Profile.personalize(raw) : raw;
-    const sent = openAiTool(finalText);
-    copyWithToast(finalText, aiSentMessage(sent), function () {
-      if (window.FX) {
-        FX.copied(document.querySelectorAll('.ai-prompt-card')[i]);
-        FX.awardOnce(cfg.xpPrefix + '_copy_prompt', 10, 'XP');
-      }
-    });
+    const p = state.displayedPrompts[i];
+    if (!p) return;
+    const sira = (cfg.aiPrompts || []).indexOf(p);
+    closeModal();
+    if (!window.AiSohbet || sira < 0) { showToast(AI_PANEL_YOK, 'warn'); return; }
+    AiSohbet.baslat({ istek: 'hazir:' + sira, baslik: p.title });
+    if (window.FX) FX.awardOnce(cfg.xpPrefix + '_copy_prompt', 10, 'XP');
   }
 
   // ---------- "LED YANDI MI?" KONTROLÜ ----------
@@ -973,12 +934,12 @@ window.LessonEngine = (function () {
   }
 
   /* Öğretmen yok, AI yoldaşı öğretmen: çocuğun tarif edemeyeceği teknik
-     ayrıntılar promptun içinde gidiyor ve soru AI'ya hazır ulaşıyor. */
+     ayrıntılar dersin yardım notunda (helpPrompt). 2026-10-14'ten beri not
+     sunucuda (ai-sohbet promptlar.ts); burada yalnız 'led' isteği panele gider. */
   function askHelpFromAI() {
     if (!cfg.helpPrompt) return;
-    const text = window.Profile ? Profile.personalize(cfg.helpPrompt) : cfg.helpPrompt;
-    const sent = openAiTool(text);
-    copyPromptText(cfg.helpPrompt, aiSentMessage(sent));
+    if (!window.AiSohbet) { showToast(AI_PANEL_YOK, 'warn'); return; }
+    AiSohbet.baslat({ istek: 'led', baslik: 'LED\'im yanmadı' });
   }
 
   // ---------- QUIZ ----------
@@ -1385,15 +1346,14 @@ window.LessonEngine = (function () {
     renderMaterials, materialsReady,
     pinMapHtml, togglePinMap,
     clickToLearnHtml, selectCtlLine, kodEtkisi, merakSahneHtml, merakSahneKur, hataCevir, copyUserCode, lessonCode,
-    toggleAiPrompts, copyPrompt, copyPromptText, aiSentMessage,
+    toggleAiPrompts, copyPrompt,
     ledCheckHtml, ledCheck, restoreLedCheck, askHelpFromAI,
-    paintAiSection, aiTool, setAiTool, openAiTool,
+    paintAiSection,
     renderQuiz, renderQuizQuestion, answerQuiz, quizNext, quizPrev,
     blockStep,
-    /* Köşedeki AI yardımcısı (ai-helper.js) dersin teknik derinliğini
-       buradan okuyor: ders verisi motorun içinde, modülün dışında.
-       `stepHelp` bugün hiçbir derste yok — sözleşme baştan tanımlı ki
-       Ders 1.3 adıma özel bir not eklemek isterse yeri hazır olsun. */
+    /* Dersin yardım notu ve adıma özel not. 2026-10-14'ten beri AI'ya giden metni
+       sunucu kendi kopyasından kurar (tools/ai-promptlar.mjs veriden üretir);
+       bunlar teşhis ve testler için duruyor. `stepHelp` bugün hiçbir derste yok. */
     get helpPrompt() { return cfg.helpPrompt || ''; },
     get stepHelp() {
       var d = cfg.stepsData && cfg.stepsData[state.currentStep - 1];

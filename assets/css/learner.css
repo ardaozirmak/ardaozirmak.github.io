@@ -44,19 +44,19 @@
 }
 .learner-gate .portal-btn.primary,
 .learner-badge .portal-btn.primary {
-  background: var(--color-primary);
+  background: var(--color-primary-fill);
   color: #fff;
-  box-shadow: 0 5px 0 var(--color-primary-hover);
+  box-shadow: 0 5px 0 var(--color-primary-fill-2);
 }
 .learner-gate .portal-btn.primary:hover,
 .learner-badge .portal-btn.primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 7px 0 var(--color-primary-hover);
+  box-shadow: 0 7px 0 var(--color-primary-fill-2);
 }
 .learner-gate .portal-btn.primary:active,
 .learner-badge .portal-btn.primary:active {
   transform: translateY(3px);
-  box-shadow: 0 2px 0 var(--color-primary-hover);
+  box-shadow: 0 2px 0 var(--color-primary-fill-2);
 }
 .learner-gate .portal-btn.ghost,
 .learner-badge .portal-btn.ghost {
@@ -496,7 +496,7 @@ body.learner-gate-locked .learner-badge { display: none; }
      alfalı kırmızı, zeminle karışınca rgb(242,181,182) veriyordu ve
      üstündeki beyaz metin 1.74:1 kontrastta kalıyordu (WCAG alt sınırı
      4.5). İki durak da opak marka kırmızısı: 4.99:1 ve 6.41:1. */
-  background: linear-gradient(165deg, var(--color-primary), var(--color-primary-hover));
+  background: linear-gradient(165deg, var(--color-primary-fill), var(--color-primary-fill-2));
   color: #fff;
   cursor: pointer;
   font-family: var(--font-heading);

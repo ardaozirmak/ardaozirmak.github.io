@@ -254,7 +254,7 @@ function yuklemeyiUyguladim(btn) {
    verilirse boğar). Ekranda başlık, tıklayınca hesap. ---------------- */
 function acilirKutu(id, icon, baslik, govde) {
   return `
-    <div class="quiz-box pin-map" style="margin-top:14px;">
+    <div class="quiz-box pin-map" data-kutu="${id}" style="margin-top:14px;">
       <button type="button" class="pin-map-toggle" aria-expanded="false" aria-controls="${id}"
               onclick="LessonEngine.togglePinMap(this)">
         <span style="display:flex; align-items:center; gap:8px;">
